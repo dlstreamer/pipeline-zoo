@@ -5,19 +5,12 @@ This repository stores the pipelines and pipeline benchmark results.
 Each pipeline directory consists of:
 
 * Generic Pipeline Description
-
 * Model Downloader Config
-
 * Sample Media Downloader Config
-
 * Subdirectories for each supported framework:
-
   * DLStreamer
-
     * DLStreamer App Configuration
-
   * FFmpeg
-
   * TBD
 
 
