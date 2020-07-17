@@ -1,8 +1,54 @@
 # pipelines
 
-This repository stores the pipelines and pipeline benchmark results.
+This repository stores pipelines and links to benchmark results.
 
-Each pipeline directory consists of:
+## Pipeline Taxonomy
+
+```mermaid
+graph TB
+  Base[Pipeline Zoo] --> Video
+  Base --> Image
+  Base --> Audio
+  Base --> Multimodal
+  subgraph "Input Type"
+  Video
+  Image
+  Audio
+  Multimodal
+  end
+  Video --> Object_Detection
+  Video --> Object_Tracking
+  Video --> Object_Classification
+  Video --> Object_Identification
+  Video --> Object_Transformation
+  Image --> Image_Classification
+  Image --> Image_Segmentation
+  Object_Detection --> ob_h264_mbnetssd
+  Object_Detection --> ob_h264_yolov3
+  Object_Classification --> ob_h264_mbnetssd_resnet50
+  Object_Tracking --> ob_h264_mbnetssd_iou
+  subgraph "Task"
+  Object_Detection("Object Detection")
+  Object_Tracking("Object Tracking")
+  Object_Classification("Object Classification")
+  Object_Identification("Object Identification")
+  Object_Transformation("Object Transformation")
+  end
+  subgraph "Task"
+  Image_Classification("Image Classification")
+  Image_Segmentation("Image Segmentation")
+  end
+  subgraph "Pipeline"
+  ob_h264_mbnetssd
+  ob_h264_yolov3
+  ob_h264_mbnetssd_resnet50
+  ob_h264_mbnetssd_iou
+  end
+```
+
+## Directory Structure
+
+Each pipeline directory is meant to be standalone and consists of:
 
 * Generic Pipeline Description
 * Model Downloader Config
