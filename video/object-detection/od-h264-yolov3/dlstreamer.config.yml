@@ -1,0 +1,7 @@
+# Runner specific configuration
+
+run: "python3 dlstreamrun"
+
+detect:
+  inference-interval: 10
+  device: CPU

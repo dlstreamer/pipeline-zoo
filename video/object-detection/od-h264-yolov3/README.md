@@ -1,6 +1,6 @@
-# od-h264-mbnetssd
+# od-h264-yolov3
 
-Object detection pipeline taking encoded video frames in h264 format and using [mobilenet ssd]() for detection.
+Object detection pipeline taking encoded video frames in h264 format and using [yolo-v3-tf]() for detection.
 
 ```mermaid
 stateDiagram
@@ -17,14 +17,14 @@ stateDiagram
    
     state detect {
     state scale {
-      w300xh300
+      w416xh416
     }
     state csc {
-    BGR
+    RGB
     }
 
     state inference {
-    mbnetssd
+    yolo_v3_tf
     }
 
     state tensors_to_objects {

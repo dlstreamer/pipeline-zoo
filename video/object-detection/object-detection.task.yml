@@ -1,0 +1,63 @@
+# Object Detection Task
+
+# Tasks Define the input output and properties of a pipeline task
+# The inputs and outputs will futher be specialized by pipeline and workload
+
+description: "Object Detection"
+inputs:
+  media:
+    type:
+      media-type: video/*
+    operator: video-source.media
+outputs:
+  objects:
+    type:
+      media-type: metadata/objects
+    operator: detect.objects
+properties:
+  model:
+    type: string
+    operator: detect.model
+operators:
+  video-source:
+    inputs:
+      media: inputs.media
+  decode:
+    inputs:
+      frame: video-source.frame
+  detect:
+    inputs:
+      frame: decode.frame
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+
