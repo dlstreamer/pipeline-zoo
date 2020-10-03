@@ -15,6 +15,9 @@ import shlex
 import tempfile
 from util import create_directory
 from util import print_action
+import gitlab
+import urllib.parse
+import requests
 
 class Handler(object, metaclass=abc.ABCMeta):
 
@@ -117,15 +120,51 @@ class Runner(Handler):
 
 
 class Media(Handler):
+    
+    LFS_POINTER_SIZE = 200
 
     def __init__(self,args):
         self._args = args
 
+    def _lfs(self, path):
+        try:
+            if os.path.getsize(path) <= Media.LFS_POINTER_SIZE:
+                with open(path) as f:
+                    for line in f:
+                        if ("git-lfs" in line):
+                            return True
+        except Exception as error:
+            print(error)
+        return False
+        
+    def _download_lfs(self, path, target_path):
+        url = "{}/-/raw/main/{}".format(self._args.media_root,path)
+        print(url,flush=True)
+        request = requests.get(url,allow_redirects=True)
+        
+        with open(target_path,"wb") as f:
+            f.write(request.content)
+    
+    def _copy_gitlab_tree(self,path,target):
+        parsed_url = urllib.parse.urlparse(self._args.media_root)
+        gl = gitlab.Gitlab("{}://{}".format(parsed_url.scheme,parsed_url.netloc))
+        project = gl.projects.get(parsed_url.path[1:])
+        file_paths = project.repository_tree(path)
+        for file_path in file_paths:
+            target_path = os.path.join(target, file_path["path"])            
+            os.makedirs(os.path.dirname(target_path),exist_ok=True)
+            with open(target_path, 'wb') as f:
+                project.files.raw(file_path=file_path["path"], ref='main', streamed=True, action=f.write)
+
+            if (self._lfs(target_path)):
+                self._download_lfs(file_path["path"], target_path)
+            
     def download(self,
                  pipeline,
                  pipeline_root,
                  item=None,
                  item_list= None):
+
 
         media_list_path = os.path.join(pipeline_root,
                                        "media.list.yml")
@@ -136,8 +175,8 @@ class Media(Handler):
 
             if (item) and (item != media):
                 continue
+
             
-            source = os.path.join(self._args.media_root,media)
             target_root = os.path.join(self._args.destination,
                                        os.path.join(pipeline,"media"))
             target_media = os.path.join(target_root,media)
@@ -151,8 +190,8 @@ class Media(Handler):
             if os.path.isdir(target_media):
                 print("Media Directory {0} Exists - Skipping".format(media))
                 continue
-                
-            shutil.copytree(source,target_media)
+            
+            self._copy_gitlab_tree(media, target_root)
             
 class Pipeline(Handler):
     def __init__(self,args):

@@ -54,6 +54,9 @@ def parse_args(args=None,program_name=package_name):
 
     parser.add_argument("--force", required=False, dest="force",action="store_true", default=False)
 
+    parser.add_argument("--media-root", required=False, dest="media_root",
+                        default="https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/media")
+
     parser.add_argument("pipelines",nargs='+')
     
 
@@ -64,7 +67,6 @@ def parse_args(args=None,program_name=package_name):
     args = parser.parse_args(args)
     args.destination = os.path.abspath(args.destination)
     args.zoo_root = find_zoo_root()
-    args.media_root = os.path.join(args.zoo_root,"media")
     args.runners_root = os.path.join(args.zoo_root,"runners")
     
     return args
