@@ -1,0 +1,80 @@
+---
+
+$id: workload
+
+type: object
+
+properties:
+  scenario:
+    $ref: scenario
+  pipeline:
+    type: string
+    format: path
+  media:
+    type: string
+    format: path
+  measurement:
+    type: object
+    default: {}
+    properties:
+      throughput:
+        type: object
+        default: {}
+        properties:
+          warm-up:
+            type: integer
+            default: 2
+          sample-size:
+            type: integer
+            default: 100
+          duration:
+            type: integer
+            default: 120
+          select:
+            type: string
+            default: min
+            enum: [max, min, avg]
+        required: [warm-up, sample-size, duration, select]
+      latency:
+        type: object
+        default: {}
+    
+      density:
+        type: object
+        default: {}
+        properties:
+          multiprocess:
+            type: boolean
+            default: true
+          fps:
+            type: integer
+            default: 30
+          warm-up:
+            type: integer
+            default: 2
+          sample-size:
+            type: integer
+            default: 100
+          duration:
+            type: integer
+            default: 120
+          minimum-range:
+            type: array
+            items:
+              type: number
+            minItems: 1
+            maxItems: 2
+            default: [25]
+          average-range:
+            type: array
+            items:
+              type: number
+            minItems: 1
+            maxItems: 2
+            default: [29]
+          max-streams:
+            type: integer
+            default: 100
+        required: [fps, max-streams, warm-up, sample-size, duration]  
+      
+required: [scenario, pipeline, media, measurement]

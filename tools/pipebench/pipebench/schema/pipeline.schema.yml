@@ -1,0 +1,165 @@
+---
+
+# All yml files have an associated schema
+# given by the 'type' before the .yml
+# i.e "pipeline.yml", "task.yml"
+  
+$id: task
+
+oneOf:
+  - type: object
+    additionalProperties:
+      oneOf:
+        - $ref: operator
+        - $ref: scenario-list
+    minProperties: 1
+    maxProperties: 1
+  - oneOf:
+      - $ref: operator
+      - $ref: scenario-list
+
+definitions:
+  
+  operators:
+    $id: operators
+    type: object
+    additionalProperties:
+      $ref: operator
+
+  scenario:
+    $id: scenario
+    type: object
+    properties:
+      source:
+        type: string
+        enum: [memory, network, disk]
+      type:
+        type: string
+        enum: [stream, batch]
+    required: [source, type]
+  
+  scenario-list:
+    $id: scenario-list
+    type: array
+    items:
+      type: object
+      properties:
+        scenario:
+          $ref: scenario
+        pipeline:
+          $ref: operator
+      required: [scenario, pipeline]
+
+  caps-type:
+    $id: caps-type
+    oneOf:
+      - type: string
+        format: gstreamer_caps
+      - type: object
+        properties:
+          media-type:
+            type: string
+        additionalProperties:
+          oneOf:
+            - type: [string, number, boolean]
+            - type: array
+              items:
+                type: [string, number, boolean]
+              minItems: 2
+              maxItems: 2
+            - type: array
+              items:
+                type: [string, number, boolean]
+              uniqueItems: true
+        required: [media-type]
+
+  caps-list:
+    $id: caps-list
+    oneOf:
+      - type: array
+        items:
+          $ref: caps-type
+      - $ref: caps-type
+
+  operator:
+    $id: operator
+    oneOf:
+      - type: object
+        properties:
+          description:
+            type: string
+          inputs:
+            type: object
+            additionalProperties:
+              type: object
+              properties:
+                type:
+                  $ref: caps-list
+                operator:
+                  oneOf:
+                    - type: string
+                      format: operator_input
+                    - type: array
+                      items:
+                        type: string
+                        format: operator_input
+              required: [type]
+          outputs:
+            type: object
+            additionalProperties:
+              type: object
+              properties:
+                type:
+                  $ref: caps-list
+                operator:
+                  type: string
+                  format: operator_output
+              required: [type]
+          properties:
+            type: object
+            properties:
+              additionalProperties:
+                allOf:
+                  - $ref: http://json-schema.org/draft-07/schema#
+                  - properties:
+                      operator:
+                        oneOf:
+                          - type: string
+                            format: operator_property
+                          - type: array
+                            items:
+                              type: string
+                              format: operator_property
+                      optional:
+                        type: boolean
+                        default: false
+          operators:
+            type: object
+            additionalProperties:
+              type: object
+              properties:
+                inputs:
+                  type: object
+                  additionalProperties:
+                    type: string
+                optional:
+                  type: boolean
+                  default: false
+        required: [inputs, outputs]
+        additionalProperties: false
+      - type: object
+        $id: pipeline
+        additionalPropertes: true
+        oneOf:
+          - properties:
+              type:
+                type: string
+                format: operator_name
+            required: [type]
+          - properties:
+              task:
+                type: string
+                format: operator_name
+            required: [task]
+           
+        

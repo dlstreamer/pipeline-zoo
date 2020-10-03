@@ -1,0 +1,35 @@
+# piperun.sh --pipeline pipeline.yml --inputs inputs.yml --outputs output.yml --config config.yml 
+# piperun.sh piperun.yml
+
+# Three forms
+# 1 all in one document
+# 2 seperate documents by section
+# 3 seperate documents referenced in one document
+# start with first form
+
+
+# pipeline: filename
+# inputs: filename
+# outputs: filename
+# config: filename
+
+pipeline:
+  task: object-detection
+  model: mobilenet-ssd
+  inputs.video.type.media-type: video/x-h264
+  outputs.objects.type.object-labels: coco.yml
+  outputs.objects.type.media-type: metadata/objects
+  outputs.objects.type.format: jsonl
+
+inputs:
+  - uri: pipe:///home/tools/pipebench/workspace/od-h264-mbnetssd/workloads/test/mockrun/stream_0/tmp/df8bad14-f23f-11ea-887f-1c697a06fd65/input
+    caps: "video/x-h264, stream-format=(string)byte-stream, alignment=(string)au, level=(string)4, profile=(string)high, width=(int)1920, height=(int)1080, framerate=(fraction)24/1, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive, chroma-format=(string)4:2:0, bit-depth-luma=(uint)8, bit-depth-chroma=(uint)8, parsed=(boolean)true"
+
+outputs:
+  - uri: pipe:///home/tools/pipebench/workspace/od-h264-mbnetssd/workloads/test/mockrun/stream_0/tmp/df8bad14-f23f-11ea-887f-1c697a06fd65/output
+    caps: "metadata/objects, format=jsonl"
+
+config:
+  
+
+

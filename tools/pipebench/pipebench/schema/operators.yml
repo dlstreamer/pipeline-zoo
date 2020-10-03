@@ -1,0 +1,129 @@
+---
+
+# Pipeline Operators
+  
+demux:
+  inputs:
+    media-stream:
+      type: video/*
+  outputs:
+    video-stream:
+      type: video/*
+    audio-stream:
+      type: audio/*
+
+parse:
+  inputs:
+    video-stream:
+      type: video/*
+  outputs:
+    frame:
+      type:
+        media-type: video/*
+        parsed: true
+          
+video-source:
+  inputs:
+    media:
+      type: video/*
+  outputs:
+    frame:
+      type:
+        media-type: video/*
+        parsed: true
+  operators:
+    demux:
+      inputs:
+        media-stream: inputs.media-stream
+    parse:
+      inputs:
+        video-stream: demux.video-stream          
+decode:
+  inputs:
+    frame:
+      type:
+        media-type: video/*
+        parsed: true
+  outputs:
+    frame:
+      type: video/x-raw
+      
+scale:
+  inputs:
+    frame:
+      type: video/x-raw
+
+  outputs:
+    frame:
+      type: video/x-raw
+
+csc:
+  inputs:
+    frame:
+      type: video/x-raw
+  outputs:
+    frame:
+      type: video/x-raw
+
+inference:
+  inputs:
+    frame:
+      type:
+        media-type: video/x-raw
+        format: BGR
+  outputs:
+    tensors:
+      type:
+        media-type: tensors/x-raw
+  properties:
+    model:
+      type: string
+    model-type:
+      type: string
+  
+
+tensors-to-objects:
+  inputs:
+    tensors:
+      type:
+        media-type: tensors/x-raw
+  outputs:
+    objects:
+      type:
+        media-type: metadata/objects
+        format: jsonl
+  
+detect:  
+  inputs:
+    frame:
+      type: video/x-raw
+      operator: scale.frame
+  outputs:
+    objects:
+      type:
+        media-type: metadata/objects
+        format: jsonl
+      operator: tensors-to-objects.objects
+    frame:
+      type: video-x-raw
+      operator: inputs.frame
+  properties:
+    model:
+      type: string
+      operator: inference.model
+  operators:
+    scale:
+      inputs:
+        frame: inputs.frame
+    csc:
+      inputs:
+        frame: scale.frame
+    inference:
+      inputs:
+        frame: csc.frame
+      model-type: detect
+    tensors-to-objects:
+      inputs:
+        tensor: inference.tensor
+
+    

@@ -1,0 +1,25 @@
+scenario:
+  source: memory
+  type: stream
+
+pipeline: od-h264-yolov3
+
+media: video/person-bicycle-car-detection
+
+measurement: 
+
+  throughput:
+    select: avg
+    duration: 60
+    sample-size: 10
+  density:
+     multiprocess: true
+     fps: 30
+     sample-size: 10
+     warm-up: 2
+     duration: 60
+     average-range: [29]
+     minimum-range: [28]
+     max-streams: 10
+    
+    

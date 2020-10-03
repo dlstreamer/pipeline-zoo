@@ -1,0 +1,15 @@
+FROM openvisualcloud/xeone3-ubuntu1804-analytics-dev:itt926 
+
+ENV http_proxy $http_proxy
+ENV https_proxy $https_proxy
+ENV no_proxy=""
+
+RUN apt update -y && \
+    apt install wget gnupg2 -y && \
+    cd /tmp && \
+    wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB && \
+    apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB && \
+    rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB && \
+    echo "deb https://apt.repos.intel.com/oneapi all main" | tee /etc/apt/sources.list.d/oneAPI.list && \
+    apt update -y && \
+    apt install intel-basekit libgtk-3-dev libnss3-dev  -y 
