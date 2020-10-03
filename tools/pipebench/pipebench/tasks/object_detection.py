@@ -58,7 +58,7 @@ class ObjectDetection(Task):
         
         piperun_config["inputs"] = [input]
         piperun_config["outputs"] = [output]
-        piperun_config["config"] = runner_config
+        piperun_config["runner-config"] = runner_config
         
         piperun_config_path = os.path.join(run_root,filename)
 

@@ -254,20 +254,21 @@ class ObjectDetection(Task):
 
         self._src_element = input_to_src(self._piperun_config["inputs"][0])
         self._sink_element = output_to_sink(self._piperun_config["outputs"][0])
-
+        self._runner_config = self._piperun_config["runner-config"]
+                
         self._model = find_model(self._piperun_config["pipeline"]["model"],
-                                 self._piperun_config["config"]["models_root"])
+                                 self._runner_config["models_root"])
 
 
-        self._piperun_config.setdefault("detect",{})
-        self._piperun_config["detect"].setdefault("element","gvadetect")
-        self._piperun_config["detect"].setdefault("name","detect")
-        self._detect_properties = inference_properties(self._piperun_config["detect"],
+        self._runner_config.setdefault("detect",{})
+        self._runner_config["detect"].setdefault("element","gvadetect")
+        self._runner_config["detect"].setdefault("name","detect")
+        self._detect_properties = inference_properties(self._runner_config["detect"],
                                                        self._model,
                                                        self._args.systeminfo)
 
-        self._piperun_config.setdefault("decode", {"device":"CPU"})
-        self._decode_properties = decode_properties(self._piperun_config["decode"],
+        self._runner_config.setdefault("decode", {"device":"CPU"})
+        self._decode_properties = decode_properties(self._runner_config["decode"],
                                                     self._model,
                                                     self._piperun_config["inputs"][0],
                                                     self._args.systeminfo)

@@ -63,7 +63,7 @@ class ObjectDetection(Task):
 
         extension = ObjectDetection.caps_to_extension[input_caps[0]]
             
-        input_path = os.path.join(self._piperun_config["config"]["workload_root"],
+        input_path = os.path.join(self._piperun_config["runner-config"]["workload_root"],
                                   "input")
 
         input_paths = [ os.path.join(input_path,path) for path in os.listdir(input_path)
@@ -77,8 +77,8 @@ class ObjectDetection(Task):
 
     def _load_reference(self):
     
-        reference_path = os.path.join(self._piperun_config["config"]["workload_root"],
-                                      self._piperun_config["config"]["reference"])
+        reference_path = os.path.join(self._piperun_config["runner-config"]["workload_root"],
+                                      self._piperun_config["runner-config"]["reference"])
 
         reference = []
 
