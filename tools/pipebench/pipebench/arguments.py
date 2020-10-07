@@ -10,8 +10,6 @@ import distutils.util
 import shtab
 import pipebench.commands
 
-package_name = os.path.split(os.path.dirname(__file__))[-1]
-
 def find_zoo_root():
     path = os.path.realpath(__file__)
     while (path and not os.path.basename(path)=='tools'):
@@ -115,7 +113,7 @@ def _get_parser(program_name="pipebench"):
     
     return parser
     
-def parse_args(args=None,program_name="pipe"):
+def parse_args(args=None,program_name="pipebench"):
 
     parser = _get_parser()
     

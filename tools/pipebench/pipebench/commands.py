@@ -24,82 +24,6 @@ import json
 from pipebench.tasks.task import Task
 from tabulate import tabulate
 
-def list_pipelines(args):
-
-    descriptions = []
-    for pipeline,pipeline_path in zip(args.pipelines[0],args.pipelines[1]):
-        pipeline_config = PipelineConfig(pipeline_path,args)
-        descriptions.append({"pipeline":pipeline,
-                             "task":pipeline_config._namespace.task,
-                             "model":pipeline_config._namespace.model})
-    
-    print(tabulate(descriptions,headers={'name':'name','model':'model','task':'task'},tablefmt="grid"))
-    
-def _create_download_command(pipeline, args):
-
-    downloader = os.path.join(args.zoo_root,"tools/downloader/download")
-    
-    return shlex.split("python3 {0} -d {1} {2}".format(downloader,args.workspace_root,pipeline))
-
-def download_pipeline(pipeline, args):
-
-    target_dir = os.path.join(args.workspace_root,pipeline)
-    
-    if (args.force):
-        try:
-            shutil.rmtree(target_dir)
-        except Exception as error:
-            pass
-
-    if (not os.path.isdir(target_dir)):
-        print("Pipeline not found in workspace, downloading")
-                       
-        command = _create_download_command(pipeline,args)
-
-        subprocess.run(command)
-    else:
-        print("Pipeline found, skipping download")
-
-def download(args):
-    download_pipeline(args.pipeline,
-                      args)
-
-def _create_systeminfo_command(target_dir, args):
-
-    systeminfo = os.path.join(args.zoo_root,"tools/systeminfo/systeminfo")
-    
-    return shlex.split("python3 {0} -js {1}".format(systeminfo,os.path.join(target_dir,"systeminfo.json")))
-
-
-def _load_workload(args):
-    
-    try:
-
-        pipeline_path = find_pipeline(args.pipeline, args)
-
-        if (not pipeline_path):
-            args.parser.error("Pipeline {} not found in workspace".format(args.pipeline,))
-       
-        args.pipeline_root = os.path.dirname(pipeline_path)
-
-        workload = WorkloadConfig(args.workload, args)
-        workload_name = os.path.basename(args.workload)
-        workload_name = workload_name.split('.')[0]
-
-        args.workload_name = workload_name
-        args.workload_root = os.path.join(args.
-                                          workspace_root,
-                                          workload.pipeline,
-                                          "workloads",
-                                          workload_name)
-
-        
-        return workload
-    except Exception as error:
-        args.parser.error("Invalid workload: {}, error: {}".format(args.workload,error))
-
-    return None
-
 def measure(args):
 
     if (not args.workload):
@@ -169,6 +93,85 @@ def measure(args):
                                    args,
                                    target_dir,
                                    runner_config)
+
+
+def download(args):
+    _download_pipeline(args.pipeline,
+                      args)
+
+def list_pipelines(args):
+
+    descriptions = []
+    for pipeline,pipeline_path in zip(args.pipelines[0],args.pipelines[1]):
+        pipeline_config = PipelineConfig(pipeline_path,args)
+        descriptions.append({"pipeline":pipeline,
+                             "task":pipeline_config._namespace.task,
+                             "model":pipeline_config._namespace.model})
+    
+    print(tabulate(descriptions,headers={'name':'name','model':'model','task':'task'},tablefmt="grid"))
+    
+def _create_download_command(pipeline, args):
+
+    downloader = os.path.join(args.zoo_root,"tools/downloader/download")
+    
+    return shlex.split("python3 {0} -d {1} {2}".format(downloader,args.workspace_root,pipeline))
+
+def _download_pipeline(pipeline, args):
+
+    target_dir = os.path.join(args.workspace_root,pipeline)
+    
+    if (args.force):
+        try:
+            shutil.rmtree(target_dir)
+        except Exception as error:
+            pass
+
+    if (not os.path.isdir(target_dir)):
+        print("Pipeline not found in workspace, downloading")
+                       
+        command = _create_download_command(pipeline,args)
+
+        subprocess.run(command)
+    else:
+        print("Pipeline found, skipping download")
+
+
+def _create_systeminfo_command(target_dir, args):
+
+    systeminfo = os.path.join(args.zoo_root,"tools/systeminfo/systeminfo")
+    
+    return shlex.split("python3 {0} -js {1}".format(systeminfo,os.path.join(target_dir,"systeminfo.json")))
+
+
+def _load_workload(args):
+    
+    try:
+
+        pipeline_path = find_pipeline(args.pipeline, args)
+
+        if (not pipeline_path):
+            args.parser.error("Pipeline {} not found in workspace".format(args.pipeline,))
+       
+        args.pipeline_root = os.path.dirname(pipeline_path)
+
+        workload = WorkloadConfig(args.workload, args)
+        workload_name = os.path.basename(args.workload)
+        workload_name = workload_name.split('.')[0]
+
+        args.workload_name = workload_name
+        args.workload_root = os.path.join(args.
+                                          workspace_root,
+                                          workload.pipeline,
+                                          "workloads",
+                                          workload_name)
+
+        
+        return workload
+    except Exception as error:
+        args.parser.error("Invalid workload: {}, error: {}".format(args.workload,error))
+
+    return None
+
 
 def _prepare(task, workload, args):
             
@@ -505,9 +508,3 @@ def _write_workload(workload, target_dir, args):
                   sort_keys=False)
         
     
-def view(task, workload, args):
-    pass
-
-def report(task, workload, args):
-    pass
-

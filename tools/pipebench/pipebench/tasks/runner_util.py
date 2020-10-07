@@ -50,15 +50,3 @@ def start_pipeline_runner(runner,
                                stderr=stderr_file)
     return process
 
-#    print (args.workload_root)
-    pass
-
-#def start_pipeline_runner(runner, piperun_config_path, args):
- #   runner_config = os.path.join(args.pipeline_root, runner)
-    
-#    def validate(document_path, schema_store):
-    
-    pass
-
-def stop_pipeline_runner():
-    pass
