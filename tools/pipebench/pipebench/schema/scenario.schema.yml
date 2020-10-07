@@ -1,0 +1,20 @@
+---
+
+# All yml files have an associated schema
+# given by the 'type' before the .yml
+# i.e "pipeline.yml", "task.yml"
+  
+$id: scenario
+
+type: object
+properties:
+  source:
+    type: string
+    enum: [memory, network, disk]
+    default: memory
+  type:
+    type: string
+    enum: [stream, batch]
+    default: stream
+required: [source, type]
+

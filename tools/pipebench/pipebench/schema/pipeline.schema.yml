@@ -26,17 +26,17 @@ definitions:
     additionalProperties:
       $ref: operator
 
-  scenario:
-    $id: scenario
-    type: object
-    properties:
-      source:
-        type: string
-        enum: [memory, network, disk]
-      type:
-        type: string
-        enum: [stream, batch]
-    required: [source, type]
+  # scenario:
+  #   $id: scenario
+  #   type: object
+  #   properties:
+  #     source:
+  #       type: string
+  #       enum: [memory, network, disk]
+  #     type:
+  #       type: string
+  #       enum: [stream, batch]
+  #   required: [source, type]
   
   scenario-list:
     $id: scenario-list

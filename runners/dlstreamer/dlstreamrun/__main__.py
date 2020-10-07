@@ -40,7 +40,8 @@ if __name__ == '__main__':
 
     args, parser = parse_args(program_name=package_name)
     print_args(args)
-    
+
+    args.piperun_config_path = args.piperun_config
     args.piperun_config = load_document(args.piperun_config)
 
     if args.systeminfo:

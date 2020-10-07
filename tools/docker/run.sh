@@ -166,11 +166,12 @@ error() {
 
 get_options "$@"
 
-VOLUME_MOUNT+="-v $SOURCE_DIR:/home "
+VOLUME_MOUNT+="-v $SOURCE_DIR:/home/pipeline-zoo/ "
 VOLUME_MOUNT+="-v /tmp:/tmp "
 VOLUME_MOUNT+="-v /dev:/dev "
 VOLUME_MOUNT+="-v /lib/modules:/lib/modules "
 VOLUME_MOUNT+="-v $HOME/.Xauthority:/root/.Xauthority "
+mkdir -p $SOURCE_DIR/workspace
 
 if [ -z "$NETWORK" ]; then
     NETWORK="--network=host"

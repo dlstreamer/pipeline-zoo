@@ -88,9 +88,8 @@ class ObjectDetection(Task):
                 for result in reference_file:
                     try:
                         reference.append(json.loads(result))
-                    except Error as error:
+                    except Exception as error:
                         print(error)
-                        pass
         except Exception as error:
             print("Can't load reference! {}".format(error))
             

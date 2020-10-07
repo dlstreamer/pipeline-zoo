@@ -113,7 +113,7 @@ def rsetdict(obj, attr, val):
     
 def rgetdict(obj,attr,*args):
     def _getdict(obj, attr):
-        return obj.setdefault(attr, *args)
+        return obj.setdefault(attr, {})
     return functools.reduce(_getdict, [obj] + attr.split('.'))
 
 def rsetattr(obj, attr, val):
@@ -159,11 +159,19 @@ def validate(document_path, schema_store, overrides = [] ):
         document = _load_document(document_path)
         if (overrides):
             for key,value in overrides:
+                temp = None
+                try:
+                    temp = yaml.full_load(value)
+                    temp = {} if temp is None else temp
+                except Exception as error:
+                    pass
+                
+                if (temp is not None):
+                    value = temp
                 rsetdict(document,key,value)
         if (schema_id and schema_id in schema_store):
             schema = schema_store[schema_id]
             DefaultValidatingDraft7Validator(schema,resolver=resolver).validate(document)
-        
     except Exception as error:
         print("Error validating: {} error: {}".format(document_path,error))
         document = None
@@ -227,31 +235,44 @@ class PipelineConfig(Document):
 
         self.pipeline_root = os.path.dirname(document_path)
         self.pipeline_path = document_path
+
+
         
         
 class WorkloadConfig(Document):
+
+    def _find_default_media(self, args):
+
+        media_list_path = os.path.join(args.pipeline_root,"media.list.yml")
+        document = validate(media_list_path,args.schemas)
+        if (document) and isinstance(document,list) and False:
+            return document[0]
+        else:
+            extensions = [".mp4"]
+            media_root = os.path.join(args.pipeline_root,"media")            
+            for root,dirs,paths in os.walk(media_root):
+
+                file_paths = [os.path.relpath(root,media_root)
+                              for path in paths if os.path.splitext(path)[1] in extensions]
+                if (file_paths):
+                    return file_paths[0]
+    
     def __init__(self, document_path, args):
+
         
         self._document = validate(document_path,args.schemas,args.overrides)
 
         if (not self._document):
             raise Exception("Invalid Workload {}".format(document_path))
-
         self._namespace = convert_to_namespace(self._document)
-
-
-#        self._namespace.media = os.path.join(args.zoo_root,self._namespace.media)
-
- #       self._namespace.pipeline = os.path.join(args.zoo_root,self._namespace.pipeline)
-
+        if (not "media" in self._document):
+            self._document["media"] = self._find_default_media(args)
+            self._namespace.media = self._document["media"]
+            
         self.media = self._namespace.media
-
-        self.pipeline = self._namespace.pipeline
         
-#        self.pipeline = PipelineConfig(self._namespace.pipeline,args)
+        self.pipeline = args.pipeline
 
-  #      self.task = self.pipeline._task.get_task_scenario(self._namespace.scenario)
-   #     self.task.name = self.pipeline._task.name
         
         
         

@@ -10,23 +10,9 @@ import json
 import jsonschema
 from jsonschema import Draft7Validator, validators, RefResolver
 from types import SimpleNamespace
-from schema.documents import PipelineConfig
+from pipebench.schema.documents import PipelineConfig
 import os
-from schema.documents import rsetattr
-
-#models.detect.name.FP32.path
-
-#models.classify.
-#models.inference.
-
-#for name, model in models.detect.items():
-#    gvadetect model=model.FP32.path ! 
-
-#for name, model in models.classify.items():
-#    gvaclassify model = model.FP32.path class_type = model.class_type
-
-    
-# ModelsNamespace 
+from pipebench.schema.documents import rsetattr
 
 def _set_namespace_value(namespace,path,value):
     current = namespace
@@ -101,12 +87,11 @@ def find_model(model, pipeline_root, args):
 def find_pipeline(pipeline, args):
     pipelines_root = args.workspace_root
     pipeline_root = None
-
+    
     for root, directories, files in os.walk(pipelines_root):
         if (pipeline in directories):
             pipeline_root = os.path.abspath(os.path.join(root,pipeline))
             break
-
 
     if (not pipeline_root):
         if (os.path.isdir(pipeline)):
@@ -126,7 +111,7 @@ def find_pipeline(pipeline, args):
 
     if len(file_paths)==1:
         return os.path.join(pipeline_root,file_paths[0])
-            
+    
     return None
 
 
@@ -145,7 +130,7 @@ class Task(object, metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def prepare(self, workload_root):
+    def prepare(self, workload_root, timeout):
         pass
 
     @classmethod
@@ -158,7 +143,6 @@ class Task(object, metaclass=abc.ABCMeta):
                     cls.task_map[task_name] = task
                     
         pipeline_path = find_pipeline(workload.pipeline, args)
-        print(pipeline_path)
         if (not pipeline_path):
             raise Exception("Can't find pipeline {}, please make sure it is downloaded!".format(workload.pipeline))
                     

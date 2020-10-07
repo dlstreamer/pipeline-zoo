@@ -220,13 +220,13 @@ class Pipeline(Handler):
 
 class Model(Handler):
 
-    dldt_root = "/opt/intel/dldt/"
-
+#    dldt_root = "/opt/intel/dldt/"
+    dldt_root = "/opt/intel/openvino/deployment_tools"
     model_downloader = os.path.join(dldt_root,"open_model_zoo/tools/downloader/downloader.py")
 
     model_converter = os.path.join(dldt_root,"open_model_zoo/tools/downloader/converter.py")
 
-    model_optimizer = os.path.join(dldt_root,"model-optimizer/mo.py")
+    model_optimizer = os.path.join(dldt_root,"model_optimizer/mo.py")
 
     model_proc_root = "/opt/intel/dl_streamer/samples/model_proc"
     

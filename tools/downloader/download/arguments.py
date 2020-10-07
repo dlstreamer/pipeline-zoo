@@ -63,7 +63,7 @@ def parse_args(args=None,program_name=package_name):
     if (isinstance(args, dict)):
         args = ["--{}={}".format(key, value)
                 for key, value in args.items() if value]
-        
+
     args = parser.parse_args(args)
     args.destination = os.path.abspath(args.destination)
     args.zoo_root = find_zoo_root()

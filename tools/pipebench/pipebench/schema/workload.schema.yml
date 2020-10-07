@@ -7,9 +7,7 @@ type: object
 properties:
   scenario:
     $ref: scenario
-  pipeline:
-    type: string
-    format: path
+    default: {}
   media:
     type: string
     format: path
@@ -29,19 +27,17 @@ properties:
             default: 100
           duration:
             type: integer
-            default: 120
+            default: 60
           select:
             type: string
-            default: min
+            default: avg
             enum: [max, min, avg]
         required: [warm-up, sample-size, duration, select]
-      latency:
-        type: object
-        default: {}
+#      latency:
+#        type: object
     
       density:
         type: object
-        default: {}
         properties:
           multiprocess:
             type: boolean
@@ -57,7 +53,7 @@ properties:
             default: 100
           duration:
             type: integer
-            default: 120
+            default: 60
           minimum-range:
             type: array
             items:
@@ -77,4 +73,4 @@ properties:
             default: 100
         required: [fps, max-streams, warm-up, sample-size, duration]  
       
-required: [scenario, pipeline, media, measurement]
+required: [scenario, measurement]

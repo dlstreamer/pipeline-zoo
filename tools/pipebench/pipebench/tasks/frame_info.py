@@ -6,7 +6,20 @@
 
 import os
 import json
+import time
 
+class Timeout:
+    def __init__(self, duration = 60):
+        self._duration = duration
+        self._start = None
+    def process_frame(self, frame):
+        if (not self._start):
+            self._start = time.time()
+        elif ((time.time()-self._start) >self._duration):
+            return False
+        return True
+
+                
 class FrameInfo:
 
     def __init__(self, output_path, source):

@@ -8,18 +8,33 @@ import os
 import shlex
 import subprocess
 import shutil
-from util import create_directory
-from tasks.task import find_pipeline
-from schema.documents import validate
+from pipebench.util import create_directory
+from pipebench.tasks.task import find_pipeline
+from pipebench.schema.documents import validate
+from pipebench.schema.documents import WorkloadConfig
+from pipebench.schema.documents import PipelineConfig
 import yaml
 from collections import OrderedDict
 import time
 import math
 import sys
-from tasks.media_util import FpsReport
-from util import print_action
+from pipebench.tasks.media_util import FpsReport
+from pipebench.util import print_action
 import json
+from pipebench.tasks.task import Task
+from tabulate import tabulate
 
+def list_pipelines(args):
+
+    descriptions = []
+    for pipeline,pipeline_path in zip(args.pipelines[0],args.pipelines[1]):
+        pipeline_config = PipelineConfig(pipeline_path,args)
+        descriptions.append({"name":pipeline,
+                             "task":pipeline_config._namespace.task,
+                             "model":pipeline_config._namespace.model})
+    
+    print(tabulate(descriptions,headers={'name':'name','model':'model','task':'task'},tablefmt="grid"))
+    
 def _create_download_command(pipeline, args):
 
     downloader = os.path.join(args.zoo_root,"tools/downloader/download")
@@ -45,9 +60,8 @@ def download_pipeline(pipeline, args):
     else:
         print("Pipeline found, skipping download")
 
-def download(task, workload, args):
-    
-    download_pipeline(workload.pipeline,
+def download(args):
+    download_pipeline(args.pipeline,
                       args)
 
 def _create_systeminfo_command(target_dir, args):
@@ -56,9 +70,99 @@ def _create_systeminfo_command(target_dir, args):
     
     return shlex.split("python3 {0} -js {1}".format(systeminfo,os.path.join(target_dir,"systeminfo.json")))
 
-def prepare(task, workload, args):
+
+def _load_workload(args):
     
+    try:
+
+        pipeline_path = find_pipeline(args.pipeline, args)
+
+        if (not pipeline_path):
+            args.parser.error("Pipeline {} not found in workspace".format(args.pipeline,))
+       
+        args.pipeline_root = os.path.dirname(pipeline_path)
+
+        workload = WorkloadConfig(args.workload, args)
+        workload_name = os.path.basename(args.workload)
+        workload_name = workload_name.split('.')[0]
+
+        args.workload_name = workload_name
+        args.workload_root = os.path.join(args.
+                                          workspace_root,
+                                          workload.pipeline,
+                                          "workloads",
+                                          workload_name)
+
         
+        return workload
+    except Exception as error:
+        args.parser.error("Invalid workload: {}, error: {}".format(args.workload,error))
+
+    return None
+
+def measure(args):
+
+    if (not args.workload):
+        workload_path = "{}/default.workload.yml".format(args.workspace_root)
+        with open(workload_path,
+                  "w") as workload_file:
+            workload_file.write("{}")
+        args.workload = workload_path
+        
+    workload = _load_workload(args)
+    
+    task = Task.create_task(workload, args)
+    _prepare(task, workload, args)
+    
+    # write out workload file
+    _write_workload(workload, args) 
+    
+    # load runner config
+    
+    runner_config_path = os.path.join(args.workspace_root,
+                                      workload.pipeline,
+                                      "{}.config.yml".format(args.runner))
+    
+    if ( (not os.path.isfile(runner_config_path)) and
+         (os.path.isfile(runner_config_path.replace("yml","json")))):
+        runner_config_path = runner_config_path.replace("yml","json")
+    
+    runner_config = validate(runner_config_path, args.schemas)
+    
+    # create output folder for runner
+
+    target_dir = os.path.join(args.pipeline_root,
+                              "runners",
+                              args.runner,
+                              "results",
+                              os.path.basename(args.workload_root))
+
+    if (args.force):
+        try:
+            shutil.rmtree(target_dir)
+        except Exception as error:
+            pass
+
+    if (not os.path.isdir(target_dir)):
+        create_directory(target_dir)
+
+    if ("throughput" in workload._document["measurement"]):
+        throughput = _measure_throughput(task,
+                                         workload,
+                                         args,
+                                         target_dir,
+                                         runner_config)
+        
+    if ("density" in workload._document["measurement"]):
+        density = _measure_density(throughput,
+                                   task,
+                                   workload,
+                                   args,
+                                   target_dir,
+                                   runner_config)
+
+def _prepare(task, workload, args):
+            
     if (args.force):
         try:
             shutil.rmtree(args.workload_root)
@@ -88,7 +192,8 @@ def prepare(task, workload, args):
             create_directory(directory)
 
             
-    task.prepare(args.workload_root)
+    task.prepare(args.workload_root,
+                 workload._namespace.measurement.throughput.duration)
 
 def _print_fps(runners, totals):
 
@@ -146,7 +251,6 @@ def _wait_for_task(runners, duration):
     start = time.time()
     totals = {}
     for (source, sink, runner_process) in runners:
-
         while((source.is_alive() and (not runner_process.poll()))
               and ((time.time()-start) < duration)):
             source.join(1)
@@ -184,25 +288,6 @@ def _write_throughput_result(run_directory,
     print(result_file_name)
     
     print(result)
-
-def _report_throughtput(run_directory,
-                        workload,
-                        config,
-                        results):
-    pass
-    # report = {"throughput": {
-    #     "max":
-    #     "min":
-    #     "avg":
-    #     "select": {
-    #         "min": 
-    #         }
-    # }
-    # }
-    
-    
-#    report_file_name = os.path.join(run_directory,
- #                                   "throughput.json")
     
 def _measure_density(throughput,
                      task,
@@ -280,68 +365,9 @@ def _write_workload(workload, args):
                   sort_keys=False)
         
     
-def run(task, workload, args):
-
-    # write out workload file
-    _write_workload(workload, args) 
-    
-    # load runner config
-    
-    runner_config_path = os.path.join(args.workspace_root,
-                                 workload.pipeline,
-                                 "{}.config.yml".format(args.runner))
-
-    if (not os.path.isfile(runner_config_path)) and (os.path.isfile(runner_config_path.replace("yml","json"))):
-        runner_config_path = runner_config_path.replace("yml","json")
-
-    runner_config = validate(runner_config_path, args.schemas)
-    
-    # create output folder for runner
-
-    target_dir = os.path.join(args.workload_root,
-                              "results",
-                              args.runner)
-
-    if (args.force):
-        try:
-            shutil.rmtree(target_dir)
-        except Exception as error:
-            pass
-
-    if (not os.path.isdir(target_dir)):
-        create_directory(target_dir)
-
-        
-    throughput = _measure_throughput(task,
-                                     workload,
-                                     args,
-                                     target_dir,
-                                     runner_config)
-
-
-    density = _measure_density(throughput,
-                               task,
-                               workload,
-                               args,
-                               target_dir,
-                               runner_config)
-    exit(1)
-        
-
-        
-    
-
 def view(task, workload, args):
     pass
 
 def report(task, workload, args):
     pass
 
-
-command_map = {
-    'download':download,
-    'prepare':prepare,
-    'run':run,
-    'view':view,
-    'report':report
-}

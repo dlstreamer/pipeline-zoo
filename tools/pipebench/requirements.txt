@@ -1,3 +1,5 @@
 pygraphviz
 ffmpeg-python
 jsonschema
+shtab
+tabulate

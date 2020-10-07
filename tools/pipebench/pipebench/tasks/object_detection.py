@@ -23,6 +23,7 @@ import uuid
 from .runner_util import start_pipeline_runner
 from threading import Thread
 import time
+import json
 
 class ObjectDetection(Task):
 
@@ -115,7 +116,7 @@ class ObjectDetection(Task):
                                                os.path.join(self._args.workload_root,"systeminfo.json"),
                                                redirect=self._args.redirect)
         
-
+        time.sleep(2)
         # start writer thread
         
         source = MediaSource(self._input_path,
@@ -129,15 +130,45 @@ class ObjectDetection(Task):
         
         return source, sink, runner_process
 
+    def _load_reference(self, reference_target):
+    
+        reference = []
+
+        reference_path = os.path.join(reference_target,"objects.jsonl")
+
+        print(reference_path)
+        try:
+            with open(reference_path,"r") as reference_file:
+                for result in reference_file:
+                    try:
+                        reference.append(json.loads(result))
+                    except Exception as error:
+                        print(error)
+                        pass
+        except Exception as error:
+            print("Can't load reference! {}".format(error))
+            
+        return reference
+
+
+    def _read_input_paths(self, input_directory):
+
+        frame_paths = [ os.path.join(input_directory, path)
+                         for path in os.listdir(input_directory) if path.endswith('bin')]
+             
+        frame_paths = [ frame_path for frame_path in frame_paths if os.path.isfile(frame_path) ]
+        frame_paths.sort(key= lambda item: int(os.path.basename(item).split('_')[1].split('.')[0]))
+
+        return frame_paths
         
         
-    def prepare(self, workload_root):
+    def prepare(self, workload_root, timeout):
         
         # todo resolve properties of task by filling in details from pipeline
 
         input_media_type = getattr(self._pipeline._namespace,"inputs.media.type.media-type")
 
-        input_media = find_media(self._workload.media,self._pipeline.pipeline_root,self._args)
+        input_media = find_media(self._workload.media,self._pipeline.pipeline_root)
 
         input_target = os.path.join(workload_root, "input")
 
@@ -153,7 +184,9 @@ class ObjectDetection(Task):
             create_encoded_frames(input_target,
                                   input_media_type,
                                   input_media)
-                                
+
+        input_paths = self._read_input_paths(input_target)
+        
         model_name = self._pipeline._namespace.model
 
 
@@ -180,9 +213,15 @@ class ObjectDetection(Task):
             create_reference(input_target,
                              reference_target,
                              output_media_type,
-                             models)
+                             models,
+                             timeout=timeout)
 
+        reference = self._load_reference(reference_target)
 
-
-
+        for extra_input in input_paths[len(reference):]:
+            try:
+                os.remove(extra_input)
+            except Exception as error:
+                print(error)
+        
 

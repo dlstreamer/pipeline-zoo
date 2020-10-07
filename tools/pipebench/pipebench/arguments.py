@@ -7,48 +7,112 @@ import os
 import argparse
 import json
 import distutils.util
-from schema.documents import WorkloadConfig
+import shtab
+import pipebench.commands
 
 package_name = os.path.split(os.path.dirname(__file__))[-1]
 
-    
-def parse_args(args=None,program_name=package_name):
+def find_zoo_root():
+    path = os.path.realpath(__file__)
+    while (path and not os.path.basename(path)=='tools'):
+        path = os.path.dirname(path)
+    return os.path.dirname(path)
 
+def list_pipelines():
+    pipelines_root = os.path.join(find_zoo_root(),"pipelines")
+    pipelines = []
+    pipeline_paths = []
+    for root, directories, files in os.walk(pipelines_root):
+        for path in files:
+            if (path.endswith(".pipeline.yml")):
+                pipelines.append(path.replace(".pipeline.yml",""))
+                pipeline_paths.append(os.path.join(root,path))
+    return pipelines, pipeline_paths    
+
+def _get_parser_shtab():
+    parser = _get_parser()
+
+    for command in parser._get_positional_actions():
+        for cmd, subparser in command.choices.items():
+            for option in subparser._get_optional_actions():
+                if (option.choices):
+                    option_strings = []
+                    option_string = option.option_strings[0]
+                    for choice in option.choices:
+                        option_strings.append("{}={}".format(option_string,choice))
+                    option.option_strings = option_strings
+                
+    return parser
+
+def _get_parser(program_name="pipebench"):
     parser = argparse.ArgumentParser(prog=program_name,fromfile_prefix_chars='@',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
+
+    
     parser.add_argument("--workspace",
                         action="store",
                         dest="workspace_root",
                         required=False,
-                        default="workspace")
+                        default=".")
+    
+    subparsers = parser.add_subparsers(dest="command",
+                                       metavar="download, measure, run, list",
+                                       title="commands")
+    subparsers.required = True
 
-    parser.add_argument("--override",
-                        action="append",
-                        nargs=2,
-                        required=False,
-                        dest="overrides",
-                        default=[])
+    list_parser = subparsers.add_parser("list")
+    list_parser.set_defaults(command=pipebench.commands.list_pipelines)
+    
+    download_parser = subparsers.add_parser("download")
+
+    download_parser.add_argument("pipeline",
+                                 metavar="pipeline",
+                                 choices=list_pipelines()[0])
+    download_parser.set_defaults(command=pipebench.commands.download)
+
+    download_parser.add_argument("--force", required=False, dest="force",action="store_true", default=False)
+
+    measure_parser = subparsers.add_parser("measure")
+    measure_parser.add_argument("pipeline",
+                                metavar="pipeline",
+                                choices=list_pipelines()[0])
+    
+    measure_parser.add_argument("--override",
+                                 action="append",
+                                 nargs=2,
+                                 required=False,
+                                 dest="overrides",
+                                 default=[])
+
+
+    measure_parser.add_argument("--runner",
+                                required=True,
+                                default="dlstreamer",
+                                choices=["mockrun","dlstreamer"])
+
+    measure_parser.add_argument("--workload",
+                                action="store",
+                                dest="workload",
+                                required=False,
+                                default=None)
+
+    measure_parser.add_argument("--force", required=False, dest="force",action="store_true", default=False)
 
     
-    parser.add_argument("--workload", action="store", dest="workload",required=True)
+    measure_parser.set_defaults(command=pipebench.commands.measure)
+    measure_parser.add_argument("--no-redirect", action="store_false", dest="redirect",default=True)    
+ 
+    return parser
+    
+def parse_args(args=None,program_name="pipe"):
 
-    parser.add_argument("--runner", action="store", dest="runner",required=False, default="mockrun")
-
-    parser.add_argument("--force", required=False, dest="force",action="store_true", default=False)
-
-    parser.add_argument("--dry-run", action="store_true", dest="dry_run",default=False)
-
-    parser.add_argument("--no-redirect", action="store_false", dest="redirect",default=True)
-
-    parser.add_argument("commands", choices=["download","prepare","run","report", "view"],default=["view"],nargs='+')
-
+    parser = _get_parser()
     
     if (isinstance(args, dict)):
         args = ["--{}={}".format(key, value)
                 for key, value in args.items() if value]
-
-
+        
     return parser.parse_args(args), parser
 
     

@@ -1,7 +1,7 @@
 scenario:
   source: memory
   type: stream
-
+    
 pipeline: od-h264-mbnetssd
 
 media: video/person-bicycle-car-detection

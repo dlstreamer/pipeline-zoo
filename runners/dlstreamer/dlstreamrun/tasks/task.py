@@ -84,7 +84,6 @@ class Task(threading.Thread, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def __init__(self, piperun_config, args,*pos_args,**keywd_args):
         super().__init__(*pos_args,**keywd_args)
-
     @abc.abstractmethod
     def run(self):
         pass
@@ -243,8 +242,7 @@ class ObjectDetection(Task):
       
     def __init__(self, piperun_config, args, *pos_args, **keywd_args):
         self._piperun_config = piperun_config
-        self._args = args
-      
+        self._my_args = args
         if len(self._piperun_config["inputs"]) != 1:
             raise Exception("Only support single input")
 
@@ -265,13 +263,13 @@ class ObjectDetection(Task):
         self._runner_config["detect"].setdefault("name","detect")
         self._detect_properties = inference_properties(self._runner_config["detect"],
                                                        self._model,
-                                                       self._args.systeminfo)
+                                                       self._my_args.systeminfo)
 
         self._runner_config.setdefault("decode", {"device":"CPU"})
         self._decode_properties = decode_properties(self._runner_config["decode"],
                                                     self._model,
                                                     self._piperun_config["inputs"][0],
-                                                    self._args.systeminfo)
+                                                    self._my_args.systeminfo)
 
 
         # "src ! caps ! decode ! detect ! metaconvert ! metapublish ! sink "
@@ -281,17 +279,21 @@ class ObjectDetection(Task):
                           self._decode_properties,
                           self._detect_properties,
                           self._sink_element]
-                
-        
-        super().__init__(piperun_config, args,*pos_args,**keywd_args)
-        
-    def run(self):
-        
+
         elements = " ! ".join(self._elements)
         command = "gst-launch-1.0 " + elements
-        commandargs = shlex.split(command)
-        print(' '.join(commandargs))
-        with subprocess.Popen(commandargs) as process:
+        self._commandargs = shlex.split(command)
+        dirname, basename = os.path.split(self._my_args.piperun_config_path)
+        command_path = os.path.join(dirname,
+                                 basename.replace('piperun.yml',"gst-launch.sh"))
+        with open(command_path,"w") as command_file:
+            command_file.write("{}\n".format(' '.join(self._commandargs)))
+        super().__init__(piperun_config, args, *pos_args, **keywd_args)
+
+        
+    def run(self):
+        print(' '.join(self._commandargs))
+        with subprocess.Popen(self._commandargs) as process:
             pass
         
         
