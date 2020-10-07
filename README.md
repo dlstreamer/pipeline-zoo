@@ -1,4 +1,5 @@
 # Getting Started
+## Installation 
 1. Clone Repo
    ```
    git https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/pipeline-zoo.git
@@ -16,7 +17,9 @@
    ```
    ./pipeline-zoo/tools/docker/run.sh 
    ```
-4. List Pipelines
+## Pipline Zoo Commands
+### List Pipelines
+   Command:
    ```
    pipebench list
    ```
@@ -38,49 +41,55 @@
 	+------------------+------------------+---------------+
    ```
    
-5. Download Pipeline
+### Download Pipeline
 
+   Command:
    ```
    pipebench download od-h264-mbnetssd
    ```
    Expected Output Tree:
    ```
-   - pipeline-zoo/
-     + pipelines/
-     + runners/
-     + tools/
-     - workspace/
-       - od-h264-mbnetssd/
-         - media/
-           - video/
-             + 20200711_cat/
-             + bottle_detection/
-             + person-bicycle-car-detection/
-        - models/
-          - mobilenet-ssd/
-            + FP16/
-            + FP32/
-            mobilenet-ssd.caffemodel
-            mobilenet-ssd.json
-            mobilenet-ssd.prototxt
-        - runners/
-          + dlstreamer/
-          + mockrun/
-        README.md
-        dlstreamer.config.yml
-        media.list.yml
-        mockrun.config.yml
-        models.list.yml
-        od-h264-mbnetssd.pipeline.yml
+    - pipeline-zoo/
+      + pipelines/
+      + runners/
+      + tools/
+      - workspace/
+        - od-h264-mbnetssd/
+          - media/
+            - video/
+              + 20200711_cat/
+              + bottle_detection/
+              + person-bicycle-car-detection/
+         - models/
+           - mobilenet-ssd/
+             + FP16/
+             + FP32/
+             mobilenet-ssd.caffemodel
+             mobilenet-ssd.json
+             mobilenet-ssd.prototxt
+         - runners/
+           + dlstreamer/
+           + mockrun/
+         README.md
+         dlstreamer.config.yml
+         media.list.yml
+         mockrun.config.yml
+         models.list.yml
+         od-h264-mbnetssd.pipeline.yml
    ```
-  6. Measure Pipeline Throughput
-      ```
-      pipebench measure od-h264-mbnetssd
-      ```
    
-     Expected Output:
-     ```
-      =================
+### Measure Pipeline Throughput
+     
+Command:
+     
+ ```
+       pipebench measure od-h264-mbnetssd
+ ```
+   
+Expected Output:
+     
+```
+          =================
 	  Frames Per Second
 	  	  Stream: 0000 FPS:100.5469 Min: 88.5230 Max: 118.4075 Avg: 98.9552
 	  =================
@@ -100,8 +109,9 @@
 	  pipeline          runner      media                                 avg FPS (selected)
 	  ----------------  ----------  ----------------------------------  --------------------
 	  od-h264-mbnetssd  dlstreamer  video/person-bicycle-car-detection               98.9552
-     ```
- 6. Measure Pipeline Density
+```
+     
+ ### Measure Pipeline Density
 
       ```
       pipebench measure od-h264-mbnetssd --density
