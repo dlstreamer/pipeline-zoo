@@ -29,7 +29,7 @@ def list_pipelines(args):
     descriptions = []
     for pipeline,pipeline_path in zip(args.pipelines[0],args.pipelines[1]):
         pipeline_config = PipelineConfig(pipeline_path,args)
-        descriptions.append({"name":pipeline,
+        descriptions.append({"pipeline":pipeline,
                              "task":pipeline_config._namespace.task,
                              "model":pipeline_config._namespace.model})
     
@@ -106,7 +106,10 @@ def measure(args):
         workload_path = "{}/default.workload.yml".format(args.workspace_root)
         with open(workload_path,
                   "w") as workload_file:
-            workload_file.write("{}")
+            minimal = "{measurement:{throughput:{}}}"
+            if (args.density):
+                minimal = "{measurement:{throughput:{},density:{}}}"
+            workload_file.write(minimal)
         args.workload = workload_path
         
     workload = _load_workload(args)
@@ -135,9 +138,6 @@ def measure(args):
                               "results",
                               os.path.basename(args.workload_root))
 
-    # write out workload file
-    _write_workload(workload, target_dir, args) 
-
 
     if (args.force):
         try:
@@ -148,7 +148,14 @@ def measure(args):
     if (not os.path.isdir(target_dir)):
         create_directory(target_dir)
 
-    if ("throughput" in workload._document["measurement"]):
+    # write out workload file
+    _write_workload(workload, target_dir, args) 
+
+    previous_throughput = _read_existing_throughput(os.path.join(target_dir,"throughput"),args)
+
+    if (args.density) and (previous_throughput) and (not args.throughput):
+        throughput = previous_throughput
+    elif ("throughput" in workload._document["measurement"]):
         throughput = _measure_throughput(task,
                                          workload,
                                          args,
@@ -193,10 +200,11 @@ def _prepare(task, workload, args):
         if (not os.path.isdir(directory)):
             create_directory(directory)
 
-            
-    task.prepare(args.workload_root,
-                 workload._namespace.measurement.throughput.duration)
-
+    timeout = workload._namespace.measurement.throughput.duration
+    if (not args.prepare_timeout):
+        timeout = None
+    task.prepare(args.workload_root, timeout)
+    
 def _print_fps(runners, totals):
 
     stream_stats = []
@@ -450,6 +458,15 @@ def _measure_density(throughput,
                           iteration_results,
                           args.runner)
 
+def _read_existing_throughput(target_dir, args):
+    path = os.path.join(target_dir,"result.json")
+    if (os.path.isfile(path)):
+        result = validate(os.path.join(target_dir,"result.json"),
+                          args.schemas)
+        if (result):
+            return result["throughput"]["FPS"][result["throughput"]["config"]["select"]]
+    return None
+    
 def _measure_throughput(task,
                         workload,
                         args,

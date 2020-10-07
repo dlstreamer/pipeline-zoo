@@ -245,7 +245,7 @@ class WorkloadConfig(Document):
 
         media_list_path = os.path.join(args.pipeline_root,"media.list.yml")
         document = validate(media_list_path,args.schemas)
-        if (document) and isinstance(document,list) and False:
+        if (document) and isinstance(document,list):
             return document[0]
         else:
             extensions = [".mp4"]
