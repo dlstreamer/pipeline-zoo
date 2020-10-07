@@ -114,8 +114,6 @@ def measure(args):
     task = Task.create_task(workload, args)
     _prepare(task, workload, args)
     
-    # write out workload file
-    _write_workload(workload, args) 
     
     # load runner config
     
@@ -127,7 +125,7 @@ def measure(args):
          (os.path.isfile(runner_config_path.replace("yml","json")))):
         runner_config_path = runner_config_path.replace("yml","json")
     
-    runner_config = validate(runner_config_path, args.schemas)
+    runner_config = validate(runner_config_path, args.schemas,args.runner_overrides)
     
     # create output folder for runner
 
@@ -136,6 +134,10 @@ def measure(args):
                               args.runner,
                               "results",
                               os.path.basename(args.workload_root))
+
+    # write out workload file
+    _write_workload(workload, target_dir, args) 
+
 
     if (args.force):
         try:
@@ -270,10 +272,49 @@ def _wait_for_task(runners, duration):
         del totals["total"]
     return results, totals
 
+def _write_density_result(density,
+                          run_directory,
+                          workload,
+                          config,
+                          results,
+                          runner):
+    
+    iteration_results = {}
+    stream_template = "Stream: {0:04d}"
+    iteration_template="Iteration: {0:04d}"
+    for iteration_index,result in enumerate(results):
+        iteration_result = {}
+        for stream_index,stream_result in enumerate(result):
+            iteration_result[stream_template.format(stream_index)] = stream_result
+        iteration_results[iteration_template.format(iteration_index)]=iteration_result
+    
+    result = {"density": {
+        "streams":density,
+        "iterations":iteration_results,
+        "config":config
+    }}
+
+    result_file_name = os.path.join(run_directory,
+                                    "result.json")
+
+    with open(result_file_name,"w") as result_file:
+        json.dump(result, result_file, indent=4)
+
+
+    table = {'pipeline':workload.pipeline,
+             'runner':runner,
+             'media':workload._namespace.media,
+             'density':density}
+    
+    headers = {key:key for key in table}
+    print(tabulate([table],headers=headers))
+
+    
 def _write_throughput_result(run_directory,
                              workload,
                              config,
-                             results):
+                             results,
+                             runner):
     
     result = {"throughput": {
         "FPS":results,
@@ -285,10 +326,48 @@ def _write_throughput_result(run_directory,
 
     with open(result_file_name,"w") as result_file:
         json.dump(result, result_file, indent=4)
-    print(result_file_name)
-    
-    print(result)
-    
+
+    table = {'pipeline':workload.pipeline,
+             'runner':runner,
+             'media':workload._namespace.media,
+             '{}'.format(config["select"]):results[config["select"]]}
+    headers = {key:key for key in table}
+    headers[config["select"]]='{} FPS (selected)'.format(config["select"])
+    print(tabulate([table],headers=headers))
+
+def _normalize_range(config,range_name):
+    if (not range_name in config):
+        return None
+    _min = config[range_name][0]
+    _max = sys.maxsize
+    if (len(config[range_name])>1):
+        _max = config[range_name]
+    return (_min,_max)
+
+def _check_ranges(result, ranges):
+    return {key:((getattr(result,key),(getattr(result,key)>=ranges[key][0] and getattr(result,key)<=ranges[key][1]))) for key in ranges if ranges[key]!=None}
+
+def _check_density(results, config):
+    success = True
+    per_stream_results = results[0]
+    ranges = {'min':_normalize_range(config,"minimum-range"),
+              'avg':_normalize_range(config,"average-range")}
+    range_results = [_check_ranges(stream_result,ranges) for stream_result in per_stream_results]
+    for result in range_results:
+        for key in result:
+            if not result[key][1]:
+                return False, range_results
+    return True, range_results
+
+def _print_density_result(range_results):
+    stream_template = "Stream: {0:04d}"
+    stream_results = []
+    for index,range_result in enumerate(range_results):
+        stream_results.append("{} {}".format(stream_template.format(index),
+                                             " ".join(["{}:{}".format(key,value) for key,value in range_result.items()])))
+
+    print_action("Density Result",stream_results)
+                      
 def _measure_density(throughput,
                      task,
                      workload,
@@ -303,29 +382,73 @@ def _measure_density(throughput,
     num_streams = min(config["max-streams"],math.floor(throughput / workload._document["measurement"]["density"]["fps"]))
 
     print_action("Measuring Stream Density",[config])
+
+    results_directory = os.path.join(target_dir,
+                                 "density")
+    create_directory(results_directory)
     
-    runners = []
-            
-    for stream_index in range(num_streams):
+    done = False
+    density = 0
+    first_result = None
+    current_result = None
+    iteration = 0
+    iteration_results = []
+    while (
+            (first_result == current_result)
+            and (num_streams>0) and (num_streams<=config["max-streams"])
+    ):
+        runners = []
 
-        run_directory = os.path.join(target_dir,
-                                     "density",
-                                     "stream_{}".format(stream_index))
-        create_directory(run_directory)
+        print_action("Stream Density",
+                     ["Iteration: {}".format(iteration,),
+                      "Number of Streams: {}".format(num_streams)])
 
-        source, sink, runner  = task.run(run_directory,
-                                         runner_config,
-                                         config["warm-up"],
-                                         config["fps"],
-                                         config["sample-size"])
         
+        for stream_index in range(num_streams):
 
-        time.sleep(2)
+            run_directory = os.path.join(target_dir,
+                                         "density",
+                                         "iteration_{}".format(iteration),
+                                         "stream_{}".format(stream_index))
+            create_directory(run_directory)
 
-        runners.append((source,sink,runner))
-    
-    results = _wait_for_task(runners, config["duration"])
-    
+            source, sink, runner  = task.run(run_directory,
+                                             runner_config,
+                                             config["warm-up"],
+                                             config["fps"],
+                                             config["sample-size"])
+
+
+            time.sleep(2)
+
+            runners.append((source,sink,runner))
+
+        results = _wait_for_task(runners, config["duration"])
+        success, density_result =_check_density(results, config)
+        _print_density_result(density_result)
+        print_action("Stream Density",
+                     ["Iteration: {}".format(iteration,),
+                      "Number of Streams: {}".format(num_streams),
+                      "Passed: {}".format(success)])
+        iteration_results.append(density_result)
+        if (first_result is None):
+            first_result = success
+        current_result = success
+        if (success):
+            if (density < num_streams):
+                density = num_streams
+            num_streams += 1
+        else:
+            num_streams -= 1
+        iteration += 1
+
+    _write_density_result(density,
+                          os.path.join(target_dir,
+                                       "density"),
+                          workload,
+                          config,
+                          iteration_results,
+                          args.runner)
 
 def _measure_throughput(task,
                         workload,
@@ -349,14 +472,14 @@ def _measure_throughput(task,
 
                                                 config["duration"])
 
-    _write_throughput_result(run_directory, workload, config, totals)
+    _write_throughput_result(run_directory, workload, config, totals, args.runner)
 
     return totals[config['select']]
     
 
-def _write_workload(workload, args):
+def _write_workload(workload, target_dir, args):
 
-    workload_path = os.path.join(args.workload_root,
+    workload_path = os.path.join(target_dir,
                                  os.path.basename(args.workload))
     
     with open(workload_path,"w") as workload_file:

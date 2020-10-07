@@ -27,7 +27,7 @@ properties:
             default: 100
           duration:
             type: integer
-            default: 60
+            default: 120
           select:
             type: string
             default: avg
@@ -60,14 +60,13 @@ properties:
               type: number
             minItems: 1
             maxItems: 2
-            default: [25]
           average-range:
             type: array
             items:
               type: number
             minItems: 1
             maxItems: 2
-            default: [29]
+            default: [25]
           max-streams:
             type: integer
             default: 100

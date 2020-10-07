@@ -85,9 +85,15 @@ def _get_parser(program_name="pipebench"):
                                  dest="overrides",
                                  default=[])
 
+    measure_parser.add_argument("--runner-override",
+                                 action="append",
+                                 nargs=2,
+                                 required=False,
+                                 dest="runner_overrides",
+                                 default=[])
 
     measure_parser.add_argument("--runner",
-                                required=True,
+                                required=False,
                                 default="dlstreamer",
                                 choices=["mockrun","dlstreamer"])
 

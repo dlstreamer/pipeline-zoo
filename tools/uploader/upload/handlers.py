@@ -36,7 +36,7 @@ class Media(Handler):
         output_filename = os.path.join(directory,"sample_frame.png")
         (
             ffmpeg
-            .input(media_filename,ss=60)
+            .input(media_filename,ss=5)
             .filter('scale',500,-1)
             .output(output_filename,vframes=1)
             .run()
