@@ -217,9 +217,9 @@ Expected Output:
 |`workspace/<pipeline_name>` | downloaded pipeline |
 |`workspace/<pipeline_name>/workloads` | generated reference data for workload | 
 |`workspace/<pipeline_name>/runners/<runner_name>`| runner applicaiton and configuration files |
-|`workspace/<pipeline_name>/runners/<runner_name>/results/throughput` | throughput results |
-|`workspace/<pipeline_name>/runners/<runner_name>/results/density` | density results |
-|`workspace/<pipeline_name>/runners/<runner_name>/results/throughput/<workload_name>.gst-launch.sh` | runner command line |
+|`workspace/<pipeline_name>/runners/<runner_name>/results/<workload_name>/throughput` | throughput results |
+|`workspace/<pipeline_name>/runners/<runner_name>/results/<workload_name>/density` | density results |
+|`workspace/<pipeline_name>/runners/<runner_name>/results/<workload_name>/throughput/<workload_name>.gst-launch.sh` | runner command line |
 
 
 
