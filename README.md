@@ -111,13 +111,16 @@ Expected Output:
 	  od-h264-mbnetssd  dlstreamer  video/person-bicycle-car-detection               98.9552
 ```
      
- ### Measure Pipeline Density
+### Measure Pipeline Density
 
-      ```
-      pipebench measure od-h264-mbnetssd --density
-      ```
-      Expected Output:
-      ```
+Command:
+```
+ pipebench measure od-h264-mbnetssd --density
+```
+      
+Expected Output:
+      
+```
 	     ==============
 	     Density Result
 		     Stream: 0000 avg:(27.131767701626966, False)
@@ -139,33 +142,36 @@ Expected Output:
 	    pipeline          runner      media                                 density
 	    ----------------  ----------  ----------------------------------  ---------
 	    od-h264-mbnetssd  dlstreamer  video/person-bicycle-car-detection          6
-      ```
+```
 
-   7. Configure DL Streamer Runner
-      ```
-      pipebench measure od-h264-mbnetssd --runner-override detect.nireq 1 --runner-override detect.cpu-throughput-streams 5
-      ```
+### Configure DL Streamer Runner
+Command:
+```
+ pipebench measure od-h264-mbnetssd --runner-override detect.nireq 1 --runner-override detect.cpu-throughput-streams 5
+```
    
-      Expected Change in gst-launch
+Expected Change in gst-launch
    
-      Located:
-      ```
-      pipeline-zoo/workspace/od-h264-mbnetssd/runners/dlstreamer/results/default/throughput/default.gst-launch.sh
-      ```
-   
-      ```
-      gst-launch-1.0 filesrc location=/tmp/1510b74e-08ad-11eb-968e-1c697a06fd65/input ! video/x-h264 ! h264parse ! video/x-h264, stream-format=(string)byte-stream, alignment=(string)au, level=(string)4, profile=(string)high, width=(int)1920, height=(int)1080, framerate=(fraction)24/1, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive, chroma-format=(string)4:2:0, bit-depth-luma=(uint)8, bit-depth-chroma=(uint)8, parsed=(boolean)true ! avdec_h264 name=decode max-threads=1 ! gvadetect inference-interval=1 nireq=1 cpu-throughput-streams=5 name=detect model-proc=/home/pipeline-zoo/workspace/od-h264-mbnetssd/models/mobilenet-ssd/mobilenet-ssd.json model=/home/pipeline-zoo/workspace/od-h264-mbnetssd/models/mobilenet-ssd/FP32/mobilenet-ssd.xml ! gvametaconvert add-empty-results=true ! gvametapublish method=file file-format=json-lines file-path=/tmp/1510b74e-08ad-11eb-968e-1c697a06fd65/output ! gvafpscounter ! fakesink
-      ```
-   
-   8. Download second pipeline
-      ```
-       pipebench download od-h264-yolov3
-    
-      ```
+Location:
+```
+ pipeline-zoo/workspace/od-h264-mbnetssd/runners/dlstreamer/results/default/throughput/default.gst-launch.sh
+```
+
+gst-launch command:
+
+```
+ gst-launch-1.0 filesrc location=/tmp/1510b74e-08ad-11eb-968e-1c697a06fd65/input ! video/x-h264 ! h264parse ! video/x-h264, stream-format=(string)byte-stream, alignment=(string)au, level=(string)4, profile=(string)high, width=(int)1920, height=(int)1080, framerate=(fraction)24/1, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive, chroma-format=(string)4:2:0, bit-depth-luma=(uint)8, bit-depth-chroma=(uint)8, parsed=(boolean)true ! avdec_h264 name=decode max-threads=1 ! gvadetect inference-interval=1 nireq=1 cpu-throughput-streams=5 name=detect model-proc=/home/pipeline-zoo/workspace/od-h264-mbnetssd/models/mobilenet-ssd/mobilenet-ssd.json model=/home/pipeline-zoo/workspace/od-h264-mbnetssd/models/mobilenet-ssd/FP32/mobilenet-ssd.xml ! gvametaconvert add-empty-results=true ! gvametapublish method=file file-format=json-lines file-path=/tmp/1510b74e-08ad-11eb-968e-1c697a06fd65/output ! gvafpscounter ! fakesink
+```
+
+### Download second pipeline
+Command:
+```
+ pipebench download od-h264-yolov3
+```
  
-      Expected Output Tree:
+Expected Output Tree:
     
-      ```
+```
        - pipeline-zoo/
          + pipelines/
          + runners/
@@ -189,19 +195,20 @@ Expected Output:
              mockrun.config.yml
              models.list.yml
              od-h264-yolov3.pipeline.yml
-        ```
-9. Measure throughput for second pipeline
+```
+### Measure throughput for second pipeline
 
-   ```
-    pipebench measure od-h264-yolov3
-   ```
+Command:
+```
+ pipebench measure od-h264-yolov3
+```
 
-   Expected Output:
-   ```
+Expected Output:
+```
     pipeline        runner      media                                 avg FPS (selected)
     --------------  ----------  ----------------------------------  --------------------
     od-h264-yolov3  dlstreamer  video/person-bicycle-car-detection               44.8486
-   ```
+```
 
 # Generated Files
 
