@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
-BASE_IMAGE=openvino/ubuntu18_data_dev
+BASE_IMAGE=openvino/ubuntu18_data_dev:2021.1
 #BASE_IMAGE=openvisualcloud/xeone3-ubuntu1804-analytics-dev:20.4
 BASE_BUILD_CONTEXT=
 BASE_BUILD_DOCKERFILE=

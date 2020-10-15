@@ -11,12 +11,17 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     ca-certificates \
     wget
 
-RUN sh -c "wget https://github.com/opencv/gst-video-analytics/archive/v1.1.0.tar.gz &&  tar -xzf v1.1.0.tar.gz -C / --strip-components 2 --wildcards "*/samples/model_proc/*""
-RUN wget https://github.com/openvinotoolkit/open_model_zoo/archive/2020.4.tar.gz && tar -xzf 2020.4.tar.gz -C /
+RUN sh -c "wget https://github.com/opencv/gst-video-analytics/archive/v1.2.1.tar.gz &&  tar -xzf v1.2.1.tar.gz -C / --strip-components 2 --wildcards "*/samples/model_proc/*""
+RUN wget https://github.com/openvinotoolkit/open_model_zoo/archive/2021.1.tar.gz && tar -xzf 2021.1.tar.gz -C /
 
 FROM ${BASE} as media-analytics-pipeline-zoo-bench
 
 USER root
+
+# Dependencies for OpenVINO
+RUN if [ -f /opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh ]; then \
+       /opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh ;\
+    fi    
 
 # Dependencies installed via apt-get
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -79,7 +84,7 @@ COPY --from=MODEL_ZOO /model_proc /opt/intel/dl_streamer/samples/model_proc
 # model zoo
 RUN rm -rf /opt/intel/dldt/open_model_zoo
 RUN mkdir -p /opt/intel/dldt
-COPY --from=MODEL_ZOO /open_model_zoo-2020.4 /opt/intel/dldt/open_model_zoo
+COPY --from=MODEL_ZOO /open_model_zoo-2021.1 /opt/intel/dldt/open_model_zoo
 
 # work dir
 WORKDIR /home/pipeline-zoo/workspace

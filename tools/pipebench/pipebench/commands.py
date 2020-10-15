@@ -77,7 +77,8 @@ def measure(args):
 
     previous_throughput = _read_existing_throughput(os.path.join(target_dir,"throughput"),args)
 
-    if (args.density) and (previous_throughput) and (not args.throughput):
+    if (args.density) and (workload._document["measurement"]["density"]["fixed-streams"]
+                           or previous_throughput) and (not args.throughput):
         throughput = previous_throughput
     elif ("throughput" in workload._document["measurement"]):
         throughput = _measure_throughput(task,
@@ -190,7 +191,7 @@ def _prepare(task, workload, args):
         subprocess.run(command)
 
 
-    directories = [os.path.join(args.workload_root,suffix) for suffix in ["input","reference"]]
+    directories = [os.path.join(args.workload_root,suffix) for suffix in ["input", "reference"]]
                 
     if (args.force):
         try:
@@ -388,10 +389,15 @@ def _measure_density(throughput,
     
     config = workload._document["measurement"].get("density",{})
 
-    # now run with that many streams lower bound
+    if ("fixed-streams" in config):
+        num_streams = config["fixed-streams"]
+        config["max-streams"] = num_streams
+    else:
+        # Use throughput to estimate stream density
+        num_streams = min(config["max-streams"], math.floor(throughput / workload._document["measurement"]["density"]["fps"]))
+        num_streams = max(config["min-streams"], num_streams)
 
-    num_streams = min(config["max-streams"],math.floor(throughput / workload._document["measurement"]["density"]["fps"]))
-
+    
     print_action("Measuring Stream Density",[config])
 
     results_directory = os.path.join(target_dir,

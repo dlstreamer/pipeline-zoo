@@ -67,9 +67,14 @@ properties:
             minItems: 1
             maxItems: 2
             default: [28]
+          fixed-streams:
+            type: integer
+          min-streams:
+            type: integer
+            default: 1
           max-streams:
             type: integer
             default: 100
-        required: [fps, max-streams, warm-up, sample-size, duration]  
+        required: [fps, max-streams, min-streams, warm-up, sample-size, duration]  
       
 required: [scenario, measurement]
