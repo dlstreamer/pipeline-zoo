@@ -77,7 +77,7 @@ def measure(args):
 
     previous_throughput = _read_existing_throughput(os.path.join(target_dir,"throughput"),args)
 
-    if (args.density) and (workload._document["measurement"]["density"]["fixed-streams"]
+    if (args.density) and ("fixed-streams" in workload._document["measurement"]["density"]
                            or previous_throughput) and (not args.throughput):
         throughput = previous_throughput
     elif ("throughput" in workload._document["measurement"]):
@@ -188,7 +188,7 @@ def _prepare(task, workload, args):
         command = _create_systeminfo_command(args.workload_root,
                                              args)
     
-        subprocess.run(command)
+        subprocess.run(command,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 
 
     directories = [os.path.join(args.workload_root,suffix) for suffix in ["input", "reference"]]
