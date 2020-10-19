@@ -1,5 +1,4 @@
 def pytest_addoption(parser):
-    print("here")
     parser.addoption("--pipeline",action="append",choices=["smoke","nightly","od-h264-mbnetssd","od-h264-yolov3"],dest="pipelines",default=[])
 
 

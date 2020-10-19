@@ -93,9 +93,9 @@ def test_throughput(pipeline):
     check_measurement(pipeline,"throughput")
 
 
-@pytest.mark.timeout(300)
+@pytest.mark.timeout(600)
 def test_density(pipeline):
-    test_cmd = "pipebench --workspace {} measure {} --density".format(test_workspace,pipeline)
+    test_cmd = "pipebench --workspace {} measure {} --density --override measurement.density.max-streams 8".format(test_workspace,pipeline)
     
     exitcode, err = run_cmd(test_cmd);
     print ("command exit code = %d" % exitcode)

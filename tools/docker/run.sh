@@ -16,12 +16,14 @@ PRIVILEGED=
 NETWORK=
 USER=
 ATTACH=
+INTERACTIVE="-it"
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 SOURCE_DIR=$(dirname "$SCRIPT_DIR")
 SOURCE_DIR=$(dirname "$SOURCE_DIR")
 ENVIRONMENT=$(env | cut -f1 -d= | grep -E '_(proxy)$' | sed 's/^/-e / ' | tr '\n' ' ')
 ENVIRONMENT+="-e DISPLAY "
+WORKDIR=
 
 get_options() {
     while :; do
@@ -102,15 +104,29 @@ get_options() {
                 error 'ERROR: "--entrypoint" requires a non-empty option argument.'
             fi
             ;;
+	--workdir)
+            if [ "$2" ]; then
+                WORKDIR="--workdir $2"
+                shift
+            else
+                error 'ERROR: "--workdir" requires a non-empty option argument.'
+            fi
+            ;;
 	--attach)
 	    ATTACH=TRUE
+            ;;
+	--non-interactive)
+            INTERACTIVE="-t"
             ;;
         --) # End of all options.
             shift
             break
             ;;
-        -?*)
-            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+	-?*)
+	    error 'ERROR: Unknown option: ' $1
+            ;;
+        ?*)
+	    error 'ERROR: Unknown option: ' $1
             ;;
         *) # Default case: No more options, so break out of the loop.
             break ;;
@@ -139,9 +155,10 @@ show_options() {
     echo "   Name: '${NAME}'"
     echo "   Network: '${NETWORK}'"
     echo "   Entrypoint: '${ENTRYPOINT}'"
-    echo "   EntrypointArgs: '${ENTRYPOINT_ARGS}"
+    echo "   EntrypointArgs: '${ENTRYPOINT_ARGS}'"
     echo "   User: '${USER}'"
     echo "   Attach: '${ATTACH}'"
+    echo "   Interactive: '${INTERACTIVE}'"
     echo ""
 }
 
@@ -156,12 +173,13 @@ show_help() {
   echo "  [--user name of user to pass to docker run]"
   echo "  [--name container name to pass to docker run]"
   echo "  [--attach attach to running container]"
+  echo "  [--non-interactive run container without -i flag]"
   exit 0
 }
 
 error() {
-    printf '%s\n' "$1" >&2
-    exit
+    printf '%s %s\n' "$1" "$2" >&2
+    exit 1
 }
 
 get_options "$@"
@@ -187,7 +205,7 @@ show_options
 
 if [ -z "$ATTACH" ]; then
     set -x
-    docker run -it --rm $ENVIRONMENT $VOLUME_MOUNT $DEVICES $NETWORK $PORTS $ENTRYPOINT --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
+    docker run $INTERACTIVE $WORKDIR --rm $ENVIRONMENT $VOLUME_MOUNT $DEVICES $NETWORK $PORTS $ENTRYPOINT --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
      { set +x; } 2>/dev/null
 else
     RUNNING_INSTANCE=$(docker ps -q --filter "name=$IMAGE")
