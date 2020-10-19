@@ -413,6 +413,7 @@ def _measure_density(throughput,
     while (
             (first_result == current_result)
             and (num_streams>0) and (num_streams<=config["max-streams"])
+            and (not iteration>0 and "fixed-streams" in config)
     ):
         runners = []
 
@@ -440,7 +441,7 @@ def _measure_density(throughput,
 
             runners.append((source,sink,runner))
 
-        results = _wait_for_task(runners, config["duration"])
+        results = _wait_for_task(runners, config["duration"]+(4*num_streams))
         success, density_result =_check_density(results, config)
         _print_density_result(density_result)
         print_action("Stream Density",
