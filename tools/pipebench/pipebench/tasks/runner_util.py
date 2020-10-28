@@ -34,8 +34,8 @@ def start_pipeline_runner(runner,
         runner_command = shlex.split(runner_config["run"])
     else:
         runner_command = ["/bin/bash",default_run]
-
-    runner_command.extend(["--systeminfo", systeminfo_path])
+       
+    runner_command.extend(["--systeminfo={}".format(systeminfo_path)])
 
     runner_command.append(piperun_config_path)
 

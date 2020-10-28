@@ -93,7 +93,7 @@ def _get_parser(program_name="pipebench"):
     measure_parser.add_argument("--runner",
                                 required=False,
                                 default="dlstreamer",
-                                choices=["mockrun","dlstreamer"])
+                                choices=["mockrun","dlstreamer","gapi"])
 
     measure_parser.add_argument("--workload",
                                 action="store",

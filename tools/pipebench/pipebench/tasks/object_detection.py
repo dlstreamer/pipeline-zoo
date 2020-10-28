@@ -74,7 +74,8 @@ class ObjectDetection(Task):
         with open(piperun_config_path,"w") as piperun_config_file:
             yaml.dump(piperun_config,
                       piperun_config_file,
-                      sort_keys=False)
+                      sort_keys=False,
+                      version=(1,0))
             
         return piperun_config_path
 

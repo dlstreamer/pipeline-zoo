@@ -386,18 +386,19 @@ def _measure_density(throughput,
                      args,
                      target_dir,
                      runner_config):
-    
     config = workload._document["measurement"].get("density",{})
 
+    
     if ("fixed-streams" in config):
         num_streams = config["fixed-streams"]
         config["max-streams"] = num_streams
+        config["max-iterations"] = 1
     else:
         # Use throughput to estimate stream density
         num_streams = min(config["max-streams"], math.floor(throughput / workload._document["measurement"]["density"]["fps"]))
         num_streams = max(config["min-streams"], num_streams)
-
-    
+        
+        
     print_action("Measuring Stream Density",[config])
 
     results_directory = os.path.join(target_dir,
@@ -410,10 +411,13 @@ def _measure_density(throughput,
     current_result = None
     iteration = 0
     iteration_results = []
+    max_iterations = config["max-iterations"]
+    
+    
     while (
             (first_result == current_result)
             and (num_streams>0) and (num_streams<=config["max-streams"])
-            and (not iteration>0 and "fixed-streams" in config)
+            and (max_iterations<0 or iteration < max_iterations)
     ):
         runners = []
 
@@ -474,7 +478,8 @@ def _read_existing_throughput(target_dir, args):
         result = validate(os.path.join(target_dir,"result.json"),
                           args.schemas)
         if (result):
-            return result["throughput"]["FPS"][result["throughput"]["config"]["select"]]
+            selected = result["throughput"]["config"]["select"]
+            return result["throughput"]["FPS"].get(selected,None)
     return None
     
 def _measure_throughput(task,
