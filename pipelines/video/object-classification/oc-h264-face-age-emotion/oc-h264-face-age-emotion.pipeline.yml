@@ -1,0 +1,8 @@
+# Defines ob-h264-face-age-emotion object classification pipeline
+
+task: object-classification
+
+model: ""
+
+inputs.media.type.media-type: video/x-h264
+
