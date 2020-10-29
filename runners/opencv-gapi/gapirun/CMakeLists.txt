@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 2.8)
+project(gapirun)
+find_package(OpenCV REQUIRED)
+find_package(yaml-cpp REQUIRED)
+find_package(nlohmann_json REQUIRED)
+include_directories( ${OpenCV_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR})
+add_executable(gapirun main.cpp)
+target_link_libraries( gapirun ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES})

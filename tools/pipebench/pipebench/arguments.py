@@ -16,6 +16,11 @@ def find_zoo_root():
         path = os.path.dirname(path)
     return os.path.dirname(path)
 
+def list_runners():
+    runners_root = os.path.join(find_zoo_root(),"runners")
+    for root, directories, files in os.walk(runners_root):
+        return directories
+    
 def list_pipelines():
     pipelines_root = os.path.join(find_zoo_root(),"pipelines")
     pipelines = []
@@ -93,7 +98,7 @@ def _get_parser(program_name="pipebench"):
     measure_parser.add_argument("--runner",
                                 required=False,
                                 default="dlstreamer",
-                                choices=["mockrun","dlstreamer","gapi"])
+                                choices=list_runners())
 
     measure_parser.add_argument("--workload",
                                 action="store",
