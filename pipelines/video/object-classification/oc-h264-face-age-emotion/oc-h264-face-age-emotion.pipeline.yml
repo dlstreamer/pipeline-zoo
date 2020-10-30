@@ -2,7 +2,9 @@
 
 task: object-classification
 
-model: ""
+detection-model: face-detection-adas-0001
+
+classification-models: [age-gender-recognition-retail-0013, emotions-recognition-retail-0003]
 
 inputs.media.type.media-type: video/x-h264
 

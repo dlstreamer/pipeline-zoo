@@ -105,11 +105,22 @@ def list_pipelines(args):
     descriptions = []
     for pipeline,pipeline_path in zip(args.pipelines[0],args.pipelines[1]):
         pipeline_config = PipelineConfig(pipeline_path,args)
+
+        models= []
+
+        for key, value in pipeline_config._document.items():
+            if "model" in key:
+                if isinstance(value, list):
+                    models.extend(value)
+                else:
+                    models.append(value)
+                    
+        
         descriptions.append({"pipeline":pipeline,
                              "task":pipeline_config._namespace.task,
-                             "model":pipeline_config._namespace.model})
+                             "models":models})
     
-    print(tabulate(descriptions,headers={'name':'name','model':'model','task':'task'},tablefmt="grid"))
+    print(tabulate(descriptions,headers={'name':'name','models':'models','task':'task'},tablefmt="grid"))
     
 def _create_download_command(pipeline, args):
 

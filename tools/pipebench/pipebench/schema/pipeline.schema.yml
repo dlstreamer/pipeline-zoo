@@ -145,6 +145,7 @@ definitions:
                 optional:
                   type: boolean
                   default: false
+              required: [inputs]
         required: [inputs, outputs]
         additionalProperties: false
       - type: object

@@ -1,0 +1,74 @@
+# Object Classification Task
+
+# Tasks Define the input output and properties of a pipeline task
+# The inputs and outputs will futher be specialized by pipeline and workload
+
+description: "Object Classification"
+inputs:
+  media:
+    type:
+      media-type: video/*
+    operator: video-source.media
+outputs:
+  object-attributes:
+    type:
+      media-type: metadata/object-attributes
+    operator: classify.object-attributes
+properties:
+  detection-model:
+    type: string
+    operator: detect.model
+  classification-models:
+    type: array
+    items:
+      oneOf:
+        - type: array
+          items:
+            type: string
+        - type: string
+    operator: classify.models
+operators:
+  video-source:
+    inputs:
+      media: inputs.media
+  decode:
+    inputs:
+      frame: video-source.frame
+  detect:
+    inputs:
+      frame: decode.frame
+  classify:
+    inputs:
+      frame: detect.frame
+      objects: detect.objects
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+

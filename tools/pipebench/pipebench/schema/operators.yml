@@ -47,7 +47,19 @@ decode:
   outputs:
     frame:
       type: video/x-raw
-      
+
+crop:
+  inputs:
+    frame:
+      type: video/x-raw
+    regions:
+      type:
+        media-type: metadata/objects
+        format: bounding_boxes
+  outputs:
+    frame:
+      type: video/x-raw
+
 scale:
   inputs:
     frame:
@@ -92,7 +104,43 @@ tensors-to-objects:
       type:
         media-type: metadata/objects
         format: jsonl
-  
+
+classify:
+  properties:
+    models:
+      type: array
+      items:
+        oneOf:
+        - type: array
+          items:
+            type: string
+        - type: string
+  inputs:
+    frame:
+      type: video/x-raw
+      operator: crop.frame
+    objects:
+      type: metadata/objects
+      format: bounding_boxes
+      operator: crop.regions
+  operators:
+    crop:
+      inputs:
+        frame: inputs.frame
+        regions: inputs.objects
+    scale<models>:
+      inputs:
+        frame: crop.frame
+    csc<models>:
+      inputs:
+        frame: scale.frame
+    inference<models>:
+      inputs:
+        frame: csc.frame
+      model-type: classify
+    tensors-to-object-attributes<models>:
+      inputs:
+        tensor: inference.tensor
 detect:  
   inputs:
     frame:
@@ -102,7 +150,7 @@ detect:
     objects:
       type:
         media-type: metadata/objects
-        format: jsonl
+        format: jsonl, bounding_boxes
       operator: tensors-to-objects.objects
     frame:
       type: video-x-raw
