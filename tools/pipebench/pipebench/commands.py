@@ -118,7 +118,7 @@ def list_pipelines(args):
         
         descriptions.append({"pipeline":pipeline,
                              "task":pipeline_config._namespace.task,
-                             "models":models})
+                             "models":"\n".join(models)})
     
     print(tabulate(descriptions,headers={'name':'name','models':'models','task':'task'},tablefmt="grid"))
     
