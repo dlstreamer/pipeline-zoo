@@ -1,2 +1,0 @@
-libyaml-cpp-dev
-nlohmann-json-dev
