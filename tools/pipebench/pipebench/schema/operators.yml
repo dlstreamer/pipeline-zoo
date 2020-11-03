@@ -105,6 +105,29 @@ tensors-to-objects:
         media-type: metadata/objects
         format: jsonl
 
+tensors-to-attributes:
+  inputs:
+    tensors:
+      type:
+        media-type: tensors/x-raw
+  outputs:
+    attributes:
+      type:
+        media-type: metadata/attributes
+
+attach-attributes:
+  inputs:
+    attributes:
+      type:
+        media-type: metadata/attributes
+    objects:
+      type:
+        media-type: metadata/objects
+  outputs:
+    objects:
+      type:
+        media-type: metadata/objects
+          
 classify:
   properties:
     models:
@@ -123,6 +146,12 @@ classify:
       type: metadata/objects
       format: bounding_boxes
       operator: crop.regions
+  outputs:
+    objects:
+      type:
+        media-type: metadata/objects
+        format: jsonl
+      operator: attach-attributes.objects
   operators:
     crop:
       inputs:
@@ -138,9 +167,13 @@ classify:
       inputs:
         frame: csc.frame
       model-type: classify
-    tensors-to-object-attributes<models>:
+    tensors-to-attributes<models>:
       inputs:
         tensor: inference.tensor
+    attach-attributes:
+      inputs:
+        attributes: tensors-to-attributes.attributes
+        objects: inputs.objects
 detect:  
   inputs:
     frame:

@@ -61,7 +61,7 @@ class ObjectDetection(Task):
 
         input_caps = self._piperun_config["inputs"][0]["caps"].split(',')
 
-        extension = ObjectDetection.caps_to_extension[input_caps[0]]
+        extension = self.caps_to_extension[input_caps[0]]
             
         input_path = os.path.join(self._piperun_config["runner-config"]["workload_root"],
                                   "input")
@@ -81,8 +81,6 @@ class ObjectDetection(Task):
                                       self._piperun_config["runner-config"]["reference"])
 
         reference = []
-
-        print(reference_path)
         try:
             with open(reference_path,"r") as reference_file:
                 for result in reference_file:
@@ -111,7 +109,7 @@ class ObjectDetection(Task):
         uri = self._piperun_config["inputs"][0]["uri"]
         parsed_uri = parse.urlparse(uri)
 
-        if (not parsed_uri.scheme in ObjectDetection.supported_uri_schemes):
+        if (not parsed_uri.scheme in self.supported_uri_schemes):
             raise Exception("input scheme {} not supported".format(parsed_uri.scheme))
 
         self._input_path = parsed_uri.path
@@ -119,12 +117,10 @@ class ObjectDetection(Task):
         uri = self._piperun_config["outputs"][0]["uri"]
         parsed_uri = parse.urlparse(uri)
 
-        if (not parsed_uri.scheme in ObjectDetection.supported_uri_schemes):
+        if (not parsed_uri.scheme in self.supported_uri_schemes):
             raise Exception("output scheme {} not supported".format(parsed_uri.scheme))
 
         self._output_path = parsed_uri.path
-
-        print("'{}'".format(self._outputs[0]))
         
         super().__init__(piperun_config, args,*pos_args,**keywd_args)
         
@@ -133,9 +129,9 @@ class ObjectDetection(Task):
         input_len = len(self._input_sizes)
         output_len = len(self._outputs)
         assert(input_len == output_len)
-        with open(self._input_path,"rb",buffering = 0) as input_fifo:
+        with open(self._input_path,"rb") as input_fifo:
             print("connected to input")
-            with open(self._output_path,"w") as output_fifo:
+            with open(self._output_path,"wb",buffering = 0 ) as output_fifo:
                 print("connected to output")
                 # read input frame
                 while(True):
@@ -152,16 +148,13 @@ class ObjectDetection(Task):
                         count+=1
                         print("received frame: {}".format(count))
                         print("writing output: {}".format(count))
-                        output_fifo.write("{}\n".format(json.dumps(self._outputs[count%output_len])))
+                        output_fifo.write(bytes("{}\n".format(json.dumps(self._outputs[count%output_len])),"utf-8"))
                     else:
                         return
         
             
-        
-            #print(self._reference[count])
-            #time.sleep(2)
-            #count +=1
-            #if (count>5):
-             #   return 
-    
-            
+class ObjectClassification(ObjectDetection, Task):
+    names = ["object-classification"]
+
+    def __init__(self, piperun_config, args, *pos_args, **keywd_args):
+        super().__init__(piperun_config, args,*pos_args,**keywd_args)

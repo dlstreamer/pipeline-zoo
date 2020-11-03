@@ -48,8 +48,5 @@ if __name__ == '__main__':
 
     task.start()
     task.join()
-    print("hello")
-    
-#    load_reference(args)
-    
+        
     

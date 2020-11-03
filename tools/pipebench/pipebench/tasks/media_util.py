@@ -266,12 +266,23 @@ class MediaSink(Thread):
                      ["Started: {}".format(time.time()),
                       "URI: {}".format(self._source_uri)])
         
-        with open(self._source_path,"rb",buffering=0) as source_fifo:
-            line = "start"
+        with open(self._source_path,"rb") as source_fifo:
             self.connected = True
-            while line:
-                line = source_fifo.readline()
-                if (line): self._frame_count+=1
+            next_char = ""
+            line = bytearray()
+            while next_char != None:
+                line.clear()
+                next_char = ""
+                while(next_char != b'\n'):
+                    next_char = source_fifo.read(1)
+                    if (not next_char):
+                        break
+                    line.extend(next_char)
+                if (not next_char):
+                    break
+                #print(json.loads(str(line,"utf-8")))
+                self._frame_count = self._frame_count + 1
+                
                 if (self._frame_count % self._sample_size == 0):
                     self._sample_count += 1
                     if (self._sample_count >= self._warm_up):

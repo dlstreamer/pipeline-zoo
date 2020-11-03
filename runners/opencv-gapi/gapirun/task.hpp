@@ -143,8 +143,12 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 
     mp.proc_path = find_model_proc(models_root,model_name);
 
-    std::ifstream input(mp.proc_path);    
-    input >> mp.proc;
+    if (mp.proc_path != "") {
+      std::ifstream input(mp.proc_path);    
+      input >> mp.proc;
+    } else {
+      mp.proc["output_postproc"][0]["converter"] = "tensor_to_bbox_ssd";
+    }
     
     find_model_ir(models_root, model_name, mp.precisions);
     return mp;
@@ -179,13 +183,12 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
   public:
 
         
-    ObjectDetection(YAML::Node &config):_config(config),
-					_source(this->_create_source_string()),
-					_destination(this->_create_destination_string()),
-					_source_path(this->_get_source_path()) {
-
+    ObjectDetection(YAML::Node &config, const std::string& detect_model_config="model"):_config(config),
+										_source(this->_create_source_string()),
+										_destination(this->_create_destination_string()),
+										_source_path(this->_get_source_path()) {
       find_model(config,
-		 config["pipeline"]["model"].as<std::string>(),
+		 config["pipeline"][detect_model_config].as<std::string>(),
 		 this->_model);
 
       auto converter = this->_model.proc["output_postproc"][0]["converter"];
@@ -493,12 +496,23 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 
   };
 
+  class ObjectClassification : public ObjectDetection {
+
+  public:
+    ObjectClassification(YAML::Node &config):ObjectDetection(config,"detection-model")
+    {}
+
+  };
+
   
   std::unique_ptr<Task> Task::Create(YAML::Node &config)
   {
     if (config["pipeline"]["task"].as<std::string>()=="object-detection") {
       return std::unique_ptr<ObjectDetection>(new ObjectDetection(config));
-    } else {
+    }else if (config["pipeline"]["task"].as<std::string>()=="object-classification") {
+      return std::unique_ptr<ObjectClassification>(new ObjectClassification(config));
+    }
+    else {
       return NULL;
     }
     

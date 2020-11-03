@@ -1,6 +1,6 @@
 # Runner specific configuration
 
-run: "python3 dlstreamrun"
+run: "gapirun/build/gapirun"
 
 detect:
   device: CPU
