@@ -10,7 +10,7 @@ import json
 import jsonschema
 from jsonschema import Draft7Validator, validators, RefResolver
 from types import SimpleNamespace
-import os
+import os, stat
 import threading
 import time
 from urllib import parse
@@ -196,9 +196,8 @@ def decode_properties(config, model, _input, systeminfo):
 
     if result["element"]=="vaapih264dec":
         result.setdefault("low-latency", "true")
-
-    if result["element"]=="avdec_h264":
-        result.setdefault("max-threads", "1")
+        if ("max-threads" in result):
+            result.pop("max-threads")
 
     properties = ["{}={}".format(key,value) for key,value in result.items() if key != "element" and key!="device"]
     
@@ -233,8 +232,8 @@ def inference_properties(config, model, systeminfo):
         result.setdefault("model-proc",model.proc)
     
     if (result["device"]=="CPU"):
-        result.setdefault("nireq", threads + 1)
-        result.setdefault("cpu-throughput-streams",threads)
+        #result.setdefault("nireq", threads + 1)
+        #result.setdefault("cpu-throughput-streams",threads)
         result.setdefault("model",model.FP32.xml)
 
     properties = ["{}={}".format(key,value) for key,value in result.items() if key != "element" and key != "device" and key != "enabled"]
@@ -334,14 +333,29 @@ class ObjectDetection(Task):
                           self._classify_properties,
                           self._sink_element]
 
+        standalone_elements = ["urisourcebin uri=file://{}".format(self._piperun_config["inputs"][0]["source"]),
+                               "qtdemux",
+                               "parsebin",
+                               self._decode_properties,
+                               self._detect_properties,
+                               self._classify_properties,
+                               "gvametaconvert add-empty-results=true ! gvametapublish method=file file-format=json-lines file-path=/tmp/result.jsonl ! gvafpscounter ! fakesink"
+        ]
+                                                                   
+                               
+
         elements = " ! ".join([element for element in self._elements if element])
+        standalone_elements = " ! ".join([element for element in standalone_elements if element])
         command = "gst-launch-1.0 " + elements
+        standalone_command = "gst-launch-1.0 " + standalone_elements
         self._commandargs = shlex.split(command)
+        standalone_args = shlex.split(standalone_command)
         dirname, basename = os.path.split(self._my_args.piperun_config_path)
         command_path = os.path.join(dirname,
                                  basename.replace('piperun.yml',"gst-launch.sh"))
         with open(command_path,"w") as command_file:
-            command_file.write("{}\n".format(' '.join(self._commandargs)))
+            command_file.write("{}\n".format(' '.join(standalone_args)))
+        os.chmod(command_path,stat.S_IXGRP | stat.S_IXOTH | stat.S_IEXEC)
         super().__init__(piperun_config, args, *pos_args, **keywd_args)
 
         

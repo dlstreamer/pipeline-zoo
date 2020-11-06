@@ -146,6 +146,21 @@ def _is_instance_schema(document, schema, schema_store):
         return False
     return True
 
+
+def apply_overrides(document,overrides = []):
+    if (overrides):
+        for key,value in overrides:
+            temp = None
+            try:
+                temp = yaml.full_load(value)
+                temp = {} if temp is None else temp
+            except Exception as error:
+                pass
+                
+            if (temp is not None):
+                value = temp
+            rsetdict(document,key,value)
+
 def validate(document_path, schema_store, overrides = [] ):
 
     root, extension = os.path.splitext(document_path)
@@ -157,18 +172,7 @@ def validate(document_path, schema_store, overrides = [] ):
     
     try:
         document = _load_document(document_path)
-        if (overrides):
-            for key,value in overrides:
-                temp = None
-                try:
-                    temp = yaml.full_load(value)
-                    temp = {} if temp is None else temp
-                except Exception as error:
-                    pass
-                
-                if (temp is not None):
-                    value = temp
-                rsetdict(document,key,value)
+        apply_overrides(document,overrides)
         if (schema_id and schema_id in schema_store):
             schema = schema_store[schema_id]
             DefaultValidatingDraft7Validator(schema,resolver=resolver).validate(document)

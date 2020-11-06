@@ -49,7 +49,8 @@ class ObjectClassification(Task):
         self._input_path = "{}/input".format(pipe_directory)
         self._input_uri = "pipe://{}".format(self._input_path)
         input = {"uri":self._input_uri,
-                 "caps":self._input_caps}
+                 "caps":self._input_caps,
+                 "source":find_media(self._workload.media,self._pipeline.pipeline_root)}
 
         self._output_caps = ObjectClassification.OUTPUT_CAPS
         self._output_path = "{}/output".format(pipe_directory)

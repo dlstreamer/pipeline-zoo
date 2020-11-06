@@ -7,6 +7,7 @@
 #include <fstream>
 #include <opencv2/gapi/imgproc.hpp>
 #include "opencv2/core/utils/logger.hpp"
+#include "modelutil.hpp"
 
 #define NANOSECONDS_IN_SECONDS 1000000000
 
@@ -38,141 +39,35 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
     return os;
 }
 
-  struct ModelIR {
-    std::string xml;
-    std::string bin;
-    ModelIR(std::string _xml, std::string _bin):xml(_xml),bin(_bin)
-    {}
-    ModelIR() = default;
-  };
 
-  
-  struct ModelParameters
-  {
-    json proc;
-    std::string proc_path;
-    std::map<std::string,ModelIR> precisions;
-  };
-
-  std::ostream&operator<<(std::ostream&strm, const ModelParameters&item) {
-
-    strm << item.proc_path << std::endl;
-
-    for (auto precision : item.precisions) {
-      strm << precision.first << std::endl;
-      strm << '\t' << precision.second.xml << std::endl;
-      strm << '\t' << precision.second.bin << std::endl;
-    }
-    
-    return strm;
-  }
-    
-
-  inline bool ends_with(std::string const & value, std::string const & ending)
-  {
-    if (ending.size() > value.size()) return false;
-    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
-  }
-
-  void find_model_ir(std::string models_root,
-		     const std::string &model_name,
-		     std::map<std::string,ModelIR> &result) {
-    auto xml_candidate = model_name + ".xml";
-    result.clear();
-    std::vector<cv::String> xml_candidates;
-    cv::utils::fs::glob_relative(cv::utils::fs::join(models_root,
-						     model_name),
-				 "*.xml",
-				 xml_candidates,
-				 true);
-    
-    for (auto candidate : xml_candidates) {
-      if (ends_with(candidate, xml_candidate)) {
-	auto precision = cv::utils::fs::getParent(candidate);
-	auto bin_candidate(candidate);
-	bin_candidate.replace(candidate.length()-strlen("xml"),
-			      3,
-			      "bin");
-	auto full_xml_path = cv::utils::fs::join(cv::utils::fs::join(models_root,model_name),
-						 candidate);
-	auto full_bin_path = cv::utils::fs::join(cv::utils::fs::join(models_root,model_name),
-						 bin_candidate);
-			
-	
-	if (cv::utils::fs::exists(full_xml_path) && cv::utils::fs::exists(full_bin_path))
-	  {
-	    result.emplace(precision,ModelIR(full_xml_path,
-					     full_bin_path));
-	    
-	  }
-      }
+  template<class T>
+  void set_default(YAML::Node node,
+		   const std::string &key,
+		   T value) {
+    if (!node[key]) {
+      node[key] = value;
     }
   }
-  
-  std::string find_model_proc(std::string models_root,
-			      const std::string &model_name) {
-    std::string result = "";    
 
-    auto candidate = model_name + ".json";
-
-    std::vector<cv::String> proc_candidates;
-
-    cv::utils::fs::glob(cv::utils::fs::join(models_root,
-					    model_name),
-			"*.json",
-			proc_candidates,
-			true);
-    for (auto proc_candidate : proc_candidates) {
-      if (ends_with(proc_candidate,candidate)) {
-	result = proc_candidate;
-	break;
-      }
-    }
-    if ((result == "") && (!proc_candidates.empty())) {
-      result = proc_candidates[0];
-    }
-    return result;
-  }
-  
-  
-  ModelParameters &find_model(YAML::Node &config,
-			      const std::string &model_name,
-			      ModelParameters &mp) {
-
-    std::string models_root = config["runner-config"]["models_root"].as<std::string>();
-
-    mp.proc_path = find_model_proc(models_root,model_name);
-
-    if (mp.proc_path != "") {
-      std::ifstream input(mp.proc_path);    
-      input >> mp.proc;
-    } else {
-      mp.proc["output_postproc"][0]["converter"] = "tensor_to_bbox_ssd";
-    }
-    
-    find_model_ir(models_root, model_name, mp.precisions);
-    return mp;
-  }
   
   struct Task
   {
     virtual ~Task() = default;
     static std::unique_ptr<Task> Create(YAML::Node &config);
+    virtual void init() = 0;
     virtual void run() = 0;
     virtual void log_details() = 0;
   };
   
   class ObjectDetection: public Task {
     
-  private:
+  protected:
     
     YAML::Node &_config;
-    ModelParameters _model;
+    modelutil::ModelParameters _detection_model;
+    std::vector<modelutil::ModelParameters> _classification_models;
+    json _attribute_postproc;
     cv::GStreamingCompiled _pipeline;
-
-    // object detector: takes one Mat, returns another Mat
-    G_API_NET(Detections, <cv::GMat(cv::GMat)>, "object-detector");
-
 
     std::string _source;
     std::string _destination;
@@ -180,25 +75,132 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
     int _frame_width;
     uint64_t _frame_duration_ns;
     std::string _source_path;
-  public:
+    std::string _detect_model_config;
+    
+    using ClassificationModels = std::vector<cv::gapi::ie::Params<modelutil::Classifications>>;
+    using ClassificationTwoLayerModels = std::vector<cv::gapi::ie::Params<modelutil::ClassificationsTwoLayers>>;
 
-        
-    ObjectDetection(YAML::Node &config, const std::string& detect_model_config="model"):_config(config),
-										_source(this->_create_source_string()),
-										_destination(this->_create_destination_string()),
-										_source_path(this->_get_source_path()) {
-      find_model(config,
-		 config["pipeline"][detect_model_config].as<std::string>(),
-		 this->_model);
+    std::tuple<ClassificationModels,ClassificationTwoLayerModels> _get_classification_params() {
+      ClassificationModels classification_models;
+      ClassificationTwoLayerModels classification_two_layer_models;
 
-      auto converter = this->_model.proc["output_postproc"][0]["converter"];
+      set_default(this->_config["pipeline"],"classification-models",YAML::Node());
+      int index = 0;
+      for (auto model_name : this->_config["pipeline"]["classification-models"]) {
+	
+	modelutil::ModelParameters model;
+	std::string config_name = "classify-" + std::to_string(index);
+	  
+	find_model(this->_config,
+		   model_name.as<std::string>(),
+		   model);
+
+	this->_classification_models.push_back(model);
+
+	auto runner_config = this->_config["runner-config"];
+	
+	set_default(runner_config,
+		    config_name,YAML::Node());
+	
+	set_default(runner_config[config_name],
+		    "device",
+		    "CPU");
+
+	auto device = runner_config[config_name]["device"].as<std::string>();
+	
+	if ( model.proc["output_postproc"].size() == 1) {
+	  classification_models.push_back(model.params<modelutil::Classifications>(device));
+	} else if (model.proc["output_postproc"].size() == 2) {
+	  std::array<std::string,2> layer_names {
+						 model.proc["output_postproc"][0]["layer_name"],
+						 model.proc["output_postproc"][1]["layer_name"]
+	  };
+	  classification_two_layer_models.push_back(model.params<modelutil::ClassificationsTwoLayers>(device).cfgOutputLayers(layer_names));
+	       
+	} else {
+	  std::cout << "Post Proc" << model.proc["output_postproc"] << "Not Supported" << std::endl;
+	  throw "unsupported";
+	}
+	index++;
+      }
+
+      for (auto model: this->_classification_models) {
+	if (model.proc["output_postproc"].size() == 1) {
+	  for (auto postproc : model.proc["output_postproc"]) {
+	    postproc["model_name"] = model.name;
+	    this->_attribute_postproc.push_back(postproc);
+	  }
+	}
+      }
+      for (auto model: this->_classification_models) {
+	if (model.proc["output_postproc"].size() == 2) {
+	  for (auto postproc : model.proc["output_postproc"]) {
+	    postproc["model_name"] = model.name;
+	    this->_attribute_postproc.push_back(postproc);
+	  }
+	}
+      }
+      return std::make_tuple(classification_models, classification_two_layer_models);
+    }
+
+
+    cv::gapi::ie::Params<modelutil::Detections> _get_detection_params(const std::string& detect_model_config) {
+      // detection network
+      find_model(this->_config,
+		 this->_config["pipeline"][detect_model_config].as<std::string>(),
+		 this->_detection_model);
+
+      auto converter = this->_detection_model.proc["output_postproc"][0]["converter"];
       
       if ( converter != "tensor_to_bbox_ssd" ) {
-	std::cout << "Post Proc" << converter << "Not Supported" << "\n";
+	std::cout << "Post Proc" << converter << "Not Supported" << std::endl;
 	throw "unsupported";
       }
+
+      auto runner_config = this->_config["runner-config"];
       
-      cv::GComputation graph([]() {
+      set_default(runner_config,
+			"detect",YAML::Node());
+
+      set_default(runner_config["detect"],
+			"device",
+			"CPU");
+      
+      auto device = runner_config["detect"]["device"].as<std::string>();
+
+    
+      return this->_detection_model.params<modelutil::Detections>(device);
+
+    }
+
+    cv::gapi::GNetPackage _get_network_params(const std::string& detect_model_config) {
+
+      auto det_net = this->_get_detection_params(detect_model_config);
+      auto classification_networks= this->_get_classification_params(); 
+      auto networks = cv::gapi::networks();
+      networks.networks.push_back(cv::gapi::GNetParam{det_net.tag(),
+      						det_net.backend(),
+      						det_net.params()});
+
+      auto classification_nets = std::get<0>(classification_networks);
+      for (auto network : classification_nets) {
+	networks.networks.push_back(cv::gapi::GNetParam{network.tag(),
+							  network.backend(),
+							  network.params()});
+
+      }
+      auto classification_two_layer_nets = std::get<1>(classification_networks);
+      for (auto network : classification_two_layer_nets) {
+	networks.networks.push_back(cv::gapi::GNetParam{network.tag(),
+							  network.backend(),
+							  network.params()});
+	
+      }
+      return networks;
+    }
+
+    virtual cv::GComputation graph() {
+        cv::GComputation graph([]() {
 			    // Declare an empty GMat - the beginning of the pipeline.
 			    cv::GMat in;
 			    
@@ -208,56 +210,44 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 			    // - Inference is running on the whole input image;
 			    // - Image is converted and resized to the network's expected format
 			    //   automatically.
-			    cv::GMat detections = cv::gapi::infer<Detections>(in);
+			    cv::GMat detections = cv::gapi::infer<modelutil::Detections>(in);
 
 			    // Parse SSD output to a list of ROI (rectangles) using
 			    // a custom kernel. Note: parsing SSD may become a "standard" kernel.
-			    cv::GArray<postproc::ObjectDetectionResult> objects =
-			      postproc::SSDPostProc::on(detections, in);
 
+			    cv::GArray<cv::Rect> regions;
+			    cv::GArray<postproc::ObjectDetectionResult> objects;
+			    
+			    objects = postproc::SSDPostProc::on(detections,in);
+			    regions = postproc::ExtractRegions::on(objects);
+			    
 			    // Now specify the computation's boundaries - our pipeline consumes
 			    // one images and produces five outputs.
 			    return cv::GComputation(cv::GIn(in),
-						    cv::GOut(objects));
+						    cv::GOut(objects, regions));
 
 			  });
-
-      
-      auto runner_config = this->_config["runner-config"];
-      
-      this->set_default(runner_config,
-			"detect",YAML::Node());
-
-      this->set_default(runner_config["detect"],
-			"device",
-			"CPU");
-      
-      auto device = runner_config["detect"]["device"].as<std::string>();
-
-      std::map<const std::string, const std::string> device_map = { {"CPU","FP32"},
-								    {"GPU","FP16"}};
-      auto precision = device_map[device];
-      
-      auto det_net = cv::gapi::ie::Params<Detections> {
-						       this->_model.precisions[precision].xml,   
-						       this->_model.precisions[precision].bin,   
-						       device,   
-      };
-
-      auto kernels = cv::gapi::kernels<postproc::OCVSSDPostProc>();
-      auto networks = cv::gapi::networks(det_net);
-      
-      this->_pipeline = graph.compileStreaming(cv::compile_args(kernels, networks));
-
+	return graph;
     }
+    
+  public:
 
-    template<class T>
-    void set_default(YAML::Node node,
-		     const std::string &key,
-		     T value) {
-      if (!node[key]) {
-	node[key] = value;
-      }
+        
+    ObjectDetection(YAML::Node &config,
+		    const std::string& detect_model_config="model"):_config(config),
+								    _source(this->_create_source_string()),
+								    _destination(this->_create_destination_string()),
+								    _source_path(this->_get_source_path()),
+								    _detect_model_config(detect_model_config) {}
+    
+    void init() {
+
+      auto kernels = cv::gapi::kernels<postproc::OCVSSDPostProc, postproc::OCVExtractRegions>();
+
+      auto networks = this->_get_network_params(this->_detect_model_config);
+      
+      this->_pipeline = this->graph().compileStreaming(cv::compile_args(kernels, networks));
+
     }
 
     std::string _create_decode_string(const std::string &media_type) {
@@ -272,10 +262,10 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 	   }
       };
       
-      this->set_default(config,
+      set_default(config,
 			"decode",YAML::Node());
 
-      this->set_default(config["decode"],
+      set_default(config["decode"],
 			"device",
 			"CPU");
 
@@ -288,12 +278,12 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
         device_map = media_type_iterator->second;
       }
 
-      this->set_default(config["decode"],
+      set_default(config["decode"],
 			"element",
 			device_map[device]);
       
       if (config["decode"]["element"].as<std::string>()=="avdec_h264") {
-	this->set_default(config["decode"],"max-threads","1");
+	set_default(config["decode"],"max-threads","1");
       }
 
       result << config["decode"]["element"] << " ";
@@ -355,7 +345,7 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
       auto scheme = input_uri.substr(0,scheme_end);      
       auto path = input_uri.substr(scheme_end+3,
 					  std::string::npos);
-      this->set_default(this->_config["inputs"][0],
+      set_default(this->_config["inputs"][0],
 			"caps",
 			"");
       auto caps = this->_config["inputs"][0]["caps"].as<std::string>();
@@ -418,7 +408,50 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 
     }
 
+    json &attribute_to_json(cv::Mat attribute,
+			    int attribute_index,
+			    json &object) {
+      auto postproc = this->_attribute_postproc[attribute_index];
+      
+      json &json_attribute = object[postproc["attribute_name"].get<std::string>()];
+      
+      json_attribute["model"] = {{"name", postproc["model_name"]}};
+      const float* results = attribute.ptr<float>();
+      if (postproc["converter"] == "tensor_to_label") {
+	if (postproc["method"] == "max") {
+	  const float* end = results + attribute.total();
+	  if (postproc["labels"].size()>0) {
+	    end = results + postproc["labels"].size();
+	  }
+	  const auto label_id = std::max_element(results, end) - results;
+	  if (postproc["labels"].size()>0) {
+	    json_attribute["label"] = postproc["labels"][label_id];
+	  } else {
+	    json_attribute["label_id"] = label_id;
+	  }
+	}
+      } else if (postproc["converter"] == "tensor_to_text") {
+        float scale = 1;
+	int precision = 0;
+	if (postproc.find("tensor_to_text_scale") != postproc.end()) {
+	  scale = postproc["tensor_to_text_scale"];
+	}
+	if (postproc.find("tensor_to_text_precision") != postproc.end()) {
+	  precision = postproc["tensor_to_text_precision"];
+	}
+	std::ostringstream label;
+	label << std::fixed << std::setprecision(precision) << (scale * results[0]);
+	json_attribute["label"] = label.str();
+      } else {
+	std::cout << "Unknown Converter: " << postproc["converter"] << std::endl;
+	throw "Unknown Converter"; 
+      }
+      return json_attribute;
+    }
+
+    template<unsigned int N>
     json objects_to_json(const std::vector<postproc::ObjectDetectionResult> &objects,
+			 const std::array<std::vector<cv::Mat>,N>& attributes,
 			 int frame_index) {
       json result;
       result["resolution"] = { {"height", this->_frame_height},
@@ -426,9 +459,9 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 
       result["timestamp"] = frame_index * this->_frame_duration_ns;
       result["source"] = this->_source_path;
-
+      int object_index = 0;
       for (auto object : objects) {
-	auto label = this->_model.proc["output_postproc"][0]["labels"][int(object.object_type)];
+	auto label = this->_detection_model.proc["output_postproc"][0]["labels"][int(object.object_type)];
 
 	json detection = { {"bounding_box", {"x_max",object.roi_right,
 					     "x_min",object.roi_left,
@@ -438,12 +471,23 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 			   {"label",label},
 			   {"label_id",object.object_type}};
 	
+	json json_object = { {"detection", detection},
+			     {"h", object.roi.height},
+			     {"w", object.roi.width},
+			     {"x", object.roi.x},
+			     {"y", object.roi.y} };
 	
-	result["objects"].push_back( { {"detection", detection},
-				       {"h", object.roi.height},
-				       {"w", object.roi.width},
-				       {"x", object.roi.x},
-				       {"y", object.roi.y} } );
+	int attribute_index = 0;
+	for (auto attribute : attributes) {
+
+	  this->attribute_to_json(attribute[object_index],
+				  attribute_index,
+				  json_object);
+	  ++attribute_index;
+	}
+
+	result["objects"].push_back(json_object);
+	++object_index;
       }
       return result;
     }
@@ -455,12 +499,21 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
       std::cout << "GAPI-RUN" << std::endl;
       std::cout << header << std::endl;
       std::cout << "Task:\t" <<this->_config["pipeline"]["task"] << std::endl;
-      std::cout << "Model:\t" <<this->_config["pipeline"]["model"] << std::endl << std::endl;
-      std::cout << "\t" << this->_model << std::endl;
+      std::cout << "Detection Model:\t" << this->_detection_model.name << std::endl << std::endl;
+      std::cout << "\t" << this->_detection_model << std::endl;
+      for (auto model : this->_classification_models) {
+	std::cout << "Classification Model:\t" <<  model.name;
+	std::cout << "\t" << model << std::endl;
+      }
       std::cout << "CaptureSource:\n\t" <<this->_source << std::endl << std::endl;
       std::cout << header << std::endl << std::endl;
     }
+
+    void run() {
+      this->run<0>();
+    }
     
+    template<unsigned int N>
     void run() {
       Avg avg;
       std::size_t frames = 0u;            // Frame counter (not produced by the graph)
@@ -471,15 +524,24 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
       avg.start();
       this->_pipeline.start();
       std::vector<postproc::ObjectDetectionResult> objects;
-      auto out_vector = cv::gout(objects);
+      std::vector<cv::Rect> regions;
+      std::array<std::vector<cv::Mat>,N> attributes;
+      
+
+      auto out_vector = cv::gout(objects,regions);
+
+      for (int i = 0; i <N; i++) {
+	out_vector.push_back(cv::GRunArgP(cv::detail::VectorRef(attributes[i])));
+      }
+      
       while(this->_pipeline.running()) {
 	if (!this->_pipeline.pull(std::move(out_vector))) {
 	  break;
 	}
-	fout << objects_to_json(objects, frames) << '\n';
+	fout << objects_to_json<N>(objects, attributes, frames) << '\n';
 	fout.flush();
 	if (cv::utils::logging::getLogLevel() >= cv::utils::logging::LogLevel::LOG_LEVEL_VERBOSE) {
-	  std::cout << objects_to_json(objects, frames) << std::endl;
+	  std::cout << objects_to_json<N>(objects, attributes, frames) << std::endl;  
 	}
 	frames++;
 	if (frames % 50 == 0) {
@@ -498,9 +560,62 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 
   class ObjectClassification : public ObjectDetection {
 
+  protected:
+
+    void run() {
+      this->ObjectDetection::run<3>();
+    }
+
+    
+    virtual cv::GComputation graph(){
+
+      cv::GComputation graph([]() {
+			       // Declare an empty GMat - the beginning of the pipeline.
+			       cv::GMat in;
+			       
+			       // Run object detection on the input frame. Result is a single GMat,
+			       // internally representing an 1x1x200x7 SSD output.
+			       // This is a single-patch version of infer:
+			       // - Inference is running on the whole input image;
+			       // - Image is converted and resized to the network's expected format
+			       //   automatically.
+			       cv::GMat detections = cv::gapi::infer<modelutil::Detections>(in);
+			       
+			       // Parse SSD output to a list of ROI (rectangles) using
+			       // a custom kernel. Note: parsing SSD may become a "standard" kernel.
+			       
+			       cv::GArray<cv::Rect> regions;
+			       cv::GArray<postproc::ObjectDetectionResult> objects;
+			       
+			       objects = postproc::SSDPostProc::on(detections,in);
+			       regions = postproc::ExtractRegions::on(objects);
+
+			       cv::GArray<cv::GMat> classifications = cv::gapi::infer<modelutil::Classifications>(regions, in);
+
+			       cv::GArray<cv::GMat> classifications_two_layer_0;
+			       cv::GArray<cv::GMat> classifications_two_layer_1;
+			       
+			       std::tie(classifications_two_layer_0, classifications_two_layer_1) =
+				 cv::gapi::infer<modelutil::ClassificationsTwoLayers>(regions, in);			       
+			       
+			       // Now specify the computation's boundaries - our pipeline consumes
+			       // one images and produces five outputs.
+			       return cv::GComputation(cv::GIn(in),
+						       cv::GOut(objects,
+								regions,
+								classifications,
+								classifications_two_layer_0,
+								classifications_two_layer_1));
+			       
+			     });
+	return graph;
+    }
+
+    
   public:
     ObjectClassification(YAML::Node &config):ObjectDetection(config,"detection-model")
     {}
+
 
   };
 

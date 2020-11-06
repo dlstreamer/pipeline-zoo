@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
-ARG BASE=openvisualcloud/xeon-ubuntu1804-analytics-dev:20.4
+ARG BASE=openvino/ubuntu18_data_dev:2021.1
 FROM ubuntu:18.04 as MODEL_ZOO
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -33,6 +33,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     dmidecode \
     cmake \
     bash-completion \
+    libyaml-cpp-dev \
+    nlohmann-json-dev \	
     python3 && \
     rm -rf /var/lib/apt/lists/*
 

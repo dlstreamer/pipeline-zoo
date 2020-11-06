@@ -11,6 +11,7 @@ import shutil
 from pipebench.util import create_directory
 from pipebench.tasks.task import find_pipeline
 from pipebench.schema.documents import validate
+from pipebench.schema.documents import apply_overrides
 from pipebench.schema.documents import WorkloadConfig
 from pipebench.schema.documents import PipelineConfig
 import yaml
@@ -52,7 +53,9 @@ def measure(args):
          (os.path.isfile(runner_config_path.replace("yml","json")))):
         runner_config_path = runner_config_path.replace("yml","json")
     
-    runner_config = validate(runner_config_path, args.schemas,args.runner_overrides)
+    #runner_config = validate(runner_config_path, args.schemas,args.runner_overrides)
+
+#    runner_config = validate(runner_config_path, args.schemas)
     
     # create output folder for runner
 
@@ -81,6 +84,14 @@ def measure(args):
                            or previous_throughput) and (not args.throughput):
         throughput = previous_throughput
     elif ("throughput" in workload._document["measurement"]):
+        runner_config = validate(runner_config_path, args.schemas)
+        if ("throughput" in runner_config):
+            if (not args.default_config):
+                runner_config.update(runner_config["throughput"])
+            runner_config.pop("throughput")
+            
+        apply_overrides(runner_config,args.runner_overrides)
+        
         throughput = _measure_throughput(task,
                                          workload,
                                          args,
@@ -88,6 +99,14 @@ def measure(args):
                                          runner_config)
         
     if ("density" in workload._document["measurement"]):
+        runner_config = validate(runner_config_path, args.schemas)
+        if ("density" in runner_config):
+            if (not args.default_config):
+                runner_config.update(runner_config["density"])
+            runner_config.pop("density")
+            
+        apply_overrides(runner_config,args.runner_overrides)
+  
         density = _measure_density(throughput,
                                    task,
                                    workload,
@@ -100,6 +119,11 @@ def download(args):
     _download_pipeline(args.pipeline,
                       args)
 
+
+def list_pipeline_runners(pipeline_path):
+    for root, directories, files in os.walk(os.path.dirname(pipeline_path)):
+        return [path.replace(".config.yml","") for path in files if path.endswith(".config.yml")]
+
 def list_pipelines(args):
 
     descriptions = []
@@ -107,7 +131,7 @@ def list_pipelines(args):
         pipeline_config = PipelineConfig(pipeline_path,args)
 
         models= []
-
+        runners = list_pipeline_runners(pipeline_path)
         for key, value in pipeline_config._document.items():
             if "model" in key:
                 if isinstance(value, list):
@@ -116,9 +140,10 @@ def list_pipelines(args):
                     models.append(value)
                     
         
-        descriptions.append({"pipeline":pipeline,
-                             "task":pipeline_config._namespace.task,
-                             "models":"\n".join(models)})
+        descriptions.append({"Pipeline":pipeline,
+                             "Task":pipeline_config._namespace.task,
+                             "Models":"\n".join(models),
+                             "Runners":"\n".join(runners)})
     
     print(tabulate(descriptions,headers={'name':'name','models':'models','task':'task'},tablefmt="grid"))
     
@@ -323,12 +348,27 @@ def _write_density_result(density,
     with open(result_file_name,"w") as result_file:
         json.dump(result, result_file, indent=4)
 
+    last = []
+    second_to_last = []
+    if (results):
+        iteration = results[-1]
+        last.append("Streams: {}".format(len(iteration)))
+        last.extend(_density_result_strings(iteration))
+        if (len(results)>1):
+            iteration = results[-2]
+            second_to_last.append("Streams: {}".format(len(iteration)))
+            second_to_last.extend(_density_result_strings(iteration))
+     
 
-    table = {'pipeline':workload.pipeline,
-             'runner':runner,
-             'media':workload._namespace.media,
-             'density':density}
+    table = {'Pipeline':workload.pipeline,
+             'Runner':runner}
     
+    if (second_to_last):
+        table[second_to_last[0]]="\n".join(second_to_last[1:])
+
+    if (last):
+        table[last[0]]="\n".join(last[1:])
+
     headers = {key:key for key in table}
     print(tabulate([table],headers=headers))
 
@@ -350,9 +390,9 @@ def _write_throughput_result(run_directory,
     with open(result_file_name,"w") as result_file:
         json.dump(result, result_file, indent=4)
 
-    table = {'pipeline':workload.pipeline,
-             'runner':runner,
-             'media':workload._namespace.media,
+    table = {'Pipeline':workload.pipeline,
+             'Runner':runner,
+             'Media':workload._namespace.media,
              '{}'.format(config["select"]):results[config["select"]]}
     headers = {key:key for key in table}
     headers[config["select"]]='{} FPS (selected)'.format(config["select"])
@@ -382,14 +422,22 @@ def _check_density(results, config):
                 return False, range_results
     return True, range_results
 
-def _print_density_result(range_results):
+def _density_result_strings(range_results):
     stream_template = "Stream: {0:04d}"
     stream_results = []
+    fps_template = "{0:04.4f} {1}"
+    passed = {True:"Pass",
+              False:"Fail"}
     for index,range_result in enumerate(range_results):
-        stream_results.append("{} {}".format(stream_template.format(index),
-                                             " ".join(["{}:{}".format(key,value) for key,value in range_result.items()])))
+        
+        stream_results.append("{} {}".format(
+            stream_template.format(index),
+        " ".join(["{}: {}".format(key.title(),fps_template.format(value[0],passed[value[1]]))
+                  for key,value in range_result.items()])))
+    return stream_results
 
-    print_action("Density Result",stream_results)
+def _print_density_result(range_results):
+    print_action("Density Result",_density_result_strings(range_results))
                       
 def _measure_density(throughput,
                      task,
@@ -404,6 +452,8 @@ def _measure_density(throughput,
         num_streams = config["fixed-streams"]
         config["max-streams"] = num_streams
         config["max-iterations"] = 1
+    elif ("starting-streams" in config):
+        num_streams = config["starting-streams"]
     else:
         # Use throughput to estimate stream density
         num_streams = min(config["max-streams"], math.floor(throughput / workload._document["measurement"]["density"]["fps"]))
@@ -427,7 +477,7 @@ def _measure_density(throughput,
     
     while (
             (first_result == current_result)
-            and (num_streams>0) and (num_streams<=config["max-streams"])
+            and (num_streams>=config["min-streams"]) and (num_streams<=config["max-streams"])
             and (max_iterations<0 or iteration < max_iterations)
     ):
         runners = []

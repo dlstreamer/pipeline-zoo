@@ -245,7 +245,8 @@ int main(int argc, char *argv[])
   if (cv::utils::logging::getLogLevel() >= cv::utils::logging::LogLevel::LOG_LEVEL_INFO) {
     task->log_details();
   }
-  
+
+  task->init();
   task->run();
   
     /*
