@@ -20,7 +20,7 @@ timeout_sec = 60
 test_workspace = "/home/test_workspace"     
 
 def pytest_report_header(config):
-    return "test downalod command of pipebench"
+    return "test download command of pipebench"
 
 
 def run_cmd(cmd_str):
@@ -35,15 +35,16 @@ def run_cmd(cmd_str):
 def check_measurement(pipeline, measurement):
     pipeline_root = os.path.join(test_workspace, pipeline)
     results_path = os.path.join(pipeline_root,
-                                "runners",
-                                "dlstreamer",
-                                "results",
-                                "default",
+                                "measurements",
+                                "person-bicycle-car-detection",
                                 measurement,
+                                "dlstreamer",
                                 "result.json")
     assert(os.path.isfile(results_path))
     with open(results_path) as results_file:
         result = json.load(results_file)
+        if ("density" in measurement):
+            measurement = "density"
         assert(measurement in result)
         
 def check_download(pipeline):
@@ -110,6 +111,6 @@ def test_density(pipeline):
     elif(exitcode != 0):
         assert False
     # if no error codes then check 
-    check_measurement(pipeline,"density")
+    check_measurement(pipeline,"density.30fps")
 
 

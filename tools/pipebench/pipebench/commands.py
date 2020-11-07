@@ -24,21 +24,23 @@ from pipebench.util import print_action
 import json
 from pipebench.tasks.task import Task
 from tabulate import tabulate
+import tempfile
 
 def measure(args):
 
     if (not args.workload):
-        workload_path = "{}/default.workload.yml".format(args.workspace_root)
-        with open(workload_path,
-                  "w") as workload_file:
-            minimal = "{measurement:{throughput:{}}}"
-            if (args.density):
-                minimal = "{measurement:{throughput:{},density:{}}}"
-            workload_file.write(minimal)
-        args.workload = workload_path
-        
-    workload = _load_workload(args)
-    
+        with tempfile.TemporaryDirectory() as workload_root:
+            workload_path = "{}/workload.yml".format(workload_root)
+            with open(workload_path,
+                      "w") as workload_file:
+                minimal = "{measurement:{throughput:{}}}"
+                if (args.density):
+                    minimal = "{measurement:{throughput:{},density:{}}}"
+                workload_file.write(minimal)
+            args.workload = workload_path
+            workload = _load_workload(args)
+    else:
+        workload = _load_workload(args)
     task = Task.create_task(workload, args)
     _prepare(task, workload, args)
     
@@ -47,38 +49,43 @@ def measure(args):
     
     runner_config_path = os.path.join(args.workspace_root,
                                       workload.pipeline,
-                                      "{}.config.yml".format(args.runner))
+                                      "{}{}.config.yml".format(args.runner,
+                                                               ".{}".format(args.runner_config) if args.runner_config else ""))
     
     if ( (not os.path.isfile(runner_config_path)) and
          (os.path.isfile(runner_config_path.replace("yml","json")))):
         runner_config_path = runner_config_path.replace("yml","json")
-    
-    #runner_config = validate(runner_config_path, args.schemas,args.runner_overrides)
-
-#    runner_config = validate(runner_config_path, args.schemas)
-    
+        
     # create output folder for runner
 
-    target_dir = os.path.join(args.pipeline_root,
-                              "runners",
-                              args.runner,
-                              "results",
-                              os.path.basename(args.workload_root))
+    measurements = ["throughput"]
+
+    if ("density" in workload._document["measurement"]):
+        measurements.append("density.{}fps".format(workload._namespace.measurement.density.fps))
+    
+    target_dirs = [ os.path.join(args.pipeline_root,
+                                 "measurements",
+                                 args.workload_name,
+                                 measurement,
+                                 os.path.basename(runner_config_path).replace(".config.yml","").replace(".config.json",""))
+                    for measurement in measurements]
 
 
     if (args.force):
         try:
-            shutil.rmtree(target_dir)
+            for target_dir in target_dirs:
+                shutil.rmtree(target_dir)
         except Exception as error:
             pass
-
-    if (not os.path.isdir(target_dir)):
-        create_directory(target_dir)
+        
+    for target_dir in target_dirs:
+        if (not os.path.isdir(target_dir)):
+            create_directory(target_dir)
 
     # write out workload file
-    _write_workload(workload, target_dir, args) 
+    _write_workload(workload, os.path.dirname(os.path.dirname(target_dirs[0])), args) 
 
-    previous_throughput = _read_existing_throughput(os.path.join(target_dir,"throughput"),args)
+    previous_throughput = _read_existing_throughput(target_dirs[0],args)
 
     if (args.density) and ("fixed-streams" in workload._document["measurement"]["density"]
                            or previous_throughput) and (not args.throughput):
@@ -95,7 +102,7 @@ def measure(args):
         throughput = _measure_throughput(task,
                                          workload,
                                          args,
-                                         target_dir,
+                                         target_dirs[0],
                                          runner_config)
         
     if ("density" in workload._document["measurement"]):
@@ -111,7 +118,7 @@ def measure(args):
                                    task,
                                    workload,
                                    args,
-                                   target_dir,
+                                   target_dirs[1],
                                    runner_config)
 
 
@@ -193,14 +200,14 @@ def _load_workload(args):
 
         workload = WorkloadConfig(args.workload, args)
         workload_name = os.path.basename(args.workload)
-        workload_name = workload_name.split('.')[0]
-
+        workload_name = workload_name.replace("workload.yml","").replace("workload.json","").strip('.')
+        workload_name = os.path.basename(workload.media) if workload_name == "" else workload_name
         args.workload_name = workload_name
         args.workload_root = os.path.join(args.
                                           workspace_root,
                                           workload.pipeline,
                                           "workloads",
-                                          workload_name)
+                                          os.path.basename(workload.media))
 
         
         return workload
@@ -406,11 +413,10 @@ def _normalize_range(config,range_name):
     if (len(config[range_name])>1):
         _max = config[range_name][1]
 
-    if _min < 0:
+    if _min < 1:
         _min = config["fps"] - _min
-    if _max < 0:
+    if _max < 1:
         _max = config["fps"] + _max
-        
     return (_min,_max)
 
 def _check_ranges(result, ranges):
@@ -468,8 +474,8 @@ def _measure_density(throughput,
         
     print_action("Measuring Stream Density",[config])
 
-    results_directory = os.path.join(target_dir,
-                                 "density")
+    results_directory = target_dir
+    
     create_directory(results_directory)
     
     done = False
@@ -496,7 +502,6 @@ def _measure_density(throughput,
         for stream_index in range(num_streams):
 
             run_directory = os.path.join(target_dir,
-                                         "density",
                                          "iteration_{}".format(iteration),
                                          "stream_{}".format(stream_index))
             create_directory(run_directory)
@@ -532,8 +537,7 @@ def _measure_density(throughput,
         iteration += 1
 
     _write_density_result(density,
-                          os.path.join(target_dir,
-                                       "density"),
+                          target_dir,
                           workload,
                           config,
                           iteration_results,
@@ -555,8 +559,8 @@ def _measure_throughput(task,
                         target_dir,
                         runner_config):
   
-    run_directory = os.path.join(target_dir,
-                                 "throughput")
+    run_directory = target_dir
+    
     create_directory(run_directory)
 
     config = workload._document["measurement"].get("throughput", {})
@@ -579,7 +583,7 @@ def _measure_throughput(task,
 def _write_workload(workload, target_dir, args):
 
     workload_path = os.path.join(target_dir,
-                                 os.path.basename(args.workload))
+                                 args.workload_name + ".workload.yml")
     
     with open(workload_path,"w") as workload_file:
         yaml.dump(workload._document,

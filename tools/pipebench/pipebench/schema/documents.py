@@ -165,7 +165,8 @@ def validate(document_path, schema_store, overrides = [] ):
 
     root, extension = os.path.splitext(document_path)
     root, schema = os.path.splitext(root)
-    
+    if not schema:
+        schema = os.path.basename(root)
     schema_id = schema.strip('.')
     resolver = RefResolver("","",schema_store)
     document = None

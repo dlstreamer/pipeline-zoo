@@ -92,7 +92,12 @@ def _get_parser(program_name="pipebench"):
                                  action="store_true",
                                  required=False,
                                  default=False)
-    
+
+    measure_parser.add_argument("--runner-config",
+                                required=False,
+                                dest="runner_config",
+                                default="")
+
     measure_parser.add_argument("--runner-override",
                                  action="append",
                                  nargs=2,
