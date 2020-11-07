@@ -404,7 +404,13 @@ def _normalize_range(config,range_name):
     _min = config[range_name][0]
     _max = sys.maxsize
     if (len(config[range_name])>1):
-        _max = config[range_name]
+        _max = config[range_name][1]
+
+    if _min < 0:
+        _min = config["fps"] - _min
+    if _max < 0:
+        _max = config["fps"] + _max
+        
     return (_min,_max)
 
 def _check_ranges(result, ranges):

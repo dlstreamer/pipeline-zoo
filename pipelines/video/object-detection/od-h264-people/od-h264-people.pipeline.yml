@@ -1,0 +1,8 @@
+# Defines ob-h264-mbnetssd Pipeline of type object-detection
+
+task: object-detection
+
+model: person-detection-retail-0013
+
+inputs.media.type.media-type: video/x-h264
+

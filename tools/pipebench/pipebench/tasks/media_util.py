@@ -357,7 +357,7 @@ class MediaSource(Thread):
         self._sleep_time = 0
 
         if (self._frame_rate != -1 ):
-            self._sleep_time = 1 / self._frame_rate
+            self._sleep_time = 1 / (self._frame_rate+0.5)
             
         super().__init__(*args, **kwargs)
 
