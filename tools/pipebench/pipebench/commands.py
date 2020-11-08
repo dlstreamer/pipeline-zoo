@@ -25,6 +25,7 @@ import json
 from pipebench.tasks.task import Task
 from tabulate import tabulate
 import tempfile
+from statistics import mean
 
 def measure(args):
 
@@ -87,7 +88,8 @@ def measure(args):
 
     previous_throughput = _read_existing_throughput(target_dirs[0],args)
 
-    if (args.density) and ("fixed-streams" in workload._document["measurement"]["density"]
+    if (args.density) and ("fixed-streams" in workload._document["measurement"]["density"] or
+                           "starting-streams" in workload._document["measurement"]["density"]
                            or previous_throughput) and (not args.throughput):
         throughput = previous_throughput
     elif ("throughput" in workload._document["measurement"]):
@@ -327,6 +329,13 @@ def _wait_for_task(runners, duration):
         del totals["total"]
     return results, totals
 
+def _iteration_stats(iteration):
+    values = {}
+    for stream_result in iteration:
+        for key,value in stream_result.items():
+            values.setdefault(key,[]).append(value[0])
+    return values
+        
 def _write_density_result(density,
                           run_directory,
                           workload,
@@ -361,11 +370,20 @@ def _write_density_result(density,
         iteration = results[-1]
         last.append("Streams: {}".format(len(iteration)))
         last.extend(_density_result_strings(iteration))
+        values = _iteration_stats(iteration)
+        last.append("Min: {:04.4f} Max: {:04.4f} Avg: {:04.4f}".format(min(values["avg"]),
+                                                                    max(values["avg"]),
+                                                                    mean(values["avg"])))
+                                                                                                                
         if (len(results)>1):
             iteration = results[-2]
             second_to_last.append("Streams: {}".format(len(iteration)))
             second_to_last.extend(_density_result_strings(iteration))
-     
+            values = _iteration_stats(iteration)
+            second_to_last.append("Min: {:04.4f} Max: {:04.4f} Avg: {:04.4f}".format(min(values["avg"]),
+                                                                                  max(values["avg"]),
+                                                                                  mean(values["avg"])))
+
 
     table = {'Pipeline':workload.pipeline,
              'Runner':runner}
@@ -458,7 +476,6 @@ def _measure_density(throughput,
                      target_dir,
                      runner_config):
     config = workload._document["measurement"].get("density",{})
-
     
     if ("fixed-streams" in config):
         num_streams = config["fixed-streams"]
@@ -485,7 +502,9 @@ def _measure_density(throughput,
     iteration = 0
     iteration_results = []
     max_iterations = config["max-iterations"]
-    
+    frame_rate = config["fps"]
+    if (not config["limit-frame-rate"]):
+        frame_rate = -1
     
     while (
             (first_result == current_result)
@@ -509,7 +528,7 @@ def _measure_density(throughput,
             source, sink, runner  = task.run(run_directory,
                                              runner_config,
                                              config["warm-up"],
-                                             config["fps"],
+                                             frame_rate,
                                              config["sample-size"])
 
 

@@ -355,7 +355,7 @@ class ObjectDetection(Task):
                                  basename.replace('piperun.yml',"gst-launch.sh"))
         with open(command_path,"w") as command_file:
             command_file.write("{}\n".format(' '.join(standalone_args)))
-        os.chmod(command_path,stat.S_IXGRP | stat.S_IXOTH | stat.S_IEXEC)
+        os.chmod(command_path,stat.S_IXGRP | stat.S_IXOTH | stat.S_IEXEC | stat.S_IWUSR | stat.S_IROTH | stat.S_IRUSR)
         super().__init__(piperun_config, args, *pos_args, **keywd_args)
 
         

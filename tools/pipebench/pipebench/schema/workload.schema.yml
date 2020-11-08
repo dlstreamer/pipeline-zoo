@@ -45,6 +45,9 @@ properties:
           fps:
             type: integer
             default: 30
+          limit-frame-rate:
+            type: boolean
+            default: true
           warm-up:
             type: integer
             default: 2
