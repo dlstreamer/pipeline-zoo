@@ -239,6 +239,7 @@ class MediaSink(Thread):
         self._sample_count = 0
         self._source_uri = source_uri
         self.connected = False
+        self._stopped = False
         
         if ("jsonl" in self._media_type.encoded_caps):
             self._frame_sizes = None
@@ -258,54 +259,56 @@ class MediaSink(Thread):
                          self._avg_fps)
 
     def stop(self):
-        pass
+        self._stopped = True
         
     def read_lines(self):
 
-        print_action("Starting: pipebench memory sink",
-                     ["Started: {}".format(time.time()),
-                      "URI: {}".format(self._source_uri)])
-        
-        with open(self._source_path,"rb") as source_fifo:
-            self.connected = True
-            next_char = ""
-            line = bytearray()
-            while next_char != None:
-                line.clear()
+        while(not self._stopped):
+
+            print_action("Starting: pipebench memory sink",
+                         ["Started: {}".format(time.time()),
+                          "URI: {}".format(self._source_uri)])
+
+            with open(self._source_path,"rb") as source_fifo:
+                self.connected = True
                 next_char = ""
-                while(next_char != b'\n'):
-                    next_char = source_fifo.read(1)
+                line = bytearray()
+                while next_char != None:
+                    line.clear()
+                    next_char = ""
+                    while(next_char != b'\n'):
+                        next_char = source_fifo.read(1)
+                        if (not next_char):
+                            break
+                        line.extend(next_char)
                     if (not next_char):
                         break
-                    line.extend(next_char)
-                if (not next_char):
-                    break
-                #print(json.loads(str(line,"utf-8")))
-                self._frame_count = self._frame_count + 1
-                
-                if (self._frame_count % self._sample_size == 0):
-                    self._sample_count += 1
-                    if (self._sample_count >= self._warm_up):
-                        current_time = time.time()
-                        if (not self._start_time):
-                            self._start_time = current_time
-                            self._last_start_time = current_time
-                            self._start_frame_count = self._frame_count
-                            continue
-                        self._last_sample_fps = self._sample_size / (current_time - self._last_start_time)
-                        if (self._last_sample_fps > self._max_sample_fps):
-                            self._max_sample_fps = self._last_sample_fps
-                        if (self._last_sample_fps < self._min_sample_fps):
-                            self._min_sample_fps = self._last_sample_fps
-                        self._total_sample_fps += self._last_sample_fps
-                        self._avg_sample_fps = self._total_sample_fps / (self._sample_count-self._warm_up)
-                        self._last_start_time = current_time
-                        self._avg_fps = (self._frame_count - self._start_frame_count) / (current_time - self._start_time)
+                    #print(json.loads(str(line,"utf-8")))
+                    self._frame_count = self._frame_count + 1
 
-        self.connected = False
-        print_action("Ended: pipebench memory sink",
-                     ["Ended: {}".format(time.time()),
-                      "Frames Read: {}".format(self._frame_count)])
+                    if (self._frame_count % self._sample_size == 0):
+                        self._sample_count += 1
+                        if (self._sample_count >= self._warm_up):
+                            current_time = time.time()
+                            if (not self._start_time):
+                                self._start_time = current_time
+                                self._last_start_time = current_time
+                                self._start_frame_count = self._frame_count
+                                continue
+                            self._last_sample_fps = self._sample_size / (current_time - self._last_start_time)
+                            if (self._last_sample_fps > self._max_sample_fps):
+                                self._max_sample_fps = self._last_sample_fps
+                            if (self._last_sample_fps < self._min_sample_fps):
+                                self._min_sample_fps = self._last_sample_fps
+                            self._total_sample_fps += self._last_sample_fps
+                            self._avg_sample_fps = self._total_sample_fps / (self._sample_count-self._warm_up)
+                            self._last_start_time = current_time
+                            self._avg_fps = (self._frame_count - self._start_frame_count) / (current_time - self._start_time)
+
+            self.connected = False
+            print_action("Ended: pipebench memory sink",
+                         ["Ended: {}".format(time.time()),
+                          "Frames Read: {}".format(self._frame_count)])
 
 
 
@@ -350,6 +353,7 @@ class MediaSource(Thread):
         self._frame_rate = frame_rate
         self._frame_count = frame_count
         self.connected = False
+        self._stopped = False
 
         if (self._frame_count == -1) and (elapsed_time != -1 ) and (self._frame_rate>-1):
             self._frame_count = elapsed_time * self._frame_rate
@@ -362,13 +366,11 @@ class MediaSource(Thread):
         super().__init__(*args, **kwargs)
 
     def stop(self):
-        self._frame_count = 0
+        self._stopped = True
     
     def run(self):
-
-        start_attempts = 0
         
-        while(start_attempts <10):
+        while(not self._stopped):
         
             start_time = time.time()
             count = 0
@@ -382,16 +384,15 @@ class MediaSource(Thread):
             with open(self._sink_path,"wb", buffering=0) as sink_fifo:
                 self.connected = True
                 try:
-                    while(True):
+                    while(not self._stopped):
                         written = sink_fifo.write(self._frames[count % frame_len])
                         time.sleep(self._sleep_time)
                         count += 1
                         if (self._frame_count!=-1) and (count>=self._frame_count):
-                            start_attemps = 10
-                            break
+                            self._stopped = True
+                       
                 except BrokenPipeError as error:
                     print(error)
-                    start_attempts+=1
                     print_action("Ended: pipebench memory source",
                                  ["Ended: {}".format(time.time()),
                                   "Frames Written: {}".format(count+1)])

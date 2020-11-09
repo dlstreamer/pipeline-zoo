@@ -84,7 +84,9 @@ def measure(args):
             create_directory(target_dir)
 
     # write out workload file
-    _write_workload(workload, os.path.dirname(os.path.dirname(target_dirs[0])), args) 
+    _write_workload(workload, os.path.dirname(os.path.dirname(target_dirs[0])), args)
+    if (args.save_workload):
+        _write_workload(workload, args.pipeline_root, args)
 
     previous_throughput = _read_existing_throughput(target_dirs[0],args)
 
@@ -95,8 +97,7 @@ def measure(args):
     elif ("throughput" in workload._document["measurement"]):
         runner_config = validate(runner_config_path, args.schemas)
         if ("throughput" in runner_config):
-            if (not args.default_config):
-                runner_config.update(runner_config["throughput"])
+            runner_config.update(runner_config["throughput"])
             runner_config.pop("throughput")
             
         apply_overrides(runner_config,args.runner_overrides)
@@ -110,8 +111,7 @@ def measure(args):
     if ("density" in workload._document["measurement"]):
         runner_config = validate(runner_config_path, args.schemas)
         if ("density" in runner_config):
-            if (not args.default_config):
-                runner_config.update(runner_config["density"])
+            runner_config.update(runner_config["density"])
             runner_config.pop("density")
             
         apply_overrides(runner_config,args.runner_overrides)
@@ -122,6 +122,9 @@ def measure(args):
                                    args,
                                    target_dirs[1],
                                    runner_config)
+
+    if (args.save_runner_config and runner_config):
+        _write_runner_config(runner_config, args)
 
 
 def download(args):
@@ -204,6 +207,8 @@ def _load_workload(args):
         workload_name = os.path.basename(args.workload)
         workload_name = workload_name.replace("workload.yml","").replace("workload.json","").strip('.')
         workload_name = os.path.basename(workload.media) if workload_name == "" else workload_name
+        if (args.save_workload):
+            workload_name = args.save_workload
         args.workload_name = workload_name
         args.workload_root = os.path.join(args.
                                           workspace_root,
@@ -314,15 +319,15 @@ def _wait_for_task(runners, duration):
               and ((time.time()-start) < duration)):
             source.join(1)
             _print_fps(runners, totals)
-           
+
+        source.stop()
         if (source.connected):
-            source.stop()
             source.join()
         
         runner_process.kill()
 
+        sink.stop()
         if (sink.connected):
-            sink.stop()
             sink.join()
         results.append(sink.get_fps())
     if ("total" in totals):
@@ -599,6 +604,14 @@ def _measure_throughput(task,
     return totals[config['select']]
     
 
+def _write_runner_config(config, args):
+    config_path = os.path.join(args.pipeline_root,
+                        args.runner+".{}.{}".format(args.save_runner_config,"config.yml"))
+    with open(config_path,"w") as config_file:
+        yaml.dump(config,
+                  config_file,
+                  sort_keys=False)
+        
 def _write_workload(workload, target_dir, args):
 
     workload_path = os.path.join(target_dir,

@@ -85,7 +85,12 @@ class Runner(Handler):
                    if os.path.isfile(os.path.join(pipeline_root,filepath))
                    and (filepath.endswith(".config.yml") or filepath.endswith(".config.json")) ]
 
+        
+
         for runner_config in runners:
+
+            if (len(runner_config.split('.'))>3):
+                continue
 
             runner_name = os.path.splitext(os.path.splitext(runner_config)[0])[0]
 

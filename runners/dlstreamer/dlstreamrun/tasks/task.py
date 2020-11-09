@@ -361,11 +361,17 @@ class ObjectDetection(Task):
         
     def run(self):
         print(' '.join(self._commandargs))
-        with subprocess.Popen(self._commandargs) as process:
-            pass
-        
-        
-    
+        print("\n\n", flush=True)
+        launched = False
+        max_attempts = 5
+        while ((not launched) and max_attempts):
+            start = time.time()
+            with subprocess.Popen(self._commandargs) as process:
+                pass
+            if (time.time()-start > 10):
+                launched = True
+            else:
+                max_attempts -= 1
             
 class ObjectClassification(ObjectDetection, Task):
     supported_tasks = ["object-classification"]

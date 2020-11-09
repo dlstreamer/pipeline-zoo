@@ -88,15 +88,20 @@ def _get_parser(program_name="pipebench"):
                                  dest="overrides",
                                  default=[])
 
-    measure_parser.add_argument("--default-config",
-                                 action="store_true",
-                                 required=False,
-                                 default=False)
-
     measure_parser.add_argument("--runner-config",
                                 required=False,
                                 dest="runner_config",
                                 default="")
+
+    measure_parser.add_argument("--save-workload",
+                                required=False,
+                                dest="save_workload",
+                                default=None)
+    
+    measure_parser.add_argument("--save-runner-config",
+                                required=False,
+                                dest="save_runner_config",
+                                default=None)
 
     measure_parser.add_argument("--runner-override",
                                  action="append",
