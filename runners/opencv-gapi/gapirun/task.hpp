@@ -282,10 +282,6 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 			"element",
 			device_map[device]);
       
-      if (config["decode"]["element"].as<std::string>()=="avdec_h264") {
-	set_default(config["decode"],"max-threads","1");
-      }
-
       result << config["decode"]["element"] << " ";
 
       for (auto i : config["decode"]) {
@@ -311,13 +307,15 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 
     std::string _create_videoconvert() {
       std::ostringstream result;
-      result << "videoconvert n-threads=" << cv::getNumThreads();
+      auto config = this->_config["runner-config"];
+      set_default(config["convert"],"n-threads",cv::getNumThreads());
+      result << "videoconvert name=convert n-threads=" << config["convert"]["n-threads"];
       return result.str();
     }
     
     std::string _create_appsink() {
       std::ostringstream result;
-      result << "appsink sync=false emit-signals=false max-buffers=1";
+      result << "appsink sync=false emit-signals=false";
       return result.str();
     }
 

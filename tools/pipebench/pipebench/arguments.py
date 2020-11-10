@@ -125,6 +125,7 @@ def _get_parser(program_name="pipebench"):
 
     
     measure_parser.set_defaults(command=pipebench.commands.measure)
+    measure_parser.add_argument("--add-timestamp", action="store_true", dest="add_timestamp",default=False)
     measure_parser.add_argument("--no-redirect", action="store_false", dest="redirect",default=True)
     measure_parser.add_argument("--no-prepare-timeout", action="store_false", dest="prepare_timeout",default=True)    
     measure_parser.add_argument("--density", action="store_true", dest="density",default=False)

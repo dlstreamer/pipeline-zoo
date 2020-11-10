@@ -17,7 +17,9 @@ from util import print_action
 import shlex
 import shutil
 import subprocess
-
+import atexit
+import signal
+import psutil
 
 def print_args(args):
     heading = "Arguments for {}".format("pipebench")
@@ -43,14 +45,27 @@ def initialize(parser, args):
         
     load_tasks(args)
 
-            
-if __name__ == '__main__':
+def cleanup():
+    children = psutil.Process().children(recursive=True)
+    for child in children:
+        print("Terminating: {}".format(child))
+        child.terminate()
+    gone, alive = psutil.wait_procs(children,timeout=3)
+    for child in alive:
+        print("Killing: {}".format(child))
+        child.kill()        
 
-    args, parser = parse_args(program_name="pipe")
-    print_args(args)
-    initialize(parser, args)
-    args.pipelines = list_pipelines()
-    args.command(args)
+if __name__ == '__main__':
+    try:
+        os.setpgrp()
+        atexit.register(cleanup)
+        args, parser = parse_args(program_name="pipe")
+        print_args(args)
+        initialize(parser, args)
+        args.pipelines = list_pipelines()
+        args.command(args)
+    except(KeyboardInterrupt, SystemExit):
+        pass
     
     
   

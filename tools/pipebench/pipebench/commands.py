@@ -63,10 +63,15 @@ def measure(args):
 
     if ("density" in workload._document["measurement"]):
         measurements.append("density.{}fps".format(workload._namespace.measurement.density.fps))
+
+    timestamp = ""
     
+    if (args.add_timestamp):
+        timestamp = "_{}".format(int(time.time()))
+        
     target_dirs = [ os.path.join(args.pipeline_root,
                                  "measurements",
-                                 args.workload_name,
+                                 args.workload_name+timestamp,
                                  measurement,
                                  os.path.basename(runner_config_path).replace(".config.yml","").replace(".config.json",""))
                     for measurement in measurements]

@@ -34,9 +34,13 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     cmake \
     bash-completion \
     libyaml-cpp-dev \
-    nlohmann-json-dev \	
+    nlohmann-json-dev \
+    numactl \
+    libjemalloc-dev \
     python3 && \
     rm -rf /var/lib/apt/lists/*
+
+ENV LD_PRELOAD=libjemalloc
 
 # bash completion
 RUN echo -e "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then \n\

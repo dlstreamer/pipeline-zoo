@@ -392,7 +392,6 @@ class MediaSource(Thread):
                             self._stopped = True
                        
                 except BrokenPipeError as error:
-                    print(error)
                     print_action("Ended: pipebench memory source",
                                  ["Ended: {}".format(time.time()),
                                   "Frames Written: {}".format(count+1)])

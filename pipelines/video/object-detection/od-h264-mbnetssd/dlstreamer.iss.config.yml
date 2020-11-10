@@ -1,10 +1,11 @@
 run: python3 dlstreamrun
-detect:
-  cpu-throughput-streams: 2
-  nireq: 5
-  ie-config: CPU_THREADS_NUM=2,CPU_BIND_THREAD=NO
-  pre-process-backend: ie
-decode:
-  max-threads: 1
-  device: CPU
+density:
+  detect:
+    cpu-throughput-streams: 2
+    nireq: 5
+    ie-config: CPU_THREADS_NUM=2,CPU_BIND_THREAD=NO
+    pre-process-backend: ie
+  decode:
+    max-threads: 1
+    device: CPU
 models_root: /home/pipeline-zoo/workspace/od-h264-mbnetssd/models
