@@ -40,6 +40,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     python3 && \
     rm -rf /var/lib/apt/lists/*
 
+ENV LD_PRELOAD=libjemalloc.so
+
 # bash completion
 RUN echo -e "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then \n\
     . /etc/bash_completion \n\
@@ -89,8 +91,6 @@ COPY --from=MODEL_ZOO /model_proc /opt/intel/dl_streamer/samples/model_proc
 RUN rm -rf /opt/intel/dldt/open_model_zoo
 RUN mkdir -p /opt/intel/dldt
 COPY --from=MODEL_ZOO /open_model_zoo-2021.1 /opt/intel/dldt/open_model_zoo
-
-ENV LD_PRELOAD=libjemalloc
 
 # work dir
 WORKDIR /home/pipeline-zoo/workspace
