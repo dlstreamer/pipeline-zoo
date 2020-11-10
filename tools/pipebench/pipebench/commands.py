@@ -138,8 +138,9 @@ def download(args):
 
 
 def list_pipeline_runners(pipeline_path):
+
     for root, directories, files in os.walk(os.path.dirname(pipeline_path)):
-        return [path.replace(".config.yml","") for path in files if path.endswith(".config.yml")]
+        return [path.replace(".config.yml","") for path in files if path.endswith(".config.yml") and (len(path.split('.'))==3)]
 
 def list_pipelines(args):
 

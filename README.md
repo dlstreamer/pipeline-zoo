@@ -25,20 +25,31 @@
    ```
    Output:
    ```
-   pipebench list
    =======================
    Arguments for pipebench
    =======================
-	workspace_root == .
-	command == <function list_pipelines at 0x7fdbe4d65a60>
+	   workspace_root == .
+	   command == <function list_pipelines at 0x7f7ca1ce8488>
 
-	+------------------+------------------+---------------+
-	| pipeline         | task             | model         |
-	+==================+==================+===============+
-	| od-h264-yolov3   | object-detection | yolo-v3-tf    |
-	+------------------+------------------+---------------+
-	| od-h264-mbnetssd | object-detection | mobilenet-ssd |
-	+------------------+------------------+---------------+
+   +--------------------------+-----------------------+------------------------------------+----------------+
+   | Pipeline                 | Task                  | Models                             | Runners        |
+   +==========================+=======================+====================================+================+
+   | od-h264-yolov3           | object-detection      | yolo-v3-tf                         | dlstreamer     |
+   |                          |                       |                                    | mockrun        |
+   +--------------------------+-----------------------+------------------------------------+----------------+
+   | od-h264-people           | object-detection      | person-detection-retail-0013       | opencv-gapi    |
+   |                          |                       |                                    | dlstreamer     |
+   |                          |                       |                                    | mockrun        |
+   +--------------------------+-----------------------+------------------------------------+----------------+
+   | od-h264-mbnetssd         | object-detection      | mobilenet-ssd                      | opencv-gapi    |
+   |                          |                       |                                    | dlstreamer     |
+   |                          |                       |                                    | mockrun        |
+   +--------------------------+-----------------------+------------------------------------+----------------+
+   | oc-h264-face-age-emotion | object-classification | face-detection-adas-0001           | opencv-gapi    |
+   |                          |                       | age-gender-recognition-retail-0013 | dlstreamer     |
+   |                          |                       | emotions-recognition-retail-0003   | mockrun        |
+   +--------------------------+-----------------------+------------------------------------+----------------+
+   
    ```
    
 ### Download Pipeline
@@ -154,13 +165,13 @@ Expected Change in gst-launch
    
 Location:
 ```
- pipeline-zoo/workspace/od-h264-mbnetssd/runners/dlstreamer/results/default/throughput/default.gst-launch.sh
+ pipeline-zoo/workspace/od-h264-mbnetssd/measurements/person-bicyle-car-detection/throughput/dlstreamer/person-bicycle-car-detection.gst-launch.sh
 ```
 
 gst-launch command:
 
 ```
- gst-launch-1.0 filesrc location=/tmp/1510b74e-08ad-11eb-968e-1c697a06fd65/input ! video/x-h264 ! h264parse ! video/x-h264, stream-format=(string)byte-stream, alignment=(string)au, level=(string)4, profile=(string)high, width=(int)1920, height=(int)1080, framerate=(fraction)24/1, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive, chroma-format=(string)4:2:0, bit-depth-luma=(uint)8, bit-depth-chroma=(uint)8, parsed=(boolean)true ! avdec_h264 name=decode max-threads=1 ! gvadetect inference-interval=1 nireq=1 cpu-throughput-streams=5 name=detect model-proc=/home/pipeline-zoo/workspace/od-h264-mbnetssd/models/mobilenet-ssd/mobilenet-ssd.json model=/home/pipeline-zoo/workspace/od-h264-mbnetssd/models/mobilenet-ssd/FP32/mobilenet-ssd.xml ! gvametaconvert add-empty-results=true ! gvametapublish method=file file-format=json-lines file-path=/tmp/1510b74e-08ad-11eb-968e-1c697a06fd65/output ! gvafpscounter ! fakesink
+gst-launch-1.0 urisourcebin uri=file:///home/pipeline-zoo/workspace/od-h264-mbnetssd/media/video/person-bicycle-car-detection/person-bicycle-car-detection_1920_1080_2min.mp4 ! qtdemux ! parsebin ! avdec_h264 name=decode ! gvadetect name=detect model-proc=/home/pipeline-zoo/workspace/od-h264-mbnetssd/models/mobilenet-ssd/mobilenet-ssd.json model=/home/pipeline-zoo/workspace/od-h264-mbnetssd/models/mobilenet-ssd/FP32/mobilenet-ssd.xml ! gvametaconvert add-empty-results=true ! gvametapublish method=file file-format=json-lines file-path=/tmp/result.jsonl ! gvafpscounter ! fakesink
 ```
 
 ### Download second pipeline
@@ -216,11 +227,10 @@ Expected Output:
 |---------------| ---| 
 |`workspace/<pipeline_name>` | downloaded pipeline |
 |`workspace/<pipeline_name>/workloads` | generated reference data for workload | 
-|`workspace/<pipeline_name>/runners/<runner_name>`| runner applicaiton and configuration files |
-|`workspace/<pipeline_name>/runners/<runner_name>/results/<workload_name>/throughput` | throughput results |
-|`workspace/<pipeline_name>/runners/<runner_name>/results/<workload_name>/density` | density results |
-|`workspace/<pipeline_name>/runners/<runner_name>/results/<workload_name>/throughput/<workload_name>.gst-launch.sh` | runner command line |
-
+|`workspace/<pipeline_name>/runners/<runner_name>`| runner applications |
+|`workspace/<pipeline_name>/measurements/<workload_name>/throughput/<runner_name>` | throughput results |
+|`workspace/<pipeline_name>/measurements/<workload_name>/density.30fps/<runner-name>` | density results |
+|`workspace/<pipeline_name>/measurements/<workload_name>/throughput/dlstreamer/<workload_name>.gst-launch.sh` | gstlaunch command line |
 
 # [Additional Examples](./doc/examples.md)
 
