@@ -281,7 +281,7 @@ def _print_fps(runners, totals):
 
     template = "{stream} FPS:{stats.fps:04.4f} Min: {stats.min:04.4f} Max: {stats.max:04.4f} Avg: {stats.avg:04.4f}"
     output = []
-    for index, (source, sink, runner_process) in enumerate(runners):
+    for index, (source, sink, runner_process, _) in enumerate(runners):
         if (source.is_alive()):
             
             stats = sink.get_fps()
@@ -316,11 +316,22 @@ def _print_fps(runners, totals):
     if (output):
         print_action("Frames Per Second", output)
 
+known_return_codes = [-9, 0]
+def _check_return_codes(return_codes):
+    unknown_return = ["Return Code: {} Output Directory: {}".format(return_code[0],return_code[1])
+                      for return_code in return_codes if return_code[0] not in known_return_codes]
+    if (unknown_return):
+        print("Unknown Return Codes - Check Output Directory:\n\n\t{}".format(
+            "\n\t".join(unknown_return)))
+        sys.exit(1)
+
+
 def _wait_for_task(runners, duration):
     results = []
+    return_codes = []
     start = time.time()
     totals = {}
-    for (source, sink, runner_process) in runners:
+    for (source, sink, runner_process, run_directory) in runners:
         while((source.is_alive() and (not runner_process.poll()))
               and ((time.time()-start) < duration)):
             source.join(1)
@@ -331,13 +342,16 @@ def _wait_for_task(runners, duration):
             source.join()
         
         runner_process.kill()
-
+        runner_process.wait()
         sink.stop()
         if (sink.connected):
             sink.join()
         results.append(sink.get_fps())
+        return_codes.append((runner_process.returncode,run_directory))
+        
     if ("total" in totals):
         del totals["total"]
+    _check_return_codes(return_codes)
     return results, totals
 
 def _iteration_stats(iteration):
@@ -426,6 +440,9 @@ def _write_throughput_result(run_directory,
     with open(result_file_name,"w") as result_file:
         json.dump(result, result_file, indent=4)
 
+    if (config["select"] not in results):
+        return
+        
     table = {'Pipeline':workload.pipeline,
              'Runner':runner,
              'Media':workload._namespace.media,
@@ -494,11 +511,13 @@ def _measure_density(throughput,
         config["max-iterations"] = 1
     elif ("starting-streams" in config):
         num_streams = config["starting-streams"]
-    else:
+    elif throughput:
         # Use throughput to estimate stream density
         num_streams = min(config["max-streams"], math.floor(throughput / workload._document["measurement"]["density"]["fps"]))
         num_streams = max(config["min-streams"], num_streams)
-        
+    else:
+        print("No starting density specified and no throughput result")
+        sys.exit(1)
         
     print_action("Measuring Stream Density",[config])
 
@@ -545,7 +564,7 @@ def _measure_density(throughput,
 
             time.sleep(2)
 
-            runners.append((source,sink,runner))
+            runners.append((source,sink,runner,run_directory))
 
         results = _wait_for_task(runners, config["duration"]+(4*num_streams))
         success, density_result =_check_density(results, config)
@@ -601,13 +620,11 @@ def _measure_throughput(task,
                                     -1,
                                     config["sample-size"])
 
-    per_stream_results, totals = _wait_for_task([(source, sink, runner)],
-
+    per_stream_results, totals = _wait_for_task([(source, sink, runner,run_directory)],
                                                 config["duration"])
 
     _write_throughput_result(run_directory, workload, config, totals, args.runner)
-
-    return totals[config['select']]
+    return totals.get(config['select'],None)
     
 
 def _write_runner_config(config, args):
