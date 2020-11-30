@@ -84,8 +84,9 @@ def gst_launch(elements,vaapi=True):
     env = None
     print(os.getcwd())
     if not vaapi:
-        env = dict(os.environ)  
-        del env['GST_VAAPI_ALL_DRIVERS']
+        env = dict(os.environ)
+        if ("GST_VAAPI_ALL_DRIVERS" in env):            
+            del env['GST_VAAPI_ALL_DRIVERS']
        
     result = subprocess.run(commandargs, env=env, check=False)
     return result.returncode == 0

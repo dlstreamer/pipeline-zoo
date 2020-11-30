@@ -43,7 +43,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
 ENV LD_PRELOAD=libjemalloc.so
 
 # bash completion
-RUN echo -e "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then \n\
+RUN printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then \n\
     . /etc/bash_completion \n\
 fi\n" >> ~/.bashrc
 
@@ -54,11 +54,8 @@ RUN rm -f /requirements.txt
 RUN ln -s /home/pipeline-zoo/tools/pipebench/pipebench/__main__.py /usr/local/bin/pipebench
 ENV PYTHONPATH=$PYTHONPATH:/home/pipeline-zoo/tools/pipebench
 # Install bash-completion
-RUN echo 'eval "$(shtab --shell=bash pipebench.arguments._get_parser_shtab)"' \
+RUN printf 'eval "$(shtab --shell=bash pipebench.arguments._get_parser_shtab)"' \
   | tee "$(pkg-config --variable=completionsdir bash-completion)"/pipebench
-
-#RUN shtab  -u > ~/.pipebench.completion.bash
-#RUN echo -e "\nsource ~/.pipebench.completion.bash \n" >> ~/.bashrc
 
 # systeminfo
 COPY ./systeminfo/requirements.txt /

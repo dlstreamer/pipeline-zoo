@@ -193,6 +193,7 @@ show_help() {
     echo "  [--base-build-arg additional build args to pass to docker build for base image]"
     echo "  [--base-build-context context of docker build for base image]"
     echo "  [--base-build-dockerfile dockerfile used to build base image]"
+    echo "  [--tag tag for image]"
     echo "  [--target build a specific target]"
     echo "  [--dockerfile-dir specify a different dockerfile directory]"
     echo "  [--environment-file read and set environment variables from a file. Can be supplied multiple times.]"
