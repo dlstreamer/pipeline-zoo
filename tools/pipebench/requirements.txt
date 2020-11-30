@@ -3,3 +3,5 @@ ffmpeg-python
 jsonschema
 shtab
 tabulate
+pyyaml
+psutil
