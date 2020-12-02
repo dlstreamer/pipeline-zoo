@@ -56,6 +56,7 @@ def cleanup():
         child.kill()        
 
 if __name__ == '__main__':
+    parser = None
     try:
         os.setpgrp()
         atexit.register(cleanup)
@@ -67,5 +68,9 @@ if __name__ == '__main__':
     except(KeyboardInterrupt, SystemExit):
         pass
     
-    
-  
+    except Exception as error:
+        if (parser):
+            parser.error("\n\n{}\n\n".format(error))
+        else:
+            print("\n\n{}\n\n".format(error))
+         

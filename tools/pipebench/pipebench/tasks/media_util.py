@@ -366,6 +366,9 @@ class MediaSource(Thread):
             
         super().__init__(*args, **kwargs)
 
+        if (not self._frames):
+            raise Exception("No input found please regenerate using --force")
+
     def stop(self):
         self._stopped = True
     
