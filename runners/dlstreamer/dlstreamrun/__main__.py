@@ -51,5 +51,9 @@ if __name__ == '__main__':
 
     task.start()
     task.join()
-    
+
+    if (task.completed):
+        sys.exit(task.completed.returncode)
+    else:
+        sys.exit(-1)
     

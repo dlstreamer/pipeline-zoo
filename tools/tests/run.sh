@@ -75,7 +75,7 @@ get_options "$@"
 
 #If tag is not used, set VA_SERVING_TAG to default
 if [ -z "$IMAGE" ]; then
-  IMAGE=media-analytics-pipeline-zoo-bench:latest
+  IMAGE=media-analytics-pipeline-zoo:latest
 fi
 
 $WORK_DIR/../docker/run.sh --image $IMAGE  \

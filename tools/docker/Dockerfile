@@ -4,17 +4,25 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 ARG BASE=openvino/ubuntu18_data_dev:2021.1
+ARG PIPELINE_ZOO_PLATFORM=DEFAULT
 FROM ubuntu:18.04 as MODEL_ZOO
+ARG MODEL_PROC_VERSION=v1.2.1
+ARG MODEL_ZOO_VERSION=2021.1
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y -q --no-install-recommends \
     ca-certificates \
     wget
 
-RUN sh -c "wget https://github.com/opencv/gst-video-analytics/archive/v1.2.1.tar.gz &&  tar -xzf v1.2.1.tar.gz -C / --strip-components 2 --wildcards "*/samples/model_proc/*""
-RUN wget https://github.com/openvinotoolkit/open_model_zoo/archive/2021.1.tar.gz && tar -xzf 2021.1.tar.gz -C /
+RUN sh -c "wget https://github.com/opencv/gst-video-analytics/archive/${MODEL_PROC_VERSION}.tar.gz &&  tar -xzf ${MODEL_PROC_VERSION}.tar.gz -C / --strip-components 2 --wildcards "*/samples/model_proc/*""
+RUN wget https://github.com/openvinotoolkit/open_model_zoo/archive/${MODEL_ZOO_VERSION}.tar.gz && mkdir /open_model_zoo && tar -xzf ${MODEL_ZOO_VERSION}.tar.gz -C /open_model_zoo --strip-components 1 
 
-FROM ${BASE} as media-analytics-pipeline-zoo-bench
+FROM ${BASE} as media-analytics-pipeline-zoo
+ARG BASE=openvino/ubuntu18_data_dev:2021.1
+ARG PIPELINE_ZOO_PLATFORM=DEFAULT
+
+ENV PIPELINE_ZOO_PLATFORM=$PIPELINE_ZOO_PLATFORM
+ENV PIPELINE_ZOO_BASE_IMAGE=$BASE
 
 USER root
 
@@ -87,7 +95,7 @@ COPY --from=MODEL_ZOO /model_proc /opt/intel/dl_streamer/samples/model_proc
 # model zoo
 RUN rm -rf /opt/intel/dldt/open_model_zoo
 RUN mkdir -p /opt/intel/dldt
-COPY --from=MODEL_ZOO /open_model_zoo-2021.1 /opt/intel/dldt/open_model_zoo
+COPY --from=MODEL_ZOO /open_model_zoo /opt/intel/dldt/open_model_zoo
 
 # work dir
 WORKDIR /home/pipeline-zoo/workspace

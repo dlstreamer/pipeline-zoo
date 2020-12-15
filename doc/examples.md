@@ -1,5 +1,7 @@
 # Examples
 
+## [Running on VCAC-A](/doc/vcac-a.md)
+
 ## OpenCV-GAPI Runner
 
 ### Download object detection mobilenet ssd

@@ -5,11 +5,15 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
+# Platforms
+declare -A PLATFORMS=(["VCAC-A"]=1 ["DEFAULT"]=2)
+PLATFORM=DEFAULT
+
 IMAGE=
 VOLUME_MOUNT=
 PORTS=
 DEVICES=
-DEFAULT_IMAGE="media-analytics-pipeline-zoo-bench"
+DEFAULT_IMAGE="media-analytics-pipeline-zoo"
 ENTRYPOINT=
 ENTRYPOINT_ARGS=
 PRIVILEGED=
@@ -31,6 +35,14 @@ get_options() {
         -h | -\? | --help)
             show_help # Display a usage synopsis.
             exit
+            ;;
+	--platform)
+            if [ "$2" ]; then
+                PLATFORM=$2
+                shift
+            else
+                error 'ERROR: "--platform" requires an argument.'
+            fi
             ;;
         --image) # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
@@ -135,8 +147,18 @@ get_options() {
         shift
     done
 
+    if [ ! -z "$PLATFORM" ]; then
+	PLATFORM=${PLATFORM^^}
+	if [[ ! -n "${PLATFORMS[$PLATFORM]}" ]]; then
+	    error 'ERROR: Unknown platform: ' $PLATFORM
+	fi
+    fi
+
     if [ -z "$IMAGE" ]; then
         IMAGE=$DEFAULT_IMAGE
+	if [ ! -z "$PLATFORM" ] && [ $PLATFORM != 'DEFAULT' ]; then
+	    IMAGE+="-${PLATFORM,,}"
+	fi
     fi
 
     if [ -z "$NAME" ]; then
@@ -186,6 +208,7 @@ get_options "$@"
 
 VOLUME_MOUNT+="-v $SOURCE_DIR:/home/pipeline-zoo/ "
 VOLUME_MOUNT+="-v /tmp:/tmp "
+VOLUME_MOUNT+="-v /var/tmp:/var/tmp "
 VOLUME_MOUNT+="-v /dev:/dev "
 VOLUME_MOUNT+="-v /lib/modules:/lib/modules "
 VOLUME_MOUNT+="-v $HOME/.Xauthority:/root/.Xauthority "

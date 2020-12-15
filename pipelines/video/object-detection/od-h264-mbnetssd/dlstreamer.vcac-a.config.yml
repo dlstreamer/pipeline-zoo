@@ -1,0 +1,11 @@
+run: python3 dlstreamrun
+detect:
+  device: HDDL
+  nireq: 100
+decode:
+  post-proc-caps: video/x-raw,height=300,width=300,format=BGRx
+  device: GPU
+detect-queue:
+  enabled: true
+decode-queue:
+  enabled: true

@@ -1,0 +1,14 @@
+# Runner specific configuration
+
+run: "gapirun/build/gapirun"
+
+decode:
+  max-threads: 1
+convert:
+  n-threads: 1
+detect:
+  device: CPU
+classify-0:
+  device: CPU
+classify-1:
+  device: CPU

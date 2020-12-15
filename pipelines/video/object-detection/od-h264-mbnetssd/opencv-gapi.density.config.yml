@@ -4,3 +4,8 @@ run: "gapirun/build/gapirun"
 
 detect:
   device: CPU
+
+decode:
+  max-threads: 1
+convert:
+  n-threads: 1

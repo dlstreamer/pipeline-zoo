@@ -27,6 +27,43 @@ from tabulate import tabulate
 import tempfile
 from statistics import mean
 
+def _get_runner_config_path(measurement, workload, args):
+
+    candidates = []
+    template = os.path.join(args.workspace_root,
+                            workload.pipeline,
+                            "{runner}{platform}{config}.config.{extension}")
+    
+    configs = []
+    if (args.runner_config):
+        configs.append(args.runner_config)
+    else:
+        configs.append(measurement)
+        configs.append(None)
+
+    platforms = []
+    if (args.platform):
+        platforms.append(args.platform)
+    else:
+        platforms.append(None)
+
+    for config in configs:
+        for platform in platforms:
+            candidates.append(template.format(runner = args.runner,
+                                              config = ".{}".format(config) if config else "",
+                                              platform = ".{}".format(platform) if platform else "",
+                                              extension = "yml"))
+            candidates.append(template.format(runner = args.runner,
+                                              config = ".{}".format(config) if config else "",
+                                              platform = ".{}".format(platform) if platform else "",
+                                              extension = "json"))
+    for candidate in candidates:
+        if os.path.isfile(candidate):
+            return candidate
+        
+    args.parser.error("Runner config not found in workspace, candidates: {}".format(candidates,))
+       
+    
 def measure(args):
 
     if (not args.workload):
@@ -44,19 +81,11 @@ def measure(args):
         workload = _load_workload(args)
     task = Task.create_task(workload, args)
     _prepare(task, workload, args)
+
+    target_dir_suffix = "{runner}{platform}{config}".format(runner = args.runner,
+                                                            platform = ".{}".format(args.platform) if args.platform else "",
+                                                            config = ".{}".format(args.runner_config) if args.runner_config else "")
     
-    
-    # load runner config
-    
-    runner_config_path = os.path.join(args.workspace_root,
-                                      workload.pipeline,
-                                      "{}{}.config.yml".format(args.runner,
-                                                               ".{}".format(args.runner_config) if args.runner_config else ""))
-    
-    if ( (not os.path.isfile(runner_config_path)) and
-         (os.path.isfile(runner_config_path.replace("yml","json")))):
-        runner_config_path = runner_config_path.replace("yml","json")
-        
     # create output folder for runner
 
     measurements = ["throughput"]
@@ -73,7 +102,7 @@ def measure(args):
                                  "measurements",
                                  args.workload_name+timestamp,
                                  measurement,
-                                 os.path.basename(runner_config_path).replace(".config.yml","").replace(".config.json",""))
+                                 target_dir_suffix)
                     for measurement in measurements]
 
 
@@ -100,36 +129,41 @@ def measure(args):
                            or previous_throughput) and (not args.throughput):
         throughput = previous_throughput
     elif ("throughput" in workload._document["measurement"]):
-        runner_config = validate(runner_config_path, args.schemas)
-        if ("throughput" in runner_config):
-            runner_config.update(runner_config["throughput"])
-            runner_config.pop("throughput")
-            
-        apply_overrides(runner_config,args.runner_overrides)
-        
+        runner_config_path = _get_runner_config_path("throughput",
+                                                     workload,
+                                                     args)
+        runner_config = validate(runner_config_path, args.schemas, args.runner_overrides)
+
+        if (args.save_runner_config and runner_config):
+            _write_runner_config(runner_config, args)
+                    
         throughput = _measure_throughput(task,
                                          workload,
                                          args,
                                          target_dirs[0],
                                          runner_config)
+        if (not throughput):
+            print("No throughput calculated. Check pipeline runner logs for errors.")
         
     if ("density" in workload._document["measurement"]):
-        runner_config = validate(runner_config_path, args.schemas)
-        if ("density" in runner_config):
-            runner_config.update(runner_config["density"])
-            runner_config.pop("density")
+        runner_config_path = _get_runner_config_path("density",
+                                                     workload,
+                                                     args)
+        runner_config = validate(runner_config_path, args.schemas, args.runner_overrides)
+
+        if (args.save_runner_config and runner_config):
+            _write_runner_config(runner_config, args)
+
             
-        apply_overrides(runner_config,args.runner_overrides)
-  
         density = _measure_density(throughput,
                                    task,
                                    workload,
                                    args,
                                    target_dirs[1],
                                    runner_config)
-
-    if (args.save_runner_config and runner_config):
-        _write_runner_config(runner_config, args)
+        if (not density):
+            print("No density calculated. Check pipeline runner logs for errors.")
+      
 
 
 def download(args):
@@ -321,7 +355,7 @@ def _check_return_codes(return_codes):
     unknown_return = ["Return Code: {} Output Directory: {}".format(return_code[0],return_code[1])
                       for return_code in return_codes if return_code[0] not in known_return_codes]
     if (unknown_return):
-        print("Unknown Return Codes - Check Output Directory:\n\n\t{}".format(
+        print("Error - Check Output Directory:\n\n\t{}".format(
             "\n\t".join(unknown_return)))
         sys.exit(1)
 
@@ -591,6 +625,7 @@ def _measure_density(throughput,
                           config,
                           iteration_results,
                           args.runner)
+    return density
 
 def _read_existing_throughput(target_dir, args):
     path = os.path.join(target_dir,"result.json")
@@ -629,7 +664,10 @@ def _measure_throughput(task,
 
 def _write_runner_config(config, args):
     config_path = os.path.join(args.pipeline_root,
-                        args.runner+".{}.{}".format(args.save_runner_config,"config.yml"))
+                               args.runner+"{}.{}.{}".format(
+                                   ".{}".format(args.platform) if args.platform else "",
+                                   args.save_runner_config,
+                                   "config.yml"))
     with open(config_path,"w") as config_file:
         yaml.dump(config,
                   config_file,

@@ -88,6 +88,11 @@ def _get_parser(program_name="pipebench"):
                                  dest="overrides",
                                  default=[])
 
+    measure_parser.add_argument("--platform",
+                                required=False,
+                                dest="platform",
+                                default="")
+
     measure_parser.add_argument("--runner-config",
                                 required=False,
                                 dest="runner_config",

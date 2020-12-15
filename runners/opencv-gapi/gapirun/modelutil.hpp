@@ -7,6 +7,20 @@ using json = nlohmann::json;
 
 namespace modelutil {
 
+  inline bool starts_with(std::string const & value, std::string const & beginning)
+  {
+    if (beginning.size() > value.size()) return false;
+    return std::equal(beginning.begin(), beginning.end(), value.begin());
+  }
+
+  
+  inline bool ends_with(std::string const & value, std::string const & ending)
+  {
+    if (ending.size() > value.size()) return false;
+    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+  }
+
+
   struct ModelIR {
     std::string xml;
     std::string bin;
@@ -27,7 +41,9 @@ namespace modelutil {
     
     template<class T>
     cv::gapi::ie::Params<T>params(std::string const &device) {
-      auto precision = device_to_precision[device];
+      
+      auto precision = starts_with(device,"MULTI") ? device_to_precision["MULTI"] : device_to_precision[device];
+
       return cv::gapi::ie::Params<T> {
 	this->precisions[precision].xml,   
 	  this->precisions[precision].bin,   
@@ -37,7 +53,9 @@ namespace modelutil {
   };
 
   std::map<const std::string, const std::string> ModelParameters::device_to_precision= { {"CPU","FP32"},
-											 {"GPU","FP16"}};
+											 {"GPU","FP16"},
+											 {"HDDL","FP16"},
+											 {"MULTI","FP16"} };
 
   
   std::ostream&operator<<(std::ostream&strm, const ModelParameters&item) {
@@ -52,13 +70,7 @@ namespace modelutil {
     
     return strm;
   }
-  
-  
-  inline bool ends_with(std::string const & value, std::string const & ending)
-  {
-    if (ending.size() > value.size()) return false;
-    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
-  }
+
   
   void find_model_ir(std::string models_root,
 		     const std::string &model_name,

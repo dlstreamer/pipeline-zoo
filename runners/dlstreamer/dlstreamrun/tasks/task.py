@@ -177,13 +177,23 @@ def number_of_physical_threads(systeminfo):
 def intel_gpu(systeminfo):
     return ("gpu" in systeminfo and "Intel" in systeminfo["gpu"]["Device name"])
 
-def decode_properties(config, model, _input, systeminfo):
+def queue_properties(config, model, systeminfo):
+    result = ""
+
+    if (config["enabled"]):
+        properties = ["{}={}".format(key,value) for key,value in config.items() if key != "element" and key != "enabled"]
+
+        result = "{} {}".format(config["element"],
+                                  " ".join(properties))
+    return result
+
+def decode_properties(config, queue_config, model, _input, systeminfo):
 
     media_type_map = defaultdict(lambda:{"CPU":"decodebin","GPU":"vaapidecodebin"},
                                  {"video/x-h264": {"CPU":"avdec_h264", "GPU":"vaapih264dec"}})
 
     result = config
-    
+    post_proc = ""
     if intel_gpu(systeminfo):
         result.setdefault("device", "GPU")
     else:
@@ -195,27 +205,35 @@ def decode_properties(config, model, _input, systeminfo):
     result.setdefault("name", "decode")
 
     if result["element"]=="vaapih264dec":
-        result.setdefault("low-latency", "true")
         if ("max-threads" in result):
             result.pop("max-threads")
 
-    properties = ["{}={}".format(key,value) for key,value in result.items() if key != "element" and key!="device"]
+    if "post-proc-caps" in result:
+        if result["device"] == "GPU":
+            post_proc = " ! vaapipostproc ! {}".format(result["post-proc-caps"])
+        elif result["device"] == "CPU":
+            post_proc = " ! videoconvert ! videoscale ! {}".format(result["post-proc-caps"])
+
+    queue_name = "decode-queue"
+    queue_config.setdefault("element", "queue")
+    queue_config.setdefault("name", queue_name)
+    queue_config.setdefault("enabled", False)
+
+    decode_queue_properties = queue_properties(queue_config,
+                                               None,
+                                               systeminfo)
+    if (decode_queue_properties):
+        decode_queue_properties=" ! {}".format(decode_queue_properties)
+    properties = ["{}={}".format(key,value) for key,value in result.items() if key != "element" and key!="device" and key!="post-proc-caps"]
     
-    template = "{} {}".format(result["element"],
-                                     " ".join(properties))
+    template = "{} {} {}{}".format(result["element"],
+                                  " ".join(properties),
+                                  decode_queue_properties,
+                                  post_proc)
 
     return template
 
 
-def queue_properties(config, model, systeminfo):
-    result = ""
-
-    if (config["enabled"]):
-        properties = ["{}={}".format(key,value) for key,value in config.items() if key != "element" and key != "enabled"]
-
-        result = "{} {}".format(config["element"],
-                                  " ".join(properties))
-    return result
 
         
 def inference_properties(config, model, systeminfo):
@@ -236,7 +254,17 @@ def inference_properties(config, model, systeminfo):
         #result.setdefault("cpu-throughput-streams",threads)
         result.setdefault("model",model.FP32.xml)
 
-    properties = ["{}={}".format(key,value) for key,value in result.items() if key != "element" and key != "device" and key != "enabled"]
+    if (result["device"]=="HDDL"):
+        result.setdefault("model",model.FP16.xml)
+
+    if (result["device"]=="GPU"):
+        result.setdefault("model",model.FP16.xml)
+
+    if ("MULTI" in result["device"]):
+        result.setdefault("model",model.FP16.xml)
+
+    
+    properties = ["{}={}".format(key,value) for key,value in result.items() if key != "element" and key != "enabled"]
     
     template = "{} {}".format(result["element"],
                                      " ".join(properties))
@@ -274,7 +302,7 @@ class ObjectDetection(Task):
                 classify_config.setdefault("name",element_name)
                 classify_config.setdefault("enabled", True)
 
-                queue_name = "queue-classify-{}".format(index)
+                queue_name = "classify-{}-queue".format(index)
                 queue_config = self._runner_config.setdefault(queue_name,{})
                 queue_config.setdefault("element", "queue")
                 queue_config.setdefault("name", queue_name)
@@ -312,12 +340,28 @@ class ObjectDetection(Task):
         self._runner_config["detect"].setdefault("element","gvadetect")
         self._runner_config["detect"].setdefault("name","detect")
         self._runner_config["detect"].setdefault("enabled",True)
+
+        queue_name = "detect-queue"
+        queue_config = self._runner_config.setdefault(queue_name,{})
+        queue_config.setdefault("element", "queue")
+        queue_config.setdefault("name", queue_name)
+        queue_config.setdefault("enabled", False)
+        
+        self._detect_queue_properties = queue_properties(queue_config,
+                                                         self._model,
+                                                         self._my_args.systeminfo)
+        
         self._detect_properties = inference_properties(self._runner_config["detect"],
                                                        self._model,
                                                        self._my_args.systeminfo)
 
         self._runner_config.setdefault("decode", {"device":"CPU"})
+
+        queue_name = "decode-queue"
+        queue_config = self._runner_config.setdefault(queue_name,{})
+
         self._decode_properties = decode_properties(self._runner_config["decode"],
+                                                    self._runner_config["decode-queue"],
                                                     self._model,
                                                     self._piperun_config["inputs"][0],
                                                     self._my_args.systeminfo)
@@ -329,6 +373,7 @@ class ObjectDetection(Task):
         self._elements = [self._src_element,
                           self._piperun_config["inputs"][0]["caps"],
                           self._decode_properties,
+                          self._detect_queue_properties,
                           self._detect_properties,
                           self._classify_properties,
                           self._sink_element]
@@ -337,6 +382,7 @@ class ObjectDetection(Task):
                                "qtdemux",
                                "parsebin",
                                self._decode_properties,
+                               self._detect_queue_properties,
                                self._detect_properties,
                                self._classify_properties,
                                "gvametaconvert add-empty-results=true ! gvametapublish method=file file-format=json-lines file-path=/tmp/result.jsonl ! gvafpscounter ! fakesink"
@@ -354,8 +400,9 @@ class ObjectDetection(Task):
         command_path = os.path.join(dirname,
                                  basename.replace('piperun.yml',"gst-launch.sh"))
         with open(command_path,"w") as command_file:
-            command_file.write("{}\n".format(' '.join(standalone_args)))
+            command_file.write("{}\n".format(' '.join(standalone_args).replace('(','\(').replace(')','\)')))
         os.chmod(command_path,stat.S_IXGRP | stat.S_IXOTH | stat.S_IEXEC | stat.S_IWUSR | stat.S_IROTH | stat.S_IRUSR)
+        self.completed = None
         super().__init__(piperun_config, args, *pos_args, **keywd_args)
 
         
@@ -364,14 +411,15 @@ class ObjectDetection(Task):
         print("\n\n", flush=True)
         launched = False
         max_attempts = 5
+        completed = None
         while ((not launched) and max_attempts):
             start = time.time()
-            with subprocess.Popen(self._commandargs) as process:
-                pass
+            completed = subprocess.run(self._commandargs)
             if (time.time()-start > 10):
                 launched = True
             else:
                 max_attempts -= 1
+        self.completed = completed
             
 class ObjectClassification(ObjectDetection, Task):
     supported_tasks = ["object-classification"]

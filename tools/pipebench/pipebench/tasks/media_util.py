@@ -127,9 +127,11 @@ def create_reference(source_dir, target_dir, media_type, models, output_caps = N
                                                                          source_media_type.frame_extension,
                                                                          caps)
 
-    decode = "decodebin sink-caps=\"{}\"".format(caps)
+    if "PIPELINE_ZOO_PLATFORM" in os.environ and os.environ["PIPELINE_ZOO_PLATFORM"]=="VCAC_A":
+        decode = "avdec_h264 "
+    else:
+        decode = "decodebin sink-caps=\"{}\"".format(caps)
 
-    
     detect = _create_inference_elements(models,"detect")
 
     classify = _create_inference_elements(models,"classify")
