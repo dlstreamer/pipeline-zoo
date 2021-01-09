@@ -12,15 +12,15 @@ declare -A PLATFORMS=(["VCAC-A"]=1 ["DEFAULT"]=2)
 PLATFORM=DEFAULT
 
 # Base Images
-VCAC_A_BASE_IMAGE=openvino/ubuntu18_data_dev:2020.2
+VCAC_A_BASE_IMAGE=openvino/ubuntu18_data_dev:2021.2
 DEFAULT_BASE_IMAGE=openvino/ubuntu18_data_dev:2021.1
 
 # Model Zoo Versions
-VCAC_A_MODEL_ZOO_VERSION=2020.2
+VCAC_A_MODEL_ZOO_VERSION=2021.2
 DEFAULT_MODEL_ZOO_VERSION=2021.1
 
 # Model Proc Versions
-VCAC_A_MODEL_PROC_VERSION=v1.0.0
+VCAC_A_MODEL_PROC_VERSION=v1.3
 DEFAULT_MODEL_PROC_VERSION=v1.2.1
 
 DOCKERFILE_DIR=$(dirname "$(readlink -f "$0")")
@@ -141,7 +141,7 @@ show_image_options() {
 show_help() {
     echo "usage: build.sh"
     echo "  [--base base image]"
-    echo "  [--platform platform one of  ${PLATFORMS}]"
+    echo "  [--platform platform one of ${!PLATFORMS[@]}]"
     echo "  [--build-arg additional build args to pass to docker build]"
     echo "  [--tag tag for image]"
     echo "  [--dockerfile-dir specify a different dockerfile directory]"
