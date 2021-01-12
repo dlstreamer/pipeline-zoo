@@ -36,7 +36,7 @@ class FrameInfo:
             pass
         
         with open(path,"w") as file:
-            value = {'caps':str(frame.caps),
+            value = {'caps':str(frame.caps.to_string()),
                      'source':self._source}
             file.write(json.dumps(value))
             file.flush()
