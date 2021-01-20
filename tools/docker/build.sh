@@ -13,15 +13,15 @@ PLATFORM=DEFAULT
 
 # Base Images
 VCAC_A_BASE_IMAGE=openvino/ubuntu18_data_dev:2021.2
-DEFAULT_BASE_IMAGE=openvino/ubuntu18_data_dev:2021.1
+DEFAULT_BASE_IMAGE=openvino/ubuntu18_data_dev:2021.2
 
 # Model Zoo Versions
 VCAC_A_MODEL_ZOO_VERSION=2021.2
-DEFAULT_MODEL_ZOO_VERSION=2021.1
+DEFAULT_MODEL_ZOO_VERSION=2021.2
 
 # Model Proc Versions
 VCAC_A_MODEL_PROC_VERSION=v1.3
-DEFAULT_MODEL_PROC_VERSION=v1.2.1
+DEFAULT_MODEL_PROC_VERSION=v1.3
 
 DOCKERFILE_DIR=$(dirname "$(readlink -f "$0")")
 SOURCE_DIR=$(dirname $DOCKERFILE_DIR)
@@ -49,6 +49,22 @@ get_options() {
                 shift
             else
                 error 'ERROR: "--base" requires an argument.'
+            fi
+            ;;
+	--model-proc-version)
+            if [ "$2" ]; then
+                MODEL_PROC_VERSION=$2
+                shift
+            else
+                error 'ERROR: "--model_proc_version" requires an argument.'
+            fi
+            ;;
+	--model-zoo-version)
+            if [ "$2" ]; then
+                MODEL_ZOO_VERSION=$2
+                shift
+            else
+                error 'ERROR: "--model_zoo_version" requires an argument.'
             fi
             ;;
         --build-arg)
@@ -107,12 +123,18 @@ get_options() {
 	    error 'ERROR: Unknown platform: ' $PLATFORM
 	fi
 	PLATFORM_PREFIX=${PLATFORM//-/_}
-	BASE_IMAGE=${PLATFORM_PREFIX}_BASE_IMAGE
-	BASE_IMAGE=${!BASE_IMAGE}
-	MODEL_ZOO_VERSION=${PLATFORM_PREFIX}_MODEL_ZOO_VERSION
-	MODEL_ZOO_VERSION=${!MODEL_ZOO_VERSION}
-	MODEL_PROC_VERSION=${PLATFORM_PREFIX}_MODEL_PROC_VERSION
-	MODEL_PROC_VERSION=${!MODEL_PROC_VERSION}
+	if [ -z "$BASE_IMAGE" ]; then
+	    BASE_IMAGE=${PLATFORM_PREFIX}_BASE_IMAGE
+	    BASE_IMAGE=${!BASE_IMAGE}
+	fi
+	if [ -z "$MODEL_ZOO_VERSION" ]; then
+	    MODEL_ZOO_VERSION=${PLATFORM_PREFIX}_MODEL_ZOO_VERSION
+	    MODEL_ZOO_VERSION=${!MODEL_ZOO_VERSION}
+	fi
+	if [ -z "$MODEL_PROC_VERSION" ]; then
+	    MODEL_PROC_VERSION=${PLATFORM_PREFIX}_MODEL_PROC_VERSION
+	    MODEL_PROC_VERSION=${!MODEL_PROC_VERSION}
+	fi
     fi
 
     if [ -z "$TAG" ]; then
