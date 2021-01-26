@@ -32,16 +32,40 @@ class Media(Handler):
             if (media_info['format']['format_long_name'] in long_formats):
                 return media_type
 
-    def _create_sample_frame(self,media_filename, directory):
-        output_filename = os.path.join(directory,"sample_frame.png")
+    def _create_preview(self,media_filename, directory):
+   
+        palette = os.path.join(directory, "palette.png")
         (
             ffmpeg
-            .input(media_filename,ss=5)
+            .input(media_filename,t=5)
+            .filter('fps',12)
             .filter('scale',500,-1)
-            .output(output_filename,vframes=1)
+            .filter('palettegen')
+            .output(palette)
             .run()
         )
-        return output_filename
+
+        stream = (
+            ffmpeg
+            .input(media_filename,t=5)
+            .filter('fps',12)
+            .filter('scale',500,-1)
+        )
+
+        palette_input = (
+            ffmpeg
+            .input(palette)
+        )
+
+        output_gif = os.path.join(directory, "preview.gif")
+        (
+            ffmpeg
+            .filter((stream,palette_input),"paletteuse")
+            .output(output_gif)
+            .run()
+        )
+        os.remove(palette)
+        return output_gif
     
     def prepare(self):
 
@@ -56,10 +80,10 @@ class Media(Handler):
         media_filename = os.path.join(directory,basename)
         shutil.copyfile(self._args.source,media_filename)
 
-        sample_frame_filename = self._create_sample_frame(media_filename,directory)
+        preview = self._create_preview(media_filename,directory)
         
         readme = mdutils.MdUtils(file_name=os.path.join(directory,"README.md"),title=os.path.basename(subdirectory))
-        readme.new_line(readme.new_inline_image("Sample",os.path.basename(sample_frame_filename)))
+        readme.new_line(readme.new_inline_image("Preview",os.path.basename(preview)))
         readme.create_md_file()
         
         
