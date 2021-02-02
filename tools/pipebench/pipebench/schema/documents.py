@@ -278,6 +278,7 @@ class WorkloadConfig(Document):
         
         self.pipeline = args.pipeline
 
+        self.scenario = self._namespace.scenario
         
         
         

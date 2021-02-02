@@ -32,11 +32,12 @@ def run_cmd(cmd_str):
 
 
 # todo validate against measurement schema        
-def check_measurement(pipeline, measurement):
+def check_measurement(pipeline, measurement, scenario="memory"):
     pipeline_root = os.path.join(test_workspace, pipeline)
     results_path = os.path.join(pipeline_root,
                                 "measurements",
                                 "person-bicycle-car-detection",
+                                scenario,
                                 measurement,
                                 "dlstreamer",
                                 "result.json")

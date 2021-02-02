@@ -8,7 +8,7 @@ import shutil
 from pipebench.util import create_directory
 from pipebench.util import print_action
 from pipebench.tasks.task import Task
-from pipebench.tasks.media_util import create_encoded_frames
+from pipebench.tasks.media_util import create_encoded_stream
 import pipebench.tasks.media_util as media_util
 from .media_util import create_reference
 from .media_util import find_media
@@ -37,7 +37,7 @@ class ObjectDetection(Task):
         self._pipeline = pipeline
         self._args = args
         self._fps_stats = None
-            
+        
     def _create_piperun_config(self, run_root, runner_config):
         piperun_config = {"pipeline":self._pipeline._document}
         filename = "{}.piperun.yml".format(self._args.workload_name)
@@ -45,9 +45,18 @@ class ObjectDetection(Task):
         pipe_directory = os.path.join("/tmp",str(pipe_uuid))
         create_directory(pipe_directory)
 
-        self._input_caps = read_caps(os.path.join(self._args.workload_root,"input"))["caps"]
-        self._input_path = "{}/input".format(pipe_directory)
-        self._input_uri = "pipe://{}".format(self._input_path)
+        if (self._workload.scenario.source=="memory"):
+            self._input_caps = read_caps(os.path.join(self._args.workload_root,"input"))["caps"]
+            self._input_path = "{}/input".format(pipe_directory)
+            self._input_uri = "pipe://{}".format(self._input_path)
+        elif (self._workload.scenario.source=="disk"):
+            self._input_caps = read_caps(os.path.join(self._args.workload_root,"input"))["caps"].split(',')[0]
+            self._input_path = os.path.join(self._args.workload_root,
+                                            "input",
+                                            "stream.{}".format(ObjectDetection.caps_to_extension[self._input_caps]))
+            self._input_uri = "file://{}".format(self._input_path)
+
+            
         input = {"uri":self._input_uri,
                  "caps":self._input_caps,
                  "source":find_media(self._workload.media,self._pipeline.pipeline_root)}
@@ -80,6 +89,31 @@ class ObjectDetection(Task):
             
         return piperun_config_path
 
+    def _get_models(self):
+        models = SimpleNamespace()
+
+        detection_model = self._pipeline._document.get("detection-model",None)
+
+        if not detection_model:
+            detection_model = self._pipeline._document.get("model",None)
+                
+        detection_model = find_model(detection_model,
+                                     self._pipeline.pipeline_root,
+                                     self._args)
+        
+        models.detect = [detection_model]
+        models.classify = []
+
+        classification_models = self._pipeline._document.get("classification-models",[])
+        
+        for classification_model in classification_models:
+            if isinstance(classification_model,list):
+                raise Exception("Dependent classification not supported!")
+            models.classify.append(find_model(classification_model,
+                                              self._pipeline.pipeline_root,
+                                              self._args))
+        return models
+
                                
     def run(self,
             run_root,
@@ -89,15 +123,18 @@ class ObjectDetection(Task):
             sample_size):
         
         # create piperun config
+        
         piperun_config_path = self._create_piperun_config(run_root, runner_config)
 
         try:
-            os.unlink(self._input_path)
+            if (self._workload.scenario.source=="memory"):
+                os.unlink(self._input_path)
             os.unlink(self._output_path)
         except:
             pass
 
-        os.mkfifo(self._input_path)
+        if (self._workload.scenario.source=="memory"):
+            os.mkfifo(self._input_path)
         os.mkfifo(self._output_path)
         
         # start read thread
@@ -118,16 +155,17 @@ class ObjectDetection(Task):
                                                os.path.join(self._args.workload_root,"systeminfo.json"),
                                                redirect=self._args.redirect)
         
-        time.sleep(2)
         # start writer thread
-        
-        source = MediaSource(self._input_path,
-                             self._input_uri,
-                             self._input_caps,
-                             elapsed_time = -1,
-                             frame_rate = frame_rate,
-                             input_directory=os.path.join(self._args.workload_root,"input"),daemon=True)
-        source.start()
+        if (self._workload.scenario.source=="memory"):
+            source = MediaSource(self._input_path,
+                                 self._input_uri,
+                                 self._input_caps,
+                                 elapsed_time = -1,
+                                 frame_rate = frame_rate,
+                                 input_directory=os.path.join(self._args.workload_root,"input"),daemon=True)
+            source.start()
+        else:
+            source = None
 
         
         return source, sink, runner_process
@@ -138,15 +176,16 @@ class ObjectDetection(Task):
 
         reference_path = os.path.join(reference_target,"objects.jsonl")
 
-        print(reference_path)
         try:
             with open(reference_path,"r") as reference_file:
                 for result in reference_file:
                     try:
                         reference.append(json.loads(result))
                     except Exception as error:
-                        print(error)
-                        pass
+                        if (result == "\n"):
+                            continue
+                        else:
+                            raise
         except Exception as error:
             print("Can't load reference! {}".format(error))
             
@@ -159,7 +198,8 @@ class ObjectDetection(Task):
                          for path in os.listdir(input_directory) if path.endswith('bin')]
              
         frame_paths = [ frame_path for frame_path in frame_paths if os.path.isfile(frame_path) ]
-        frame_paths.sort(key= lambda item: int(os.path.basename(item).split('_')[1].split('.')[0]))
+        if len(frame_paths)>1:
+            frame_paths.sort(key= lambda item: int(os.path.basename(item).split('_')[1].split('.')[0]))
 
         return frame_paths
         
@@ -168,9 +208,9 @@ class ObjectDetection(Task):
         
         # todo resolve properties of task by filling in details from pipeline
 
-        input_media_type = getattr(self._pipeline._namespace,"inputs.media.type.media-type")
+        input_media_type = getattr(self._pipeline._namespace, "inputs.media.type.media-type")
 
-        input_media = find_media(self._workload.media,self._pipeline.pipeline_root)
+        input_media = find_media(self._workload.media, self._pipeline.pipeline_root)
 
         input_target = os.path.join(workload_root, "input")
 
@@ -180,26 +220,24 @@ class ObjectDetection(Task):
         existing_files = [ file_path for file_path in os.listdir(input_target)
                            if os.path.isfile(os.path.join(input_target,file_path)) ]
 
+        individual_frames = False
+        
+        if self._workload.scenario.source == "memory":
+            individual_frames = True
+        
         if (existing_files):
             print("Existing input, skipping generation")
         else:
-            create_encoded_frames(input_target,
+            create_encoded_stream(input_target,
                                   input_media_type,
-                                  input_media)
+                                  input_media,
+                                  individual_frames
+            )
 
         input_paths = self._read_input_paths(input_target)
+
+        models = self._get_models()
         
-        model_name = self._pipeline._namespace.model
-
-
-        model = find_model(model_name,
-                           self._pipeline.pipeline_root,
-                           self._args)
-        
-        models = SimpleNamespace()
-        models.detect = []
-        models.detect.append(model)
-
         reference_target = os.path.join(workload_root, "reference")
 
         # Todo: get from task document
@@ -216,7 +254,8 @@ class ObjectDetection(Task):
                              reference_target,
                              output_media_type,
                              models,
-                             timeout=timeout)
+                             timeout=timeout,
+                             individual_frames=individual_frames)
 
         reference = self._load_reference(reference_target)
 
@@ -225,5 +264,4 @@ class ObjectDetection(Task):
                 os.remove(extra_input)
             except Exception as error:
                 print(error)
-        
-
+            

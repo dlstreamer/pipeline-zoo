@@ -25,7 +25,7 @@ MediaType = namedtuple("MediaType", ["source","demux","parse",
                                      "frame_extension",
                                      "metapublish","sink"])
 
-FpsReport = namedtuple("FpsReport",["fps","min","max","sample_avg","avg"])
+FpsReport = namedtuple("FpsReport",["fps","min","max","sample_avg","avg","start","end"])
 
 
 MEDIA_TYPES = {
@@ -117,20 +117,33 @@ def _create_inference_elements(models, inference_type, precision="FP32", propert
     return result
 
 
-def create_reference(source_dir, target_dir, media_type, models, output_caps = None, timeout=60):
+def create_reference(source_dir,
+                     target_dir,
+                     media_type,
+                     models,
+                     output_caps=None,
+                     timeout=60,
+                     individual_frames=True):
 
     caps_info = FrameInfo.read_caps(source_dir)
     caps = caps_info["caps"]
     original_media_source = caps_info["source"]
     source_media_type = MEDIA_TYPES[caps.split(',')[0]]
-    source = "multifilesrc location={}/frame_%06d.{} caps=\"{}\"".format(source_dir,
-                                                                         source_media_type.frame_extension,
-                                                                         caps)
+    if (individual_frames):
+        source = "multifilesrc location={}/frame_%06d.{} caps=\"{}\"".format(source_dir,
+                                                                             source_media_type.frame_extension,
+        caps)
+    else:
+        source = "filesrc location={}/stream.{} ! \"{}\"".format(source_dir,
+                                                                 source_media_type.frame_extension,
+                                                                 caps.split(',')[0])
 
     if "PIPELINE_ZOO_PLATFORM" in os.environ and os.environ["PIPELINE_ZOO_PLATFORM"]=="VCAC_A":
         decode = "avdec_h264 "
-    else:
+    elif individual_frames:
         decode = "decodebin sink-caps=\"{}\"".format(caps)
+    else:
+        decode = "decodebin"
 
     detect = _create_inference_elements(models,"detect")
 
@@ -163,7 +176,7 @@ def create_reference(source_dir, target_dir, media_type, models, output_caps = N
         sink = output_media_type.sink.format(target_dir)
 
     timeout_element = None
-    if (timeout):
+    if (timeout and individual_frames):
         timeout_element='gvapython module={} class=Timeout arg=[{}]'.format(FRAME_INFO_MODULE,
                                                                             timeout)
 
@@ -180,7 +193,7 @@ def create_reference(source_dir, target_dir, media_type, models, output_caps = N
 def read_caps(input_path):
     return FrameInfo.read_caps(input_path)
 
-def create_encoded_frames(target_dir, media_type, media):
+def create_encoded_stream(target_dir, media_type, media, individual_frames=True):
 
     if (media_type not in MEDIA_TYPES):
         raise Exception("Unsupported Media Type: {}".format(media_type))
@@ -198,8 +211,13 @@ def create_encoded_frames(target_dir, media_type, media):
     parse = media_type.parse
     encoded_caps = media_type.encoded_caps
     frame_info = 'gvapython module={} class=FrameInfo arg=[\\\"{}\\\",\\\"{}\\\"]'.format(FRAME_INFO_MODULE,target_dir,media_uri)
-    sink = "multifilesink location={}/frame_%06d.{}".format(target_dir,media_type.frame_extension)
+    if individual_frames:
+        sink = "multifilesink location={}/frame_%06d.{}".format(target_dir,media_type.frame_extension)
+    else:
+        sink = "filesink location={}/stream.{}".format(target_dir,media_type.frame_extension)
+        
     return gst_launch([source,demux,parse,encoded_caps,frame_info,sink],vaapi=False)
+
 
 
 class MediaSink(Thread):
@@ -231,6 +249,7 @@ class MediaSink(Thread):
         self._warm_up = warm_up
         self._frame_count = 0
         self._start_time = None
+        self._end_time = None
         self._media_type = MEDIA_TYPES[caps.split(',')[0]]
         self._min_sample_fps =  sys.maxsize
         self._max_sample_fps = 0
@@ -259,7 +278,9 @@ class MediaSink(Thread):
                          self._min_sample_fps,
                          self._max_sample_fps,
                          self._avg_sample_fps,
-                         self._avg_fps)
+                         self._avg_fps,
+                         self._start_time,
+                         self._end_time)
 
     def stop(self):
         self._stopped = True
@@ -267,7 +288,7 @@ class MediaSink(Thread):
     def read_lines(self):
 
         while(not self._stopped):
-
+            
             print_action("Starting: pipebench memory sink",
                          ["Started: {}".format(time.time()),
                           "URI: {}".format(self._source_uri)])
@@ -282,11 +303,11 @@ class MediaSink(Thread):
                     while(next_char != b'\n'):
                         next_char = source_fifo.read(1)
                         if (not next_char):
+                            self._end_time = time.time()
                             break
                         line.extend(next_char)
                     if (not next_char):
                         break
-                    #print(json.loads(str(line,"utf-8")))
                     self._frame_count = self._frame_count + 1
 
                     if (self._frame_count % self._sample_size == 0):
@@ -309,8 +330,11 @@ class MediaSink(Thread):
                             self._avg_fps = (self._frame_count - self._start_frame_count) / (current_time - self._start_time)
 
             self.connected = False
+            if not self._end_time:
+                self._end_time = time.time()
             print_action("Ended: pipebench memory sink",
                          ["Ended: {}".format(time.time()),
+                          "URI: {}".format(self._source_uri),
                           "Frames Read: {}".format(self._frame_count)])
 
 

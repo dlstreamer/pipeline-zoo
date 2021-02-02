@@ -415,7 +415,7 @@ class ObjectDetection(Task):
         while ((not launched) and max_attempts):
             start = time.time()
             completed = subprocess.run(self._commandargs)
-            if (time.time()-start > 10):
+            if (time.time()-start > 2):
                 launched = True
             else:
                 max_attempts -= 1

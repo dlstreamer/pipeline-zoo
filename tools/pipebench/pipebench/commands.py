@@ -25,6 +25,7 @@ import json
 from pipebench.tasks.task import Task
 from tabulate import tabulate
 import tempfile
+import time
 from statistics import mean
 
 def _get_runner_config_path(measurement, workload, args):
@@ -101,6 +102,7 @@ def measure(args):
     target_dirs = [ os.path.join(args.pipeline_root,
                                  "measurements",
                                  args.workload_name+timestamp,
+                                 workload.scenario.source,
                                  measurement,
                                  target_dir_suffix)
                     for measurement in measurements]
@@ -254,7 +256,8 @@ def _load_workload(args):
                                           workspace_root,
                                           workload.pipeline,
                                           "workloads",
-                                          os.path.basename(workload.media))
+                                          os.path.basename(workload.media),
+                                          workload.scenario.source)
 
         
         return workload
@@ -313,17 +316,22 @@ def _print_fps(runners, totals):
 
     stream_template = "Stream: {index:04d}"
 
-    template = "{stream} FPS:{stats.fps:04.4f} Min: {stats.min:04.4f} Max: {stats.max:04.4f} Avg: {stats.avg:04.4f}"
+    template = "{stream} FPS:{stats.fps:04.4f} Min: {stats.min:04.4f} Max: {stats.max:04.4f} Avg: {stats.avg:04.4f} {end}"
     output = []
     for index, (source, sink, runner_process, _) in enumerate(runners):
-        if (source.is_alive()):
+        if (not source or source.is_alive()):
             
             stats = sink.get_fps()
+            if stats.start and stats.end:
+                end = "Start: {:.4f} End: {:.4f}".format(stats.start,stats.end)
+            else:
+                end = ""
 
             if (stats.min<sys.maxsize):
                 total_fps += stats.fps
                 output.append(template.format(stream=stream_template.format(index=index),
-                                      stats=stats))
+                                              stats=stats,
+                                              end=end))
     if (len(runners) == 1):
         totals["total"] = stats.fps
         totals["min"] = stats.min
@@ -342,10 +350,13 @@ def _print_fps(runners, totals):
                           totals["min"],
                           totals["max"],
                           0,
-                          totals["avg"])
+                          totals["avg"],
+                          None,
+                          None)
         
         output.append(template.format(stream="Total:      ",
-                              stats=stats))
+                                      stats=stats,
+                                      end=""))
                           
     if (output):
         print_action("Frames Per Second", output)
@@ -366,13 +377,16 @@ def _wait_for_task(runners, duration):
     start = time.time()
     totals = {}
     for (source, sink, runner_process, run_directory) in runners:
-        while((source.is_alive() and (not runner_process.poll()))
+        while(((not source or source.is_alive()) and (runner_process.poll() is None))
               and ((time.time()-start) < duration)):
-            source.join(1)
+            if (source):
+                source.join(1)
+            else:
+                time.sleep(1)
             _print_fps(runners, totals)
-
-        source.stop()
-        if (source.connected):
+        if (source):
+            source.stop()
+        if (source and source.connected):
             source.join()
         
         runner_process.kill()
@@ -596,7 +610,7 @@ def _measure_density(throughput,
                                              config["sample-size"])
 
 
-            time.sleep(2)
+#            time.sleep(2)
 
             runners.append((source,sink,runner,run_directory))
 
