@@ -1,0 +1,10 @@
+run: omzrun/build/omzrun
+detect:
+  device: CPU
+  nireq: 41
+  nthreads: 1
+  nstreams: 40
+decode:
+  max-threads: 1
+convert:
+  n-threads: 1
