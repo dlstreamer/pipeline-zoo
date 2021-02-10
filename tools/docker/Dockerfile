@@ -48,6 +48,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     python3 && \
     rm -rf /var/lib/apt/lists/*
 
+ENV nlohmann_json_DIR=/usr/lib/cmake
 ENV LD_PRELOAD=libjemalloc.so
 
 # bash completion
@@ -96,6 +97,7 @@ COPY --from=MODEL_ZOO /model_proc /opt/intel/dl_streamer/samples/model_proc
 RUN rm -rf /opt/intel/dldt/open_model_zoo
 RUN mkdir -p /opt/intel/dldt
 COPY --from=MODEL_ZOO /open_model_zoo /opt/intel/dldt/open_model_zoo
+ENV OPEN_MODEL_ZOO_ROOT=/opt/intel/dldt/open_model_zoo
 
 # work dir
 WORKDIR /home/pipeline-zoo/workspace

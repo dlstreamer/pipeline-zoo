@@ -1,9 +1,6 @@
-#include "opencv2/opencv_modules.hpp"
-#if defined(HAVE_OPENCV_GAPI)
 
 #include <chrono>
 #include <iomanip>
-
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/core/utils/logger.hpp"
@@ -49,22 +46,15 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
-  task->init();
-
   if (cv::utils::logging::getLogLevel() >= cv::utils::logging::LogLevel::LOG_LEVEL_INFO) {
     task->log_details();
   }
 
+  task->init();
+
+  auto extension_begin = args.get<cv::String>("@piperun_config").find("piperun.yml");
+  auto path = args.get<cv::String>("@piperun_config").substr(0,extension_begin);    
+  task->export_cmdline(path + "object-demo.sh");
   task->run();
   
 }
-#else
-#include <iostream>
-int main()
-{
-    std::cerr << "This tutorial code requires G-API module "
-                 "with Inference Engine backend to run"
-              << std::endl;
-    return 1;
-}
-#endif  // HAVE_OPECV_GAPI

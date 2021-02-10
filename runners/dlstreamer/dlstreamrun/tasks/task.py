@@ -294,7 +294,7 @@ class ObjectDetection(Task):
                 if (isinstance(model_name,list)):
                     raise Exception("Dependent Classification Not Supported")
                 model = find_model(model_name,
-                                   self._runner_config["models_root"])
+                                   self._piperun_config["models-root"])
                 element_name = "classify-{}".format(index)
                 classify_config = self._runner_config.setdefault(element_name,
                                                                  {})
@@ -334,7 +334,7 @@ class ObjectDetection(Task):
         self._runner_config = self._piperun_config["runner-config"]
                 
         self._model = find_model(self._piperun_config["pipeline"][self.detect_model_config],
-                                 self._runner_config["models_root"])
+                                 self._piperun_config["models-root"])
 
         self._runner_config.setdefault("detect",{})
         self._runner_config["detect"].setdefault("element","gvadetect")

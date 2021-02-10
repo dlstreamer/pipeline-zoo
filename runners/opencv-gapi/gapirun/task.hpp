@@ -71,8 +71,8 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 
     std::string _source;
     std::string _destination;
-    int _frame_height;
-    int _frame_width;
+    int _frame_height = -1;
+    int _frame_width = -1;
     uint64_t _frame_duration_ns;
     std::string _source_path;
     std::string _detect_model_config;
@@ -334,7 +334,7 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 
       static std::map<const std::string, const std::string> scheme_map = {
 							      {"pipe","filesrc"},
-							      {"file","filesrc"},
+							      {"file","filepath"},
 							      {"rtsp","rtspsrc"}
       };
 
@@ -349,24 +349,33 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
       auto caps = this->_config["inputs"][0]["caps"].as<std::string>();
       auto media_type_end = caps.find(",");
       auto media_type = caps.substr(0,media_type_end);
-      int framerate_numerator;
-      int framerate_denominator;
-      std::sscanf(caps.substr(caps.find("framerate=(fraction)"), std::string::npos).c_str(),
-			      "framerate=(fraction)%d/%d",
-			      &framerate_numerator,
-			      &framerate_denominator);
+      int framerate_numerator = 30;
+      int framerate_denominator = 1;
+      auto framerate = caps.find("framerate=(fraction)");
+      auto width = caps.find("width=(int)");
+      auto height = caps.find("height=(int)");
+      
+      if (framerate != std::string::npos) {
+	std::sscanf(caps.substr(caps.find("framerate=(fraction)"), std::string::npos).c_str(),
+		    "framerate=(fraction)%d/%d",
+		    &framerate_numerator,
+		    &framerate_denominator);
+      }
       
       this->_frame_duration_ns = uint64_t((float(framerate_denominator)/float(framerate_numerator) *
 					   NANOSECONDS_IN_SECONDS));
-      
-      std::sscanf(caps.substr(caps.find("width=(int)"),std::string::npos).c_str(),
-		  "width=(int)%d",
-		  &this->_frame_width);
-      
-      std::sscanf(caps.substr(caps.find("height=(int)"),std::string::npos).c_str(),
-		  "height=(int)%d",
-		  &this->_frame_height);
 
+      if (width != std::string::npos) {
+	std::sscanf(caps.substr(caps.find("width=(int)"),std::string::npos).c_str(),
+		    "width=(int)%d",
+		    &this->_frame_width);
+      }
+      
+      if (height != std::string::npos) {
+	std::sscanf(caps.substr(caps.find("height=(int)"),std::string::npos).c_str(),
+		    "height=(int)%d",
+		    &this->_frame_height);
+      }
       
       if (input_uri == scheme) {
 	std::cout << "Scheme Not Found" << "\n";
@@ -378,6 +387,10 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 	result << "urisourcebin";
       } else {
 	result << source_iterator->second;
+      }
+
+      if (result.str() == "filepath") {
+	return path;
       }
 
       if (result.str() == "filesrc") {

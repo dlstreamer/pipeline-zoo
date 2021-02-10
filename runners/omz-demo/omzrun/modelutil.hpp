@@ -1,7 +1,6 @@
 #pragma once
 #include "yaml-cpp/yaml.h"
 #include <nlohmann/json.hpp>
-#include <opencv2/gapi/imgproc.hpp>
 
 using json = nlohmann::json;
 
@@ -38,18 +37,12 @@ namespace modelutil {
     std::map<std::string,ModelIR> precisions;
     std::string name;
 
-    
-    template<class T>
-    cv::gapi::ie::Params<T>params(std::string const &device) {
-      
+    const std::string network(std::string const &device) {
       auto precision = starts_with(device,"MULTI") ? device_to_precision["MULTI"] : device_to_precision[device];
-
-      return cv::gapi::ie::Params<T> {
-	this->precisions[precision].xml,   
-	  this->precisions[precision].bin,   
-	  device   
-	  }; 
+      
+      return this->precisions[precision].xml;
     }
+    
   };
 
   std::map<const std::string, const std::string> ModelParameters::device_to_precision= { {"CPU","FP32"},

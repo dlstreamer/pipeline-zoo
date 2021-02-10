@@ -1,0 +1,14 @@
+# Runner specific configuration
+
+run: "omzrun/build/omzrun"
+
+detect:
+  device: CPU
+  nireq: 2
+  nthreads: 1
+  nstreams: "1"
+    
+decode:
+  max-threads: 1
+convert:
+  n-threads: 1

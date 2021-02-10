@@ -70,13 +70,12 @@ class ObjectDetection(Task):
         piperun_config["inputs"] = [input]
         piperun_config["outputs"] = [output]
         piperun_config["runner-config"] = runner_config
-        
+        piperun_config["models-root"] = os.path.join(self._pipeline.pipeline_root,"models")
+        piperun_config["pipeline-root"] = self._pipeline.pipeline_root
         piperun_config_path = os.path.join(run_root,filename)
 
         if (self._args.runner == "mockrun"):
-            runner_config["workload_root"] = self._args.workload_root
-
-        runner_config["models_root"] = os.path.join(self._pipeline.pipeline_root,"models")
+            runner_config["workload-root"] = self._args.workload_root
 
         if (not self._args.force) and (os.path.isfile(piperun_config_path)):
             return
