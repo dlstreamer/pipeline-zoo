@@ -152,9 +152,10 @@ def set_model_file(model, model_root, file_paths, root, result, extension, key):
         
         _set_namespace_value(result, segments, value)
 
-def find_model(model, models_root):
+def find_model(model, models_root, result=None):
 
-    result = SimpleNamespace()
+    if (result is None):
+        result = SimpleNamespace()
         
     model_root = os.path.join(models_root, model)
 
@@ -168,6 +169,11 @@ def find_model(model, models_root):
         set_model_file(model, model_root, file_paths, root, result, ".xml", "xml")
 
         set_model_file(model, model_root, file_paths, root, result, ".bin", "bin")
+
+    int8_model = model + "_INT8"
+    int8_model_root = os.path.join(models_root,int8_model)
+    if (os.path.isdir(int8_model_root)):
+        find_model(int8_model,models_root,result)
             
     return result
 
@@ -232,11 +238,8 @@ def decode_properties(config, queue_config, model, _input, systeminfo):
                                   post_proc)
 
     return template
-
-
-
         
-def inference_properties(config, model, systeminfo):
+def inference_properties(config, model, model_name, systeminfo):
 
     result = config
 
@@ -250,21 +253,25 @@ def inference_properties(config, model, systeminfo):
         result.setdefault("model-proc",model.proc)
     
     if (result["device"]=="CPU"):
-        #result.setdefault("nireq", threads + 1)
-        #result.setdefault("cpu-throughput-streams",threads)
-        result.setdefault("model",model.FP32.xml)
+        precision = result.setdefault("precision","FP32")
 
     if (result["device"]=="HDDL"):
-        result.setdefault("model",model.FP16.xml)
+        precision = result.setdefault("precision","FP16")
 
     if (result["device"]=="GPU"):
-        result.setdefault("model",model.FP16.xml)
+        precision = result.setdefault("precision","FP16")
 
     if ("MULTI" in result["device"]):
-        result.setdefault("model",model.FP16.xml)
+        precision = result.setdefault("precision","FP16")
 
+    if hasattr(model,precision):
+        result.setdefault("model",getattr(model,precision).xml)
+    else:
+        raise Exception("Can't find precision: {} for model: {}".format(precision,model_name))
+
+    non_properties = ["element","enabled","precision"]
     
-    properties = ["{}={}".format(key,value) for key,value in result.items() if key != "element" and key != "enabled"]
+    properties = ["{}={}".format(key,value) for key,value in result.items() if key not in non_properties]
     
     template = "{} {}".format(result["element"],
                                      " ".join(properties))
@@ -313,6 +320,7 @@ class ObjectDetection(Task):
                                                  self._my_args.systeminfo))
                 elements.append(inference_properties(classify_config,
                                                      model,
+                                                     model_name,
                                                      self._my_args.systeminfo))
             if (elements):
                 result = " ! ".join([element for element in elements if element])
@@ -332,8 +340,10 @@ class ObjectDetection(Task):
         self._src_element = input_to_src(self._piperun_config["inputs"][0])
         self._sink_element = output_to_sink(self._piperun_config["outputs"][0])
         self._runner_config = self._piperun_config["runner-config"]
-                
-        self._model = find_model(self._piperun_config["pipeline"][self.detect_model_config],
+
+        model_name = self._piperun_config["pipeline"][self.detect_model_config]
+        
+        self._model = find_model(model_name,
                                  self._piperun_config["models-root"])
 
         self._runner_config.setdefault("detect",{})
@@ -353,6 +363,7 @@ class ObjectDetection(Task):
         
         self._detect_properties = inference_properties(self._runner_config["detect"],
                                                        self._model,
+                                                       model_name,
                                                        self._my_args.systeminfo)
 
         self._runner_config.setdefault("decode", {"device":"CPU"})

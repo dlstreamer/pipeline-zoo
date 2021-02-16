@@ -1,0 +1,7 @@
+# Runner specific configuration
+
+run: "gapirun/build/gapirun"
+
+detect:
+  device: CPU
+  precision: FP32-INT8

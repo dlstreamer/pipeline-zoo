@@ -105,18 +105,26 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 	set_default(runner_config[config_name],
 		    "device",
 		    "CPU");
+	
+	set_default(runner_config[config_name],
+		    "precision",
+		    "");
 
 	auto device = runner_config[config_name]["device"].as<std::string>();
+	auto precision = runner_config[config_name]["precision"].as<std::string>();
 	
 	if ( model.proc["output_postproc"].size() == 1) {
-	  classification_models.push_back(model.params<modelutil::Classifications>(device));
+	  classification_models.push_back(model.params<modelutil::Classifications>(device,
+										   precision));
 	} else if (model.proc["output_postproc"].size() == 2) {
 	  std::array<std::string,2> layer_names {
 						 model.proc["output_postproc"][0]["layer_name"],
 						 model.proc["output_postproc"][1]["layer_name"]
 	  };
-	  classification_two_layer_models.push_back(model.params<modelutil::ClassificationsTwoLayers>(device).cfgOutputLayers(layer_names));
-	       
+	  classification_two_layer_models.push_back(
+						    model.params<modelutil::ClassificationsTwoLayers>(device,
+												      precision).cfgOutputLayers(layer_names));
+	  
 	} else {
 	  std::cout << "Post Proc" << model.proc["output_postproc"] << "Not Supported" << std::endl;
 	  throw "unsupported";
@@ -165,11 +173,15 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
       set_default(runner_config["detect"],
 			"device",
 			"CPU");
-      
-      auto device = runner_config["detect"]["device"].as<std::string>();
 
+      set_default(runner_config["detect"],
+			"precision",
+			"");
+
+      auto device = runner_config["detect"]["device"].as<std::string>();
+      auto precision = runner_config["detect"]["precision"].as<std::string>();
     
-      return this->_detection_model.params<modelutil::Detections>(device);
+      return this->_detection_model.params<modelutil::Detections>(device, precision);
 
     }
 

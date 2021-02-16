@@ -37,12 +37,14 @@ namespace modelutil {
     std::map<std::string,ModelIR> precisions;
     std::string name;
 
-    const std::string network(std::string const &device) {
-      auto precision = starts_with(device,"MULTI") ? device_to_precision["MULTI"] : device_to_precision[device];
-      
-      return this->precisions[precision].xml;
-    }
-    
+    const std::string network(std::string const &device, std::string const &precision) {
+      auto default_precision = starts_with(device,"MULTI") ? device_to_precision["MULTI"] : device_to_precision[device];
+      if (precision == "") {
+	return this->precisions[default_precision].xml;
+      } else  {
+	return this->precisions[precision].xml;
+      }
+    }    
   };
 
   std::map<const std::string, const std::string> ModelParameters::device_to_precision= { {"CPU","FP32"},
@@ -67,16 +69,18 @@ namespace modelutil {
   
   void find_model_ir(std::string models_root,
 		     const std::string &model_name,
-		     std::map<std::string,ModelIR> &result) {
+		     std::map<std::string,ModelIR> &result,
+		     bool clear=true) {
     auto xml_candidate = model_name + ".xml";
-    result.clear();
+    if (clear) {
+      result.clear();
+    }
     std::vector<cv::String> xml_candidates;
     cv::utils::fs::glob_relative(cv::utils::fs::join(models_root,
 						     model_name),
 				 "*.xml",
 				 xml_candidates,
 				 true);
-    
     for (auto candidate : xml_candidates) {
       if (ends_with(candidate, xml_candidate)) {
 	auto precision = cv::utils::fs::getParent(candidate);
@@ -94,9 +98,14 @@ namespace modelutil {
 	  {
 	    result.emplace(precision,ModelIR(full_xml_path,
 					     full_bin_path));
-	    
 	  }
       }
+    }
+    auto int8_model = model_name+"_INT8";
+    auto int8_model_candidate = cv::utils::fs::join(models_root,int8_model);
+    
+    if (cv::utils::fs::exists(int8_model_candidate)) {
+      find_model_ir(models_root,int8_model,result,false);
     }
   }
   
@@ -140,7 +149,6 @@ namespace modelutil {
     } else {
       mp.proc["output_postproc"][0]["converter"] = "tensor_to_bbox_ssd";
     }
-    
     find_model_ir(models_root, model_name, mp.precisions);
     return mp;
   }

@@ -107,7 +107,11 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
       set_default(runner_config["detect"],
 			"device",
 			"CPU");
-      
+
+      set_default(runner_config["detect"],
+		  "precision",
+		  "");
+
       set_default(runner_config["detect"],
 			"threshold",
 			0.5);
@@ -141,14 +145,20 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 		  "");
       
       auto device = runner_config["detect"]["device"].as<std::string>();
-
+      auto precision = runner_config["detect"]["precision"].as<std::string>();
       
       auto labels = this->_detection_model_params.proc["output_postproc"][0]["labels"];
-
-      this->_detection_model.reset(new ModelSSD(this->_detection_model_params.network(device),
+      if (labels != nullptr) {
+	this->_detection_model.reset(new ModelSSD(this->_detection_model_params.network(device, precision),
 						runner_config["detect"]["threshold"].as<float>(),
 						runner_config["detect"]["auto-resize"].as<bool>(),
 						labels));
+      }
+      else {
+	this->_detection_model.reset(new ModelSSD(this->_detection_model_params.network(device, precision),
+						  runner_config["detect"]["threshold"].as<float>(),
+						  runner_config["detect"]["auto-resize"].as<bool>()));
+      }
       printf("%s\n",this->_detection_model->getModelFileName().c_str());
     }
     
@@ -394,22 +404,29 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 	return false;
       }
 
-      std::vector<std::string> labels = this->_detection_model_params.proc["output_postproc"][0]["labels"];
-      auto labels_path = std::string(dirname((char*)this->_detection_model_params.proc_path.c_str())) + "/labels.txt";
-      FILE* labels_file = fopen(labels_path.c_str(),"w");
+      auto labels = this->_detection_model_params.proc["output_postproc"][0]["labels"];
+      if (labels != nullptr) {
+	std::vector<std::string> labels_vector = this->_detection_model_params.proc["output_postproc"][0]["labels"];
+      
+	auto labels_path = std::string(dirname((char*)this->_detection_model_params.proc_path.c_str())) + "/labels.txt";
+	FILE* labels_file = fopen(labels_path.c_str(),"w");
 
-      if (! labels_file) {
-	return false;
+	if (! labels_file) {
+	  return false;
+	}
+      
+	for (auto label : labels_vector) {
+	  fputs((label +"\n").c_str(),labels_file);
+	}
+	fclose(labels_file);
+	executable.append(" -labels " + labels_path);
       }
       
-      for (auto label : labels) {
-	fputs((label +"\n").c_str(),labels_file);
-      }
-      fclose(labels_file);
-      executable.append(" -labels " + labels_path);
       auto device = runner_config["detect"]["device"].as<std::string>();
+      auto precision = runner_config["detect"]["precision"].as<std::string>();
+      
       executable.append(" -i "+ this->_config["inputs"][0]["source"].as<std::string>());
-      executable.append(" -m "+ this->_detection_model_params.network(device));
+      executable.append(" -m "+ this->_detection_model_params.network(device, precision));
       executable.append(" -d "+ device);
 
       if (detect["custom-cpu-library"].as<std::string>()!="") {

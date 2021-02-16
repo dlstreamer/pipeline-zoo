@@ -15,7 +15,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     wget
 
 RUN sh -c "wget https://github.com/opencv/gst-video-analytics/archive/${MODEL_PROC_VERSION}.tar.gz &&  tar -xzf ${MODEL_PROC_VERSION}.tar.gz -C / --strip-components 2 --wildcards "*/samples/model_proc/*""
-RUN wget https://github.com/openvinotoolkit/open_model_zoo/archive/${MODEL_ZOO_VERSION}.tar.gz && mkdir /open_model_zoo && tar -xzf ${MODEL_ZOO_VERSION}.tar.gz -C /open_model_zoo --strip-components 1 
+RUN wget --no-proxy https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/archive/${MODEL_ZOO_VERSION}/models-${MODEL_ZOO_VERSION}.tar.gz && mkdir -p /media-analytics-pipeline-zoo/models && tar -xzf models-${MODEL_ZOO_VERSION}.tar.gz -C /media-analytics-pipeline-zoo/models --strip-components 1 --wildcards "*/model-descriptions/*" 
 
 FROM ${BASE} as media-analytics-pipeline-zoo
 ARG BASE=openvino/ubuntu18_data_dev:2021.1
@@ -94,10 +94,13 @@ RUN mkdir -p /opt/intel/dl_streamer/samples/model_proc
 COPY --from=MODEL_ZOO /model_proc /opt/intel/dl_streamer/samples/model_proc
 
 # model zoo
-RUN rm -rf /opt/intel/dldt/open_model_zoo
-RUN mkdir -p /opt/intel/dldt
-COPY --from=MODEL_ZOO /open_model_zoo /opt/intel/dldt/open_model_zoo
-ENV OPEN_MODEL_ZOO_ROOT=/opt/intel/dldt/open_model_zoo
+# RUN rm -rf /opt/intel/dldt/open_model_zoo
+# RUN mkdir -p /opt/intel/dldt
+# COPY --from=MODEL_ZOO /open_model_zoo /opt/intel/dldt/open_model_zoo
+ENV OPEN_MODEL_ZOO_ROOT=/opt/intel/openvino/deployment_tools/open_model_zoo
+
+# pipeline zoo models
+COPY --from=MODEL_ZOO /media-analytics-pipeline-zoo/models /opt/intel/openvino/deployment_tools/open_model_zoo/models/media-analytics-pipeline-zoo/models
 
 # work dir
 WORKDIR /home/pipeline-zoo/workspace

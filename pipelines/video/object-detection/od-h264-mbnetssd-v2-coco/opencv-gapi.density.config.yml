@@ -1,0 +1,12 @@
+# Runner specific configuration
+
+run: "gapirun/build/gapirun"
+
+detect:
+  device: CPU
+  precision: FP32-INT8
+
+decode:
+  max-threads: 1
+convert:
+  n-threads: 1
