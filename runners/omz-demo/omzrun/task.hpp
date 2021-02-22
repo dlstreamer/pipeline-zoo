@@ -143,6 +143,11 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
       set_default(runner_config["detect"],
 		  "nstreams",
 		  "");
+
+      set_default(runner_config["detect"],
+		  "cpu-bind-thread",
+		  true);
+
       
       auto device = runner_config["detect"]["device"].as<std::string>();
       auto precision = runner_config["detect"]["precision"].as<std::string>();
@@ -472,15 +477,19 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 
       auto runner_config = this->_config["runner-config"];
       auto detect = runner_config["detect"];
+      auto config = ConfigFactory::getUserConfig(detect["device"].as<std::string>(),
+						 detect["custom-cpu-library"].as<std::string>(),
+						 detect["custom-cldnn-library"].as<std::string>(),
+						 detect["performance-counters"].as<bool>(),
+						 detect["nireq"].as<int>(),
+						 detect["nstreams"].as<std::string>(),
+						 detect["nthreads"].as<int>());
+      if (detect["cpu-bind-thread"].as<bool>() == false) {
+	config.execNetworkConfig.emplace(CONFIG_KEY(CPU_BIND_THREAD), CONFIG_VALUE(NO));
+      }
       
       AsyncPipeline pipeline(std::move(this->_detection_model),
-			     ConfigFactory::getUserConfig(detect["device"].as<std::string>(),
-							  detect["custom-cpu-library"].as<std::string>(),
-							  detect["custom-cldnn-library"].as<std::string>(),
-							  detect["performance-counters"].as<bool>(),
-							  detect["nireq"].as<int>(),
-							  detect["nstreams"].as<std::string>(),
-							  detect["nthreads"].as<int>()),
+			     config,
 			     this->core);
       
 

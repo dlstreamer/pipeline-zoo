@@ -28,6 +28,8 @@ SOURCE_DIR=$(dirname $DOCKERFILE_DIR)
 BUILD_ARGS=$(env | cut -f1 -d= | grep -E '_(proxy|REPO|VER)$' | sed 's/^/--build-arg / ' | tr '\n' ' ')
 BUILD_OPTIONS="--network=host"
 
+NO_CACHE=
+
 get_options() {
     while :; do
         case $1 in
@@ -98,6 +100,9 @@ get_options() {
             echo "DRY RUN: COMMANDS PRINTED ONLY"
             echo "=============================="
             echo ""
+            ;;
+	--no-cache)
+	    NO_CACHE=" --no-cache"
             ;;
         --)
             shift
@@ -191,6 +196,6 @@ if [ -z "$RUN_PREFIX" ]; then
     set -x
 fi
 
-$RUN_PREFIX docker build -f "$DOCKERFILE_DIR/Dockerfile" $BUILD_OPTIONS $BUILD_ARGS -t $TAG $SOURCE_DIR
+$RUN_PREFIX docker build -f "$DOCKERFILE_DIR/Dockerfile" $BUILD_OPTIONS $BUILD_ARGS -t $TAG $SOURCE_DIR $NO_CACHE
 
 { set +x; } 2>/dev/null

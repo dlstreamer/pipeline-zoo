@@ -32,7 +32,7 @@ def run_cmd(cmd_str):
 
 
 # todo validate against measurement schema        
-def check_measurement(pipeline, measurement, scenario="memory"):
+def check_measurement(pipeline, measurement, scenario="disk"):
     pipeline_root = os.path.join(test_workspace, pipeline)
     results_path = os.path.join(pipeline_root,
                                 "measurements",

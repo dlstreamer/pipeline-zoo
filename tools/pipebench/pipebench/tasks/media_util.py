@@ -23,7 +23,7 @@ FRAME_INFO_MODULE = os.path.abspath(tasks.frame_info.__file__)
 MediaType = namedtuple("MediaType", ["source","demux","parse",
                                      "encoded_caps",
                                      "frame_extension",
-                                     "metapublish","sink"])
+                                     "metapublish","sink","container_formats"])
 
 FpsReport = namedtuple("FpsReport",["fps","min","max","sample_avg","avg","start","end"])
 
@@ -35,14 +35,16 @@ MEDIA_TYPES = {
                              "video/x-h264,alignment=au,stream-format=byte-stream",
                              "x-h264.bin",
                              None,
-                             "multifilesink location={}/frame_%06d.x-h264.bin"),   
+                             "multifilesink location={}/frame_%06d.x-h264.bin",
+                             ["mp4"]),   
     "metadata/objects":MediaType(None,
                                  None,
                                  None,
                                  "metadata/objects,format=jsonl",
                                  None,
                                  "method=file file-format=json-lines file-path={}/objects.jsonl",
-                                 "fakesink")              
+                                 "fakesink",
+                                 [])              
 }
 
 INFERENCE_ELEMENTS = {
@@ -55,7 +57,7 @@ INFERENCE_ELEMENTS = {
 
 
 def find_media(media, pipeline_root):
-    extensions = [".mp4"]
+    extensions = [".mp4",".x-264.bin",".h264"]
 
     media_root = os.path.join(os.path.join(pipeline_root, "media"), media)
 
@@ -77,7 +79,7 @@ def find_media(media, pipeline_root):
 
 
 def gst_launch(elements,vaapi=True):
-    elements = " ! ".join(elements)
+    elements = " ! ".join([element for element in elements if element])
     command = "gst-launch-1.0 " + elements
     commandargs = shlex.split(command)
     print(' '.join(commandargs), flush=True)
@@ -99,6 +101,11 @@ def _create_inference_elements(models, inference_type, precision="FP32", propert
     
     for model in model_list:
         model_element = []
+        
+        if (not hasattr(model, precision)):
+            precision = list(model.__dict__.keys())[0]
+            print("\nNo FP32 Model found, trying: {}\n".format(precision))
+        
         model_element.append("{} model={}".format(element,
                                                   rgetattr(model,"{}.xml".format(precision))))
 
@@ -207,7 +214,13 @@ def create_encoded_stream(target_dir, media_type, media, individual_frames=True)
         raise Exception("Media is not a file: {}".format(media))
 
     source = media_type.source.format(media_uri)
-    demux = media_type.demux
+
+    extension = os.path.splitext(media)[1]
+    
+    if (extension[1:] in media_type.container_formats):
+        demux = media_type.demux
+    else:
+        demux = None
     parse = media_type.parse
     encoded_caps = media_type.encoded_caps
     frame_info = 'gvapython module={} class=FrameInfo arg=[\\\"{}\\\",\\\"{}\\\"]'.format(FRAME_INFO_MODULE,target_dir,media_uri)

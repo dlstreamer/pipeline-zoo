@@ -1,0 +1,16 @@
+# Runner specific configuration
+
+run: "omzrun/build/omzrun"
+
+detect:
+  device: CPU
+  nireq: 3
+  nthreads: 2
+  nstreams: "2"
+  precision: FP32-INT8
+  cpu-bind-thread: false
+    
+decode:
+  max-threads: 1
+convert:
+  n-threads: 1

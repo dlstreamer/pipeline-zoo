@@ -39,6 +39,12 @@ properties:
       density:
         type: object
         properties:
+          per-stream:
+            type: boolean
+            default: true
+          numa-aware:
+            type: boolean
+            default: true
           multiprocess:
             type: boolean
             default: true
@@ -83,6 +89,6 @@ properties:
           max-streams:
             type: integer
             default: 100
-        required: [fps, max-streams, min-streams, warm-up, sample-size, duration, max-iterations]  
+        required: [fps, max-streams, min-streams, warm-up, sample-size, duration, max-iterations, numa-aware, per-stream]  
       
 required: [scenario, measurement]

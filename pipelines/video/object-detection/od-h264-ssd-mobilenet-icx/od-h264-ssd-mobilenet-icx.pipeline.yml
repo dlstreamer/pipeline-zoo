@@ -1,0 +1,8 @@
+# Defines ob-h264-mbnetssd-v2-coco Pipeline of type object-detection
+
+task: object-detection
+
+model: ssd_mobilenet_icx_INT8
+
+inputs.media.type.media-type: video/x-h264
+

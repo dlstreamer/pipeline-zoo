@@ -11,7 +11,7 @@ properties:
   source:
     type: string
     enum: [memory, network, disk]
-    default: memory
+    default: disk
   type:
     type: string
     enum: [stream, batch]

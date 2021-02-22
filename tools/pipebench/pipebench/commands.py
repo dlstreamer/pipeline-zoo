@@ -27,6 +27,7 @@ from tabulate import tabulate
 import tempfile
 import time
 from statistics import mean
+import subprocess
 
 def _get_runner_config_path(measurement, workload, args):
 
@@ -63,10 +64,23 @@ def _get_runner_config_path(measurement, workload, args):
             return candidate
         
     args.parser.error("Runner config not found in workspace, candidates: {}".format(candidates,))
-       
-    
-def measure(args):
 
+def _get_numa_nodes(args):
+    numa_nodes = None
+    try:
+        result = subprocess.run(["numactl","--hardware"], stdout=subprocess.PIPE, universal_newlines=True)
+        available_split = result.stdout.split('\n')[0].split()
+        if available_split[0]=="available:":
+            numa_nodes = int(available_split[1])
+    except Exception as error:
+        print(error)
+
+    if (not numa_nodes):
+        args.parser.error("Can't get number of numa nodes!")
+    return numa_nodes
+
+def measure(args):
+    
     if (not args.workload):
         with tempfile.TemporaryDirectory() as workload_root:
             workload_path = "{}/workload.yml".format(workload_root)
@@ -393,7 +407,7 @@ def _wait_for_task(runners, duration):
         runner_process.wait()
         sink.stop()
         if (sink.connected):
-            sink.join()
+            sink.join(10)
         results.append(sink.get_fps())
         return_codes.append((runner_process.returncode,run_directory))
         
@@ -419,12 +433,13 @@ def _write_density_result(density,
     iteration_results = {}
     stream_template = "Stream: {0:04d}"
     iteration_template="Iteration: {0:04d}"
+    if ( not config["per-stream"]):
+        stream_template ="Total"
     for iteration_index,result in enumerate(results):
         iteration_result = {}
-        for stream_index,stream_result in enumerate(result):
+        for stream_index,stream_result in enumerate(result[0]):
             iteration_result[stream_template.format(stream_index)] = stream_result
         iteration_results[iteration_template.format(iteration_index)]=iteration_result
-    
     result = {"density": {
         "streams":density,
         "iterations":iteration_results,
@@ -441,21 +456,23 @@ def _write_density_result(density,
     second_to_last = []
     if (results):
         iteration = results[-1]
-        last.append("Streams: {}".format(len(iteration)))
-        last.extend(_density_result_strings(iteration))
-        values = _iteration_stats(iteration)
-        last.append("Min: {:04.4f} Max: {:04.4f} Avg: {:04.4f}".format(min(values["avg"]),
-                                                                    max(values["avg"]),
-                                                                    mean(values["avg"])))
+        last.append("Streams: {}".format(iteration[1]))
+        last.extend(_density_result_strings(iteration[0],config))
+        if (len(iteration[0])>1):
+            values = _iteration_stats(iteration[0])
+            last.append("Min: {:04.4f} Max: {:04.4f} Avg: {:04.4f}".format(min(values["avg"]),
+                                                                           max(values["avg"]),
+                                                                           mean(values["avg"])))
                                                                                                                 
         if (len(results)>1):
             iteration = results[-2]
-            second_to_last.append("Streams: {}".format(len(iteration)))
-            second_to_last.extend(_density_result_strings(iteration))
-            values = _iteration_stats(iteration)
-            second_to_last.append("Min: {:04.4f} Max: {:04.4f} Avg: {:04.4f}".format(min(values["avg"]),
-                                                                                  max(values["avg"]),
-                                                                                  mean(values["avg"])))
+            second_to_last.append("Streams: {}".format(iteration[1]))
+            second_to_last.extend(_density_result_strings(iteration[0],config))
+            if (len(iteration[0])>1):
+                values = _iteration_stats(iteration[0])
+                second_to_last.append("Min: {:04.4f} Max: {:04.4f} Avg: {:04.4f}".format(min(values["avg"]),
+                                                                                         max(values["avg"]),
+                                                                                         mean(values["avg"])))
 
 
     table = {'Pipeline':workload.pipeline,
@@ -515,35 +532,51 @@ def _normalize_range(config,range_name):
 
 def _check_ranges(result, ranges):
     return {key:((getattr(result,key),(getattr(result,key)>=ranges[key][0] and getattr(result,key)<=ranges[key][1]))) for key in ranges if ranges[key]!=None}
-
+    
 def _check_density(results, config):
     success = True
-    per_stream_results = results[0]
     ranges = {'min':_normalize_range(config,"minimum-range"),
               'avg':_normalize_range(config,"average-range")}
-    range_results = [_check_ranges(stream_result,ranges) for stream_result in per_stream_results]
+    
+    if (config["per-stream"]):
+        per_stream_results = results[0]
+        range_results = [_check_ranges(stream_result,ranges) for stream_result in per_stream_results]
+    else:
+        number_of_streams = len(results[0])
+    
+        total_result = FpsReport(0,
+                                 results[1]["min"]/number_of_streams,
+                                 results[1]["max"]/number_of_streams,
+                                 0,
+                                 results[1]["avg"]/number_of_streams,
+                                 None,
+                                 None)
+        
+        range_results = [_check_ranges(total_result, ranges)]
+
     for result in range_results:
         for key in result:
             if not result[key][1]:
                 return False, range_results
     return True, range_results
 
-def _density_result_strings(range_results):
+def _density_result_strings(range_results, config):
     stream_template = "Stream: {0:04d}"
     stream_results = []
     fps_template = "{0:04.4f} {1}"
     passed = {True:"Pass",
               False:"Fail"}
     for index,range_result in enumerate(range_results):
-        
+        if (not config["per-stream"]):
+            stream_template ="Total"
         stream_results.append("{} {}".format(
             stream_template.format(index),
         " ".join(["{}: {}".format(key.title(),fps_template.format(value[0],passed[value[1]]))
                   for key,value in range_result.items()])))
     return stream_results
 
-def _print_density_result(range_results):
-    print_action("Density Result",_density_result_strings(range_results))
+def _print_density_result(range_results, config):
+    print_action("Density Result",_density_result_strings(range_results,config))
                       
 def _measure_density(throughput,
                      task,
@@ -566,7 +599,12 @@ def _measure_density(throughput,
     else:
         print("No starting density specified and no throughput result")
         sys.exit(1)
-        
+
+    numa_nodes = None
+    numa_node = None
+    if (config["numa-aware"]):
+        numa_nodes = _get_numa_nodes(args)
+
     print_action("Measuring Stream Density",[config])
 
     results_directory = target_dir
@@ -603,25 +641,26 @@ def _measure_density(throughput,
                                          "stream_{}".format(stream_index))
             create_directory(run_directory)
 
+            if (numa_nodes):
+                numa_node = stream_index % numa_nodes
+
             source, sink, runner  = task.run(run_directory,
                                              runner_config,
                                              config["warm-up"],
                                              frame_rate,
-                                             config["sample-size"])
-
-
-#            time.sleep(2)
+                                             config["sample-size"],
+                                             numa_node)
 
             runners.append((source,sink,runner,run_directory))
 
-        results = _wait_for_task(runners, config["duration"]+(4*num_streams))
+        results = _wait_for_task(runners, config["duration"] + 10)
         success, density_result =_check_density(results, config)
-        _print_density_result(density_result)
+        _print_density_result(density_result, config)
         print_action("Stream Density",
                      ["Iteration: {}".format(iteration,),
                       "Number of Streams: {}".format(num_streams),
                       "Passed: {}".format(success)])
-        iteration_results.append(density_result)
+        iteration_results.append((density_result,num_streams))
         if (first_result is None):
             first_result = success
         current_result = success

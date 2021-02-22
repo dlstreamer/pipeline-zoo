@@ -119,7 +119,8 @@ class ObjectDetection(Task):
             runner_config,
             warm_up,
             frame_rate,
-            sample_size):
+            sample_size,
+            numa_node = None):
         
         # create piperun config
         
@@ -152,7 +153,8 @@ class ObjectDetection(Task):
                                                piperun_config_path,
                                                self._pipeline.pipeline_root,
                                                os.path.join(self._args.workload_root,"systeminfo.json"),
-                                               redirect=self._args.redirect)
+                                               redirect=self._args.redirect,
+                                               numa_node = numa_node)
         
         # start writer thread
         if (self._workload.scenario.source=="memory"):

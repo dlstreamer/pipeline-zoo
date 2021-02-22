@@ -11,7 +11,8 @@ def start_pipeline_runner(runner,
                           piperun_config_path,
                           pipeline_root,
                           systeminfo_path,
-                          redirect=True):
+                          redirect=True,
+                          numa_node = None):
 
     runner_root = os.path.join(pipeline_root, "runners", runner)
     
@@ -38,12 +39,16 @@ def start_pipeline_runner(runner,
     runner_command.extend(["--systeminfo={}".format(systeminfo_path)])
 
     runner_command.append(piperun_config_path)
+    if numa_node is not None:
+        runner_command = ["numactl","--cpunodebind",str(numa_node),"--membind",str(numa_node)] + runner_command
 
     start_time = time.time()
 
     util.print_action("Launching: {}".format(runner),
                       ["Started: {}".format(start_time),
                        "Command: {}".format(runner_command)])
+
+    
     process = subprocess.Popen(runner_command,
                                cwd=runner_root,
                                stdout=stdout_file,
