@@ -25,11 +25,18 @@ def input_to_src(_input):
                               "file":"filesrc",
                               "rtsp":"rtspsrc"})
 
+    parser_map = defaultdict(lambda:"parsebin",
+                             {"video/x-h264":"h264parse",
+                              "video/x-h265":"h265parse"
+                             })
+
     parsed_uri = parse.urlparse(_input["uri"])  
     element = scheme_map[parsed_uri.scheme]
-
+    media_type = _input["caps"].split(",")[0]
+    parser = parser_map[media_type]
+    
     if (element == "filesrc"):
-        element = "filesrc location=\"{}\" ! video/x-h264 ! h264parse".format(parsed_uri.path)
+        element = "filesrc location=\"{}\" ! {} ! {}".format(parsed_uri.path,media_type,parser)
     return element
 
 def output_to_sink(_output):
@@ -282,9 +289,6 @@ def inference_properties(config, model, model_name, systeminfo):
 class ObjectDetection(Task):
 
     supported_tasks = ["object-detection"]
-
-    caps_to_extension = {"video/x-h264":"x-h264.bin",
-                         "metadata/objects":"objects.jsonl"}
 
     supported_uri_schemes = ["pipe", "file", "rtsp"]
     

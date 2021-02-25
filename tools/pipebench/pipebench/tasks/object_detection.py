@@ -24,12 +24,11 @@ from .runner_util import start_pipeline_runner
 from threading import Thread
 import time
 import json
+from .media_util import MEDIA_TYPES
 
 class ObjectDetection(Task):
-
     names = ["object-detection"]
     OUTPUT_CAPS = "metadata/objects,format=jsonl"
-    caps_to_extension = {"video/x-h264":"x-h264.bin"}
     
     def __init__(self, pipeline, task, workload, args):
         self._workload = workload
@@ -44,16 +43,16 @@ class ObjectDetection(Task):
         pipe_uuid = uuid.uuid1()
         pipe_directory = os.path.join("/tmp",str(pipe_uuid))
         create_directory(pipe_directory)
-
         if (self._workload.scenario.source=="memory"):
             self._input_caps = read_caps(os.path.join(self._args.workload_root,"input"))["caps"]
             self._input_path = "{}/input".format(pipe_directory)
             self._input_uri = "pipe://{}".format(self._input_path)
         elif (self._workload.scenario.source=="disk"):
             self._input_caps = read_caps(os.path.join(self._args.workload_root,"input"))["caps"].split(',')[0]
+            media_type = MEDIA_TYPES[self._input_caps]
             self._input_path = os.path.join(self._args.workload_root,
                                             "input",
-                                            "stream.{}".format(ObjectDetection.caps_to_extension[self._input_caps]))
+                                            "stream.{}".format(media_type.elementary_stream_extensions[0]))
             self._input_uri = "file://{}".format(self._input_path)
 
             
@@ -214,6 +213,9 @@ class ObjectDetection(Task):
         input_media = find_media(self._workload.media, self._pipeline.pipeline_root)
 
         input_target = os.path.join(workload_root, "input")
+
+        if not input_media:
+            raise Exception("Media not found or unsupported: {}".format(self._workload.media))
 
         if (self._args.force):
             create_directory(input_target)

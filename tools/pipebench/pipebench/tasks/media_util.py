@@ -20,10 +20,15 @@ import sys
 
 FRAME_INFO_MODULE = os.path.abspath(tasks.frame_info.__file__)
 
-MediaType = namedtuple("MediaType", ["source","demux","parse",
+MediaType = namedtuple("MediaType", ["source",
+                                     "demux",
+                                     "parse",
                                      "encoded_caps",
                                      "frame_extension",
-                                     "metapublish","sink","container_formats"])
+                                     "metapublish",
+                                     "sink",
+                                     "container_formats",
+                                     "elementary_stream_extensions"])
 
 FpsReport = namedtuple("FpsReport",["fps","min","max","sample_avg","avg","start","end"])
 
@@ -36,7 +41,17 @@ MEDIA_TYPES = {
                              "x-h264.bin",
                              None,
                              "multifilesink location={}/frame_%06d.x-h264.bin",
-                             ["mp4"]),   
+                             ["mp4"],
+                             ["h264","264"]),
+    "video/x-h265":MediaType("urisourcebin uri={}",
+                             "qtdemux",
+                             "h265parse",
+                             "video/x-h265,alignment=au,stream-format=byte-stream",
+                             "x-h265.bin",
+                             None,
+                             "multifilesink location={}/frame_%06d.x-h265.bin",
+                             ["mp4"],
+                             ["h265","265"]),   
     "metadata/objects":MediaType(None,
                                  None,
                                  None,
@@ -44,6 +59,7 @@ MEDIA_TYPES = {
                                  None,
                                  "method=file file-format=json-lines file-path={}/objects.jsonl",
                                  "fakesink",
+                                 [],
                                  [])              
 }
 
@@ -55,12 +71,20 @@ INFERENCE_ELEMENTS = {
     "audio-detect":"gvaaudiodetect"
 }
 
+def _get_media_extensions():
+    result = set()
+    for media_type in MEDIA_TYPES.values():
+        if (media_type.frame_extension):
+            result.add(media_type.frame_extension)
+        for container_format in media_type.container_formats:
+            result.add(container_format)
+        for extension in media_type.elementary_stream_extensions:
+            result.add(extension)
+    return result
 
 def find_media(media, pipeline_root):
-    extensions = [".mp4",".x-264.bin",".h264"]
-
+    extensions = [ ".{}".format(extension) for extension in _get_media_extensions() ]
     media_root = os.path.join(os.path.join(pipeline_root, "media"), media)
-
     file_paths = [
         file_path for file_path in os.listdir(media_root)
         if os.path.isfile(os.path.join(media_root, file_path)) and
@@ -142,7 +166,7 @@ def create_reference(source_dir,
         caps)
     else:
         source = "filesrc location={}/stream.{} ! \"{}\"".format(source_dir,
-                                                                 source_media_type.frame_extension,
+                                                                 source_media_type.elementary_stream_extensions[0],
                                                                  caps.split(',')[0])
 
     if "PIPELINE_ZOO_PLATFORM" in os.environ and os.environ["PIPELINE_ZOO_PLATFORM"]=="VCAC_A":
@@ -207,14 +231,12 @@ def create_encoded_stream(target_dir, media_type, media, individual_frames=True)
 
     media_type = MEDIA_TYPES[media_type]
     media_uri = None
-
     if (os.path.isfile(media)):
         media_uri = urllib.parse.urlunsplit(["file",None,media,None,None])
     else:
         raise Exception("Media is not a file: {}".format(media))
 
     source = media_type.source.format(media_uri)
-
     extension = os.path.splitext(media)[1]
     
     if (extension[1:] in media_type.container_formats):
@@ -227,8 +249,8 @@ def create_encoded_stream(target_dir, media_type, media, individual_frames=True)
     if individual_frames:
         sink = "multifilesink location={}/frame_%06d.{}".format(target_dir,media_type.frame_extension)
     else:
-        sink = "filesink location={}/stream.{}".format(target_dir,media_type.frame_extension)
-        
+        sink = "filesink location={}/stream.{}".format(target_dir,media_type.elementary_stream_extensions[0])
+
     return gst_launch([source,demux,parse,encoded_caps,frame_info,sink],vaapi=False)
 
 

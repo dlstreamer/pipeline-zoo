@@ -291,12 +291,16 @@ def _prepare(task, workload, args):
 
     if (not os.path.isdir(args.workload_root)):
         create_directory(args.workload_root)
+        measurement_directory = args.workload_root.replace("workloads","measurements")
+        create_directory(measurement_directory)
 
         command = _create_systeminfo_command(args.workload_root,
                                              args)
     
         subprocess.run(command,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-
+        
+        shutil.copy(os.path.join(args.workload_root,"systeminfo.json"),
+                    measurement_directory)
 
     directories = [os.path.join(args.workload_root,suffix) for suffix in ["input", "reference"]]
                 

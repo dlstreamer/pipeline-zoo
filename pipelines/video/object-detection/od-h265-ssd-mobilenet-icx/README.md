@@ -1,6 +1,6 @@
 # od-h264-ssd-mobilenet-icx
 
-Object detection pipeline taking encoded video frames in h264 format and using [ssd-mobilenet-icx]() for detection.
+Object detection pipeline taking encoded video frames in h265 format and using [ssd-mobilenet-icx]() for detection.
 
 ```mermaid
 stateDiagram
@@ -8,7 +8,7 @@ stateDiagram
     state Object-Detection {
   
     state media {
-    h264
+    h265
     }
 
     state video_source {
