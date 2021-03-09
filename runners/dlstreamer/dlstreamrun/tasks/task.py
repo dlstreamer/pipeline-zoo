@@ -330,6 +330,23 @@ class ObjectDetection(Task):
                 result = " ! ".join([element for element in elements if element])
             
         return result
+
+    def _create_standalone_elements(self):
+
+        demux = ( "qtdemux" if os.path.splitext(
+            self._piperun_config["inputs"][0]["source"])[1]==".mp4" else "")
+        
+        return ["urisourcebin uri=file://{}".format(
+            self._piperun_config["inputs"][0]["source"]),
+                demux,
+                "parsebin",
+                self._decode_properties,
+                self._detect_queue_properties,
+                self._detect_properties,
+                self._classify_properties,
+                "gvametaconvert add-empty-results=true ! gvametapublish method=file file-format=json-lines file-path=/tmp/result.jsonl ! gvafpscounter ! fakesink"
+        ]
+
     
     def __init__(self, piperun_config, args, *pos_args, **keywd_args):
         self._piperun_config = piperun_config
@@ -393,17 +410,7 @@ class ObjectDetection(Task):
                           self._classify_properties,
                           self._sink_element]
 
-        standalone_elements = ["urisourcebin uri=file://{}".format(self._piperun_config["inputs"][0]["source"]),
-                               "qtdemux",
-                               "parsebin",
-                               self._decode_properties,
-                               self._detect_queue_properties,
-                               self._detect_properties,
-                               self._classify_properties,
-                               "gvametaconvert add-empty-results=true ! gvametapublish method=file file-format=json-lines file-path=/tmp/result.jsonl ! gvafpscounter ! fakesink"
-        ]
-                                                                   
-                               
+        standalone_elements = self._create_standalone_elements()
 
         elements = " ! ".join([element for element in self._elements if element])
         standalone_elements = " ! ".join([element for element in standalone_elements if element])
