@@ -1,0 +1,8 @@
+# Defines ob-h264-mbnetssd-tf Pipeline of type object-detection
+
+task: object-detection
+
+model: mobilenet-ssd-tf
+
+inputs.media.type.media-type: video/x-h264
+
