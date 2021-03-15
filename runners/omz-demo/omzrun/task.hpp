@@ -485,7 +485,7 @@ std::ostream& operator<<(std::ostream &os, const Avg::Elapsed &e) {
 						 detect["nstreams"].as<std::string>(),
 						 detect["nthreads"].as<int>());
       if (detect["cpu-bind-thread"].as<bool>() == false) {
-	config.execNetworkConfig.emplace(CONFIG_KEY(CPU_BIND_THREAD), CONFIG_VALUE(NO));
+	config.execNetworkConfig[CONFIG_KEY(CPU_BIND_THREAD)] = CONFIG_VALUE(NO);
       }
       
       AsyncPipeline pipeline(std::move(this->_detection_model),
