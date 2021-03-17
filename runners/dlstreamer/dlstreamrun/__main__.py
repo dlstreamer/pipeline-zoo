@@ -6,10 +6,13 @@
 '''
 
 import os
+import atexit
+import psutil
 import yaml
 import json
 from tasks.task import Task
 import sys
+import signal
 
 from arguments import parse_args
 
@@ -35,26 +38,48 @@ def print_args(args):
         print ("\t{} == {}".format(arg, getattr(args, arg)))
     print()
 
-
+def cleanup(_signal_unused=None,_frame_unused_=None):
+    children = psutil.Process().children(recursive=True)
+    for child in children:
+        print("Terminating: {}".format(child),flush=True)
+        child.terminate()
+    gone, alive = psutil.wait_procs(children,timeout=3)
+    for child in alive:
+        print("Killing: {}".format(child),flush=True)
+        child.kill()        
     
 if __name__ == '__main__':
+    parser = None
+    try:
+        os.setpgrp()
+        signal.signal(signal.SIGINT, cleanup)
+        signal.signal(signal.SIGTERM, cleanup)
+        atexit.register(cleanup)
 
-    args, parser = parse_args(program_name=package_name)
-    print_args(args)
+        args, parser = parse_args(program_name=package_name)
+        print_args(args)
 
-    args.piperun_config_path = args.piperun_config
-    args.piperun_config = load_document(args.piperun_config)
+        args.piperun_config_path = args.piperun_config
+        args.piperun_config = load_document(args.piperun_config)
 
-    if args.systeminfo:
-        args.systeminfo = load_document(args.systeminfo)
+        if args.systeminfo:
+            args.systeminfo = load_document(args.systeminfo)
 
-    task = Task.create_task(args.piperun_config,args)
+        task = Task.create_task(args.piperun_config,args)
 
-    task.start()
-    task.join()
+        task.start()
+        task.join()
 
-    if (task.completed):
-        sys.exit(task.completed.returncode)
-    else:
-        sys.exit(-1)
+        if (task.completed):
+            sys.exit(task.completed.returncode)
+        else:
+            sys.exit(-1)
+    except(KeyboardInterrupt, SystemExit):
+        pass
+    
+    except Exception as error:
+        if (parser):
+            parser.error("\n\n{}\n\n".format(error))
+        else:
+            print("\n\n{}\n\n".format(error))
     

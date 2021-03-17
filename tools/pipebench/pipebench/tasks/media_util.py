@@ -336,7 +336,7 @@ class MediaSink(Thread):
                     line.clear()
                     next_char = ""
                     while(next_char != b'\n'):
-                        next_char = source_fifo.read(1)
+                        next_char = None if self._stopped else source_fifo.read(1)
                         if (not next_char):
                             self._end_time = time.time()
                             break

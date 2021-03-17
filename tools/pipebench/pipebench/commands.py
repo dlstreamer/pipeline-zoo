@@ -379,7 +379,7 @@ def _print_fps(runners, totals):
     if (output):
         print_action("Frames Per Second", output)
 
-known_return_codes = [-9, 0]
+known_return_codes = [-9, -15, 0]
 def _check_return_codes(return_codes):
     unknown_return = ["Return Code: {} Output Directory: {}".format(return_code[0],return_code[1])
                       for return_code in return_codes if return_code[0] not in known_return_codes]
@@ -402,13 +402,19 @@ def _wait_for_task(runners, duration):
             else:
                 time.sleep(1)
             _print_fps(runners, totals)
+
         if (source):
             source.stop()
         if (source and source.connected):
             source.join()
-        
-        runner_process.kill()
+
+        runner_process.terminate()
+        try:
+            runner_process.wait(10)
+        except:
+            runner_process.kill()
         runner_process.wait()
+        
         sink.stop()
         if (sink.connected):
             sink.join(10)
