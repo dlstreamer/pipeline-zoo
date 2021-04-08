@@ -104,7 +104,7 @@ def find_media(media, pipeline_root):
 
 def gst_launch(elements,vaapi=True):
     elements = " ! ".join([element for element in elements if element])
-    command = "gst-launch-1.0 " + elements
+    command = "gst-launch-1.0 --no-fault " + elements
     commandargs = shlex.split(command)
     print(' '.join(commandargs), flush=True)
     env = None
