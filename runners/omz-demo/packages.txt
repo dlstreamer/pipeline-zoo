@@ -1,2 +1,2 @@
 libyaml-cpp-dev
-nlohmann-json-dev
+nlohmann-json3-dev

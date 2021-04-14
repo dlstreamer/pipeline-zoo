@@ -11,8 +11,8 @@
 #include "pipelines/async_pipeline.h"
 #include "pipelines/config_factory.h"
 #include <gflags/gflags.h>
-#include <samples/images_capture.h>
-#include <samples/default_flags.hpp>
+#include <utils/images_capture.h>
+#include <utils/default_flags.hpp>
 #include "pipelines/metadata.h"
 #include <sys/stat.h>
 #include <libgen.h>

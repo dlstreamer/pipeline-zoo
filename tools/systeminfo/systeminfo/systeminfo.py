@@ -10,7 +10,7 @@ import argparse
 import json
 import yaml
 import glob
-
+import distro
 
 def empty_string_if_failure(function):
     def new_func(*args, **kwargs):
@@ -377,7 +377,7 @@ def software(model_zoo_path, job_name, openvino_path, omz_path):
         "Caffe-to-ONNX":   caffe2onnx_version(),
         "nireq":           "N/A",
     }
-    if "Ubuntu" == platform.dist()[0]:
+    if "Ubuntu" == distro.linux_distribution()[0]:
         result.update({
             "Boost":  dpkg_version("libboost-all-dev"),
             "Gflag":  dpkg_version("libgflags-dev"),

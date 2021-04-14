@@ -23,6 +23,7 @@ export nlohmann_json_DIR=/usr/lib/cmake
 mkdir -p omz_demos_build
 mkdir -p omz_demos_src/demos
 cp -rf $OPEN_MODEL_ZOO_ROOT/demos/common ./omz_demos_src/demos
+cp -rf $OPEN_MODEL_ZOO_ROOT/demos/multi_channel_common ./omz_demos_src/demos
 cp $OPEN_MODEL_ZOO_ROOT/demos/* ./omz_demos_src/demos >/dev/null 2>&1 || true
 cp -rf $OPEN_MODEL_ZOO_ROOT/demos/object_detection_demo ./omz_demos_src/demos
 cp -rf $OPEN_MODEL_ZOO_ROOT/demos/thirdparty ./omz_demos_src/demos

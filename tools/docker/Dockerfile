@@ -3,11 +3,11 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
-ARG BASE=openvino/ubuntu18_data_dev:2021.1
+ARG BASE=openvino/ubuntu20_data_dev:2021.3_vaapi_fix
 ARG PIPELINE_ZOO_PLATFORM=DEFAULT
 FROM ubuntu:18.04 as MODEL_ZOO
-ARG MODEL_PROC_VERSION=v1.2.1
-ARG MODEL_ZOO_VERSION=2021.1
+ARG MODEL_PROC_VERSION=v1.4.1
+ARG MODEL_ZOO_VERSION=2021.3
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y -q --no-install-recommends \
@@ -15,10 +15,10 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     wget
 
 RUN sh -c "wget https://github.com/opencv/gst-video-analytics/archive/${MODEL_PROC_VERSION}.tar.gz &&  tar -xzf ${MODEL_PROC_VERSION}.tar.gz -C / --strip-components 2 --wildcards "*/samples/model_proc/*""
-RUN wget --no-proxy https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/archive/${MODEL_ZOO_VERSION}/models-${MODEL_ZOO_VERSION}.tar.gz && mkdir -p /media-analytics-pipeline-zoo/models && tar -xzf models-${MODEL_ZOO_VERSION}.tar.gz -C /media-analytics-pipeline-zoo/models --strip-components 1 --wildcards "*/model-descriptions/*" 
+RUN wget --no-proxy https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/archive/main/models-main.tar.gz && mkdir -p /media-analytics-pipeline-zoo/models && tar -xzf models-main.tar.gz -C /media-analytics-pipeline-zoo/models --strip-components 1 --wildcards "*/model-descriptions/*" 
 
 FROM ${BASE} as media-analytics-pipeline-zoo
-ARG BASE=openvino/ubuntu18_data_dev:2021.1
+ARG BASE=openvino/ubuntu20_data_dev:2021.3_vaapi_fix
 ARG PIPELINE_ZOO_PLATFORM=DEFAULT
 
 ENV PIPELINE_ZOO_PLATFORM=$PIPELINE_ZOO_PLATFORM
@@ -28,7 +28,7 @@ USER root
 
 # Dependencies for OpenVINO
 RUN if [ -f /opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh ]; then \
-       /opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh ;\
+       /opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh -y ;\
     fi    
 
 # Dependencies installed via apt-get
@@ -42,7 +42,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     cmake \
     bash-completion \
     libyaml-cpp-dev \
-    nlohmann-json-dev \
+    nlohmann-json3-dev \
     numactl \
     libjemalloc-dev \
     python3 && \
