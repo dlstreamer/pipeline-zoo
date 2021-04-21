@@ -130,6 +130,8 @@ class Media(Handler):
 
     def __init__(self,args):
         self._args = args
+        os.environ['NO_PROXY']='gitlab.devtools.intel.com'
+        os.environ['no_proxy']='gitlab.devtools.intel.com'
 
     def _lfs(self, path):
         try:

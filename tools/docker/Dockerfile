@@ -5,7 +5,8 @@
 #
 ARG BASE=openvino/ubuntu20_data_dev:2021.3_vaapi_fix
 ARG PIPELINE_ZOO_PLATFORM=DEFAULT
-FROM ubuntu:18.04 as MODEL_ZOO
+ARG REGISTRY=
+FROM ${REGISTRY}ubuntu:18.04 as MODEL_ZOO
 ARG MODEL_PROC_VERSION=v1.4.1
 ARG MODEL_ZOO_VERSION=2021.3
 
@@ -17,19 +18,29 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
 RUN sh -c "wget https://github.com/opencv/gst-video-analytics/archive/${MODEL_PROC_VERSION}.tar.gz &&  tar -xzf ${MODEL_PROC_VERSION}.tar.gz -C / --strip-components 2 --wildcards "*/samples/model_proc/*""
 RUN wget --no-proxy https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/archive/main/models-main.tar.gz && mkdir -p /media-analytics-pipeline-zoo/models && tar -xzf models-main.tar.gz -C /media-analytics-pipeline-zoo/models --strip-components 1 --wildcards "*/model-descriptions/*" 
 
-FROM ${BASE} as media-analytics-pipeline-zoo
+FROM ${REGISTRY}${BASE} as media-analytics-pipeline-zoo
 ARG BASE=openvino/ubuntu20_data_dev:2021.3_vaapi_fix
 ARG PIPELINE_ZOO_PLATFORM=DEFAULT
 
 ENV PIPELINE_ZOO_PLATFORM=$PIPELINE_ZOO_PLATFORM
-ENV PIPELINE_ZOO_BASE_IMAGE=$BASE
+ENV PIPELINE_ZOO_BASE_IMAGE=${REGISTRY}$BASE
 
 USER root
 
 # Dependencies for OpenVINO
 RUN if [ -f /opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh ]; then \
        /opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh -y ;\
+    fi
+
+RUN if [ -f /opt/intel/openvino/install_dependencies/install_NEO_OCL_driver.sh ]; then \
+       /opt/intel/openvino/install_dependencies/install_NEO_OCL_driver.sh -y ; exit 0; \ 
     fi    
+
+RUN if [ -f /opt/intel/openvino/install_dependencies/install_NCS_udev_rules.sh ]; then \
+       apt-get install -y -q --no-install-recommends sudo; \ 
+       /opt/intel/openvino/install_dependencies/install_NCS_udev_rules.sh -y ;\
+    fi    
+
 
 # Dependencies installed via apt-get
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -101,6 +112,14 @@ ENV OPEN_MODEL_ZOO_ROOT=/opt/intel/openvino/deployment_tools/open_model_zoo
 
 # pipeline zoo models
 COPY --from=MODEL_ZOO /media-analytics-pipeline-zoo/models /opt/intel/openvino/deployment_tools/open_model_zoo/models/media-analytics-pipeline-zoo/models
+
+# XDG_RUNTIME_DIR
+RUN mkdir -p /home/.xdg_runtime_dir
+ENV XDG_RUNTIME_DIR=/home/.xdg_runtime_dir
+
+#Open CL Cache
+RUN mkdir -p $SOURCE_DIR/workspace/.cl-cache
+ENV cl_cache_dir=/home/pipeline-zoo/workspace/.cl-cache
 
 # work dir
 WORKDIR /home/pipeline-zoo/workspace

@@ -207,6 +207,8 @@ def decode_properties(config, queue_config, model, _input, systeminfo):
 
     result = config
     post_proc = ""
+    decode_caps = ""
+    
     if intel_gpu(systeminfo):
         result.setdefault("device", "GPU")
     else:
@@ -220,6 +222,8 @@ def decode_properties(config, queue_config, model, _input, systeminfo):
     if result["element"]=="vaapih264dec":
         if ("max-threads" in result):
             result.pop("max-threads")
+    if "caps" in result:
+        decode_caps = " ! {}".format(result["caps"])
 
     if "post-proc-caps" in result:
         if result["device"] == "GPU":
@@ -237,12 +241,15 @@ def decode_properties(config, queue_config, model, _input, systeminfo):
                                                systeminfo)
     if (decode_queue_properties):
         decode_queue_properties=" ! {}".format(decode_queue_properties)
-    properties = ["{}={}".format(key,value) for key,value in result.items() if key != "element" and key!="device" and key!="post-proc-caps"]
+
+    non_properties = ["element","device","post-proc-caps","caps"]
+    properties = ["{}={}".format(key,value) for key,value in result.items() if key not in non_properties]
     
-    template = "{} {} {}{}".format(result["element"],
+    template = "{} {} {}{}{}".format(result["element"],
                                   " ".join(properties),
-                                  decode_queue_properties,
-                                  post_proc)
+                                     decode_caps,
+                                     decode_queue_properties,
+                                     post_proc)
 
     return template
         

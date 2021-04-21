@@ -34,7 +34,7 @@ def _get_runner_config_path(measurement, workload, args):
     candidates = []
     template = os.path.join(args.workspace_root,
                             workload.pipeline,
-                            "{runner}{platform}{config}.config.{extension}")
+                            "{runner}{config}{platform}.config.{extension}")
     
     configs = []
     if (args.runner_config):

@@ -29,6 +29,7 @@ BUILD_ARGS=$(env | cut -f1 -d= | grep -E '_(proxy|REPO|VER)$' | sed 's/^/--build
 BUILD_OPTIONS="--network=host"
 
 NO_CACHE=
+REGISTRY=
 
 get_options() {
     while :; do
@@ -85,6 +86,14 @@ get_options() {
                 error 'ERROR: "--tag" requires an argument.'
             fi
             ;;
+	--registry)
+	    if [ "$2" ]; then
+		REGISTRY=$2
+		shift
+	    else
+		error 'ERROR: "--docker-image-cache" requires an argument.'
+	    fi
+	    ;;
         --dockerfile-dir)
             if [ "$2" ]; then
                 DOCKERFILE_DIR=$2
@@ -185,6 +194,7 @@ get_options "$@"
 
 # BUILD IMAGE
 
+BUILD_ARGS+=" --build-arg REGISTRY=$REGISTRY "
 BUILD_ARGS+=" --build-arg BASE=$BASE_IMAGE "
 BUILD_ARGS+=" --build-arg MODEL_ZOO_VERSION=$MODEL_ZOO_VERSION "
 BUILD_ARGS+=" --build-arg MODEL_PROC_VERSION=$MODEL_PROC_VERSION "

@@ -1,0 +1,14 @@
+# Runner specific configuration
+
+run: "python3 dlstreamrun"
+
+decode:
+  device: GPU
+  caps: video/x-raw(memory:VASurface)
+detect:
+  device: MULTI:CPU,GPU
+  cpu-throughput-streams: 1
+  nireq: 2
+  ie-config: "CPU_THREADS_NUM=1,CPU_BIND_THREAD=NO"
+  pre-process-backend: vaapi
+  precision: FP32-INT8

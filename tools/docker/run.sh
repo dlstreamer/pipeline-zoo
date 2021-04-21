@@ -26,7 +26,7 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 SOURCE_DIR=$(dirname "$SCRIPT_DIR")
 SOURCE_DIR=$(dirname "$SOURCE_DIR")
 ENVIRONMENT=$(env | cut -f1 -d= | grep -E '_(proxy)$' | sed 's/^/-e / ' | tr '\n' ' ')
-ENVIRONMENT+="-e DISPLAY "
+# ENVIRONMENT+="-e DISPLAY "
 WORKDIR=
 
 get_options() {
@@ -213,6 +213,7 @@ VOLUME_MOUNT+="-v /dev:/dev "
 VOLUME_MOUNT+="-v /lib/modules:/lib/modules "
 VOLUME_MOUNT+="-v $HOME/.Xauthority:/root/.Xauthority "
 mkdir -p $SOURCE_DIR/workspace
+mkdir -p $SOURCE_DIR/workspace/.cl-cache
 
 if [ -z "$NETWORK" ]; then
     NETWORK="--network=host"
