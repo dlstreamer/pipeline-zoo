@@ -726,11 +726,15 @@ def _measure_throughput(task,
     
 
 def _write_runner_config(config, args):
-    config_path = os.path.join(args.pipeline_root,
-                               args.runner+"{}.{}.{}".format(
-                                   ".{}".format(args.platform) if args.platform else "",
-                                   args.save_runner_config,
-                                   "config.yml"))
+
+    template = os.path.join(args.pipeline_root,
+                            "{runner}{config}{platform}.config.{extension}")    
+    
+    config_path = template.format(runner = args.runner,
+                                  config = ".{}".format(args.save_runner_config),
+                                  platform = ".{}".format(args.platform) if args.platform else "",
+                                  extension = "yml")
+
     with open(config_path,"w") as config_file:
         yaml.dump(config,
                   config_file,
