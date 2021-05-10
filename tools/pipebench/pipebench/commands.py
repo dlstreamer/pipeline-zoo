@@ -29,7 +29,13 @@ import time
 from statistics import mean
 import subprocess
 
-def _get_runner_config_path(measurement, workload, args):
+
+
+def _get_runner_config(measurement, workload, args, add_default_platform=False):
+    runner_config_path = _get_runner_config_path(measurement, workload, args, add_default_platform)
+    return validate(runner_config_path, args.schemas, args.runner_overrides)
+
+def _get_runner_config_path(measurement, workload, args, add_default_platform):
 
     candidates = []
     template = os.path.join(args.workspace_root,
@@ -46,6 +52,8 @@ def _get_runner_config_path(measurement, workload, args):
     platforms = []
     if (args.platform):
         platforms.append(args.platform)
+        if add_default_platform:
+            platforms.append(None)
     else:
         platforms.append(None)
 
@@ -142,14 +150,27 @@ def measure(args):
 
     if (args.density) and ("fixed-streams" in workload._document["measurement"]["density"] or
                            "starting-streams" in workload._document["measurement"]["density"]
-                           or previous_throughput) and (not args.throughput):
+                           or previous_throughput):
         throughput = previous_throughput
     elif ("throughput" in workload._document["measurement"]):
-        runner_config_path = _get_runner_config_path("throughput",
-                                                     workload,
-                                                     args)
-        runner_config = validate(runner_config_path, args.schemas, args.runner_overrides)
+        add_default_platform = False
 
+        if args.density:
+            add_default_platform = True
+            
+            # Note: we only check for existance and validation of config
+            # to avoid running density estimate if user gives an invalid density
+            # config
+            _get_runner_config("density",
+                               workload,
+                               args)
+          
+
+        runner_config = _get_runner_config("throughput",
+                                                workload,
+                                                args,
+                                                add_default_platform)
+      
         if (args.save_runner_config and runner_config):
             _write_runner_config(runner_config, args)
                     
@@ -162,10 +183,9 @@ def measure(args):
             print("No throughput calculated. Check pipeline runner logs for errors.")
         
     if ("density" in workload._document["measurement"]):
-        runner_config_path = _get_runner_config_path("density",
-                                                     workload,
-                                                     args)
-        runner_config = validate(runner_config_path, args.schemas, args.runner_overrides)
+        runner_config = _get_runner_config("density",
+                                           workload,
+                                           args)
 
         if (args.save_runner_config and runner_config):
             _write_runner_config(runner_config, args)
