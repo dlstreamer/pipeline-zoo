@@ -24,7 +24,7 @@ stateDiagram
     }
 
     state inference {
-    mobilenet-ssd-tf
+    mobilenet_ssd_tf
     }
 
     state tensors_to_objects {
