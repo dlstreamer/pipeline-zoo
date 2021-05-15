@@ -67,6 +67,9 @@ def set_model_file(model, model_root, file_paths, root, result, extension, key):
 
 def find_model(model, pipeline_root, args):
 
+    if model == "full_frame":
+        return model
+
     result = SimpleNamespace()
         
     model_root = os.path.join(os.path.join(pipeline_root, "models"), model)

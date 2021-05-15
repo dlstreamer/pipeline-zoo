@@ -122,13 +122,18 @@ def _create_inference_elements(models, inference_type, precision="FP32", propert
     
     model_list = getattr(models,inference_type,[])
     element = INFERENCE_ELEMENTS[inference_type]
-    
+
     for model in model_list:
-        model_element = []
+
+        if isinstance(model,str) and (model == 'full_frame'):
+            result.append(model)
+            continue
         
+        model_element = []        
         if (not hasattr(model, precision)):
-            precision = list(model.__dict__.keys())[0]
-            print("\nNo FP32 Model found, trying: {}\n".format(precision))
+            default_precision = list(model.__dict__.keys())[0]
+            print("\nNo {} Model found, trying: {}\n".format(precision, default_precision))
+            precision = default_precision
         
         model_element.append("{} model={}".format(element,
                                                   rgetattr(model,"{}.xml".format(precision))))
@@ -142,7 +147,7 @@ def _create_inference_elements(models, inference_type, precision="FP32", propert
             model_element.append("model-proc={}".format(model_proc))
 
         for key,value in properties.items():
-            model_element.append("{}={}",key,value)
+            model_element.append("{}={}".format(key,value))
 
         result.append(" ".join(model_element))
     return result
@@ -177,8 +182,11 @@ def create_reference(source_dir,
         decode = "decodebin"
 
     detect = _create_inference_elements(models,"detect")
-
-    classify = _create_inference_elements(models,"classify")
+    properties = {}
+    if detect and detect[0]=="full_frame":
+        properties['inference-region']="full-frame"
+        detect = []
+    classify = _create_inference_elements(models,"classify",properties=properties)
 
     output_media_type = MEDIA_TYPES[media_type]
 

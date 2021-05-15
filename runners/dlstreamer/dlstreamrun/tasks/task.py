@@ -161,6 +161,9 @@ def set_model_file(model, model_root, file_paths, root, result, extension, key):
 
 def find_model(model, models_root, result=None):
 
+    if model == "full_frame":
+        return model
+
     if (result is None):
         result = SimpleNamespace()
         
@@ -257,6 +260,9 @@ def inference_properties(config, model, model_name, systeminfo):
 
     result = config
 
+    if model_name == "full_frame":
+        return ""
+
     if (not result["enabled"]):
         return ""
 
@@ -280,6 +286,10 @@ def inference_properties(config, model, model_name, systeminfo):
 
     if hasattr(model,precision):
         result.setdefault("model",getattr(model,precision).xml)
+    elif list(model.__dict__.keys()):
+        default_precision = list(model.__dict__.keys())[0]
+        print("\nNo {} Model found, trying: {}\n".format(precision, default_precision))
+        result.setdefault("model",getattr(model,default_precision).xml)
     else:
         raise Exception("Can't find precision: {} for model: {}".format(precision,model_name))
 
@@ -303,7 +313,7 @@ class ObjectDetection(Task):
 
     classify_model_config = None
     
-    def _set_classify_properties(self):
+    def _set_classify_properties(self, detect_model_name=""):
         result = ""
         elements = []
         if (self.classify_model_config):
@@ -319,6 +329,9 @@ class ObjectDetection(Task):
                 classify_config.setdefault("element","gvaclassify")
                 classify_config.setdefault("name",element_name)
                 classify_config.setdefault("enabled", True)
+
+                if detect_model_name=="full_frame":
+                    classify_config.setdefault("inference-region", "full-frame")
 
                 queue_name = "classify-{}-queue".format(index)
                 queue_config = self._runner_config.setdefault(queue_name,{})
@@ -369,9 +382,9 @@ class ObjectDetection(Task):
         self._sink_element = output_to_sink(self._piperun_config["outputs"][0])
         self._runner_config = self._piperun_config["runner-config"]
 
-        model_name = self._piperun_config["pipeline"][self.detect_model_config]
+        detect_model_name = self._piperun_config["pipeline"][self.detect_model_config]
         
-        self._model = find_model(model_name,
+        self._model = find_model(detect_model_name,
                                  self._piperun_config["models-root"])
 
         self._runner_config.setdefault("detect",{})
@@ -391,7 +404,7 @@ class ObjectDetection(Task):
         
         self._detect_properties = inference_properties(self._runner_config["detect"],
                                                        self._model,
-                                                       model_name,
+                                                       detect_model_name,
                                                        self._my_args.systeminfo)
 
         self._runner_config.setdefault("decode", {"device":"CPU"})
@@ -405,7 +418,7 @@ class ObjectDetection(Task):
                                                     self._piperun_config["inputs"][0],
                                                     self._my_args.systeminfo)
 
-        self._classify_properties = self._set_classify_properties()
+        self._classify_properties = self._set_classify_properties(detect_model_name=detect_model_name)
 
         # "src ! caps ! decode ! detect ! classify ! metaconvert ! metapublish ! sink "
 

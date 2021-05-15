@@ -5,7 +5,7 @@
 * SPDX-License-Identifier: BSD-3-Clause
 '''
 
-import os
+import os, traceback
 from pipebench.arguments import parse_args
 from pipebench.arguments import list_pipelines
 from pipebench.arguments import find_zoo_root
@@ -69,8 +69,11 @@ if __name__ == '__main__':
         pass
     
     except Exception as error:
+        print("\n\n")
+        traceback.print_tb(error.__traceback__)
+        print("\n\n")
         if (parser):
-            parser.error("\n\n{}\n\n".format(error))
+            parser.error("\n\n\n{}\n\n\n".format(error))
         else:
-            print("\n\n{}\n\n".format(error))
-         
+            print("\n\n\n{}\n\n\n".format(error))
+        
