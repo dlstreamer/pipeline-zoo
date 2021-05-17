@@ -22,7 +22,7 @@ class Handler(object, metaclass=abc.ABCMeta):
 
 class Media(Handler):
 
-    media_types = {'video':['QuickTime / MOV']}
+    media_types = {'video':['QuickTime / MOV','raw HEVC video','raw H.264 video']}
     
     def __init__(self, args):
         self._args = args
@@ -31,6 +31,8 @@ class Media(Handler):
         for media_type, long_formats in Media.media_types.items():
             if (media_info['format']['format_long_name'] in long_formats):
                 return media_type
+            else:
+                print("unknown media type: {0}".format(media_info['format']['format_long_name']))
 
     def _create_preview(self,media_filename, directory):
    

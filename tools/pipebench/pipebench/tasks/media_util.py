@@ -267,7 +267,7 @@ class MediaSink(Thread):
 
     def _load_frame_sizes(self):
             
-        frame__paths = [ os.path.join(self._reference_dir, path)
+        frame_paths = [ os.path.join(self._reference_directory, path)
                          for path in os.listdir(self._reference_directory)
                          if path.endswith(self._media_type.frame_extension) ]
 
@@ -284,6 +284,8 @@ class MediaSink(Thread):
                  reference_directory = None,
                  warm_up = 0,
                  sample_size = 1,
+                 save_pipeline_output=False,
+                 output_dir=None,
                  *args,
                  **kwargs):
 
@@ -305,12 +307,17 @@ class MediaSink(Thread):
         self._source_uri = source_uri
         self.connected = False
         self._stopped = False
-        
+        self._save_pipeline_output = save_pipeline_output
+        self._output_file = None
         if ("jsonl" in self._media_type.encoded_caps):
             self._frame_sizes = None
             self.run = self.read_lines
+            if self._save_pipeline_output:
+                self._output_file = open(os.path.join(output_dir,
+                                                      "objects.jsonl"),
+                                         "wb")
         else:
-            self._frame_sizes = _load_frame_sizes()
+            self._frame_sizes = self._load_frame_sizes()
             self.run = self.read_frames
         
         
@@ -351,6 +358,8 @@ class MediaSink(Thread):
                         line.extend(next_char)
                     if (not next_char):
                         break
+                    if self._save_pipeline_output:
+                        self._output_file.write(line)
                     self._frame_count = self._frame_count + 1
 
                     if (self._frame_count % self._sample_size == 0):
@@ -379,6 +388,8 @@ class MediaSink(Thread):
                          ["Ended: {}".format(time.time()),
                           "URI: {}".format(self._source_uri),
                           "Frames Read: {}".format(self._frame_count)])
+            if self._output_file:
+                self._output_file.close()
 
 
 

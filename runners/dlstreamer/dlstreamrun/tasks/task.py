@@ -144,7 +144,6 @@ def set_model_file(model, model_root, file_paths, root, result, extension, key):
     candidate = "{}{}".format(model,extension)
     
     value = None
-        
     if (candidate in candidates):
         value = os.path.join(root, candidate)
     elif (len(candidates)==1):
@@ -158,6 +157,8 @@ def set_model_file(model, model_root, file_paths, root, result, extension, key):
         segments.append(key)
         
         _set_namespace_value(result, segments, value)
+        if key == "proc":
+            _set_namespace_value(result,["proc"],value)
 
 def find_model(model, models_root, result=None):
 
@@ -268,7 +269,6 @@ def inference_properties(config, model, model_name, systeminfo):
 
     result.setdefault("device","CPU")
     threads = number_of_physical_threads(systeminfo)
-
     if (getattr(model,"proc",None)):
         result.setdefault("model-proc",model.proc)
     

@@ -142,6 +142,8 @@ class ObjectDetection(Task):
                          self._output_caps,
                          warm_up = warm_up,
                          sample_size = sample_size,
+                         save_pipeline_output = self._args.save_pipeline_output,
+                         output_dir = os.path.dirname(piperun_config_path),
                          daemon=True)
         sink.start()
         
