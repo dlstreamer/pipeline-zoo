@@ -1,0 +1,10 @@
+# Defines oc-h265-fixed_region-resnet_v1.5_50 object classification pipeline
+
+task: object-classification
+
+detection-model: full_frame
+
+classification-models: [resnet_v1.5_50_i8_INT8]
+
+inputs.media.type.media-type: video/x-h265
+

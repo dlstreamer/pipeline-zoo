@@ -1,0 +1,14 @@
+run: python3 dlstreamrun
+detect:
+  device: GPU.0
+  nireq: 2
+  batch-size: 8
+  inference-region: full-frame
+  precision: FP32-INT8
+decode:
+  post-proc-caps: video/x-raw\(memory:VASurface\),height=300,width=300
+  device: GPU
+detect-queue:
+  enabled: false
+decode-queue:
+  enabled: false

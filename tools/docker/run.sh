@@ -6,13 +6,15 @@
 #
 
 # Platforms
-declare -A PLATFORMS=(["VCAC-A"]=1 ["DEFAULT"]=2)
+declare -A PLATFORMS=(["DEFAULT"]=1 ["VCAC-A"]=2 ["ATS"]=3)
 PLATFORM=DEFAULT
 
 IMAGE=
 VOLUME_MOUNT=
 PORTS=
+CAPADD=
 DEVICES=
+DEVICEGRP=
 DEFAULT_IMAGE="media-analytics-pipeline-zoo"
 ENTRYPOINT=
 ENTRYPOINT_ARGS=
@@ -154,6 +156,17 @@ get_options() {
 	fi
     fi
 
+    if [[ $PLATFORM =~ "ATS" ]] || [[ $IMAGE =~ "ats" ]]; then
+       CAPADD="--cap-add SYS_ADMIN" 
+       ENTRYPOINT="--entrypoint /bin/hello-bash"
+       DEVICE=${DEVICE:-/dev/dri/renderD128}
+       DEVICE_GRP=$(ls -g $DEVICE | awk '{print $3}' | xargs getent group | awk -F: '{print $3}')
+       ENVIRONMENT+=" -e DEVICE=$DEVICE"
+       DEVICES="--device=$DEVICE"
+       if [ -e /dev/dri/by-path ]; then BY_PATH="-v /dev/dri/by-path:/dev/dri/by-path"; fi
+       DEVICEGRP="--group-add $DEVICE_GRP $BY_PATH"
+    fi
+
     if [ -z "$IMAGE" ]; then
         IMAGE=$DEFAULT_IMAGE
 	if [ ! -z "$PLATFORM" ] && [ $PLATFORM != 'DEFAULT' ]; then
@@ -229,7 +242,7 @@ show_options
 
 if [ -z "$ATTACH" ]; then
     set -x
-    docker run $INTERACTIVE $WORKDIR --rm $ENVIRONMENT $VOLUME_MOUNT $DEVICES $NETWORK $PORTS $ENTRYPOINT --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
+    docker run $INTERACTIVE $WORKDIR --rm $ENVIRONMENT $VOLUME_MOUNT $CAPADD $DEVICES $DEVICEGRP $NETWORK $PORTS $ENTRYPOINT --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
      { set +x; } 2>/dev/null
 else
     RUNNING_INSTANCE=$(docker ps -q --filter "name=$IMAGE")

@@ -1,0 +1,3 @@
+- resnet_v1.5_50_i8_INT8
+- ssd_mobilenet_v2_coco_INT8
+- ssd_mobilenet_v2_coco

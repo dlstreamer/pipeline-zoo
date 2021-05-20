@@ -278,6 +278,9 @@ def inference_properties(config, model, model_name, systeminfo):
     if (result["device"]=="HDDL"):
         precision = result.setdefault("precision","FP16")
 
+    if ("GPU." in result["device"]):
+        precision = result.setdefault("precision","FP32-INT8")
+
     if (result["device"]=="GPU"):
         precision = result.setdefault("precision","FP16")
 

@@ -8,22 +8,26 @@ TAG=
 RUN_PREFIX=
 
 # Platforms
-declare -A PLATFORMS=(["VCAC-A"]=1 ["DEFAULT"]=2)
+declare -A PLATFORMS=(["DEFAULT"]=1 ["VCAC-A"]=2 ["ATS"]=3)
 PLATFORM=DEFAULT
 
 # Base Images
-VCAC_A_BASE_IMAGE=openvino/ubuntu18_data_dev:2021.2
 DEFAULT_BASE_IMAGE=openvino/ubuntu20_data_dev:2021.3_vaapi_fix
+VCAC_A_BASE_IMAGE=openvino/ubuntu18_data_dev:2021.2
+ATS_BASE_IMAGE=intel-media-analytics:latest
 
 # Model Zoo Versions
 VCAC_A_MODEL_ZOO_VERSION=2021.2
+ATS_MODEL_ZOO_VERSION=2021.2
 DEFAULT_MODEL_ZOO_VERSION=2021.3
 
 # Model Proc Versions
+ATS_MODEL_PROC_VERSION=v1.3 
 VCAC_A_MODEL_PROC_VERSION=v1.3
 DEFAULT_MODEL_PROC_VERSION=v1.4.1
 
 DOCKERFILE_DIR=$(dirname "$(readlink -f "$0")")
+DOCKERFILE=${DOCKERFILE_DIR}/Dockerfile
 SOURCE_DIR=$(dirname $DOCKERFILE_DIR)
 BUILD_ARGS=$(env | cut -f1 -d= | grep -E '_(proxy|REPO|VER)$' | sed 's/^/--build-arg / ' | tr '\n' ' ')
 BUILD_OPTIONS="--network=host"
@@ -192,6 +196,10 @@ error() {
 
 get_options "$@"
 
+if [ $PLATFORM = "ATS" ]; then
+    DOCKERFILE="$DOCKERFILE_DIR/intel-media-analytics/Dockerfile"
+fi
+
 # BUILD IMAGE
 
 BUILD_ARGS+=" --build-arg REGISTRY=$REGISTRY "
@@ -206,6 +214,6 @@ if [ -z "$RUN_PREFIX" ]; then
     set -x
 fi
 
-$RUN_PREFIX docker build -f "$DOCKERFILE_DIR/Dockerfile" $BUILD_OPTIONS $BUILD_ARGS -t $TAG $SOURCE_DIR $NO_CACHE
+$RUN_PREFIX docker build -f $DOCKERFILE $BUILD_OPTIONS $BUILD_ARGS -t $TAG $SOURCE_DIR $NO_CACHE 
 
 { set +x; } 2>/dev/null
