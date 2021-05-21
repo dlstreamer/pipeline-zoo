@@ -55,13 +55,14 @@ RUN printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then \n\
     . /etc/bash_completion \n\
 fi\n" >> ~/.bashrc
 
-# set up GSE image for PL zoo 
-RUN mkdir -p /opt/intel/openvino/deployment_tools/ \
-    && mv /opt/intel/solutions/dldt/deployment_tools/model-optimizer /opt/intel/openvino/deployment_tools/. \   
-    && mv /opt/intel/openvino/deployment_tools/model-optimizer /opt/intel/openvino/deployment_tools/model_optimizer \ 
-    && cd /opt/intel/openvino/deployment_tools/model_optimizer \
-    && python3 -m pip install --upgrade pip \
-    && python3 -m pip install -r requirements.txt
+# set up GSE image for PL zoo
+RUN if [ -d /opt/intel/solutions/dldt/deployment_tools/model-optimizer ]; then \
+       mkdir -p /opt/intel/openvino/deployment_tools/ \
+       && mv /opt/intel/solutions/dldt/deployment_tools/model-optimizer /opt/intel/openvino/deployment_tools/model_optimizer \
+       && cd /opt/intel/openvino/deployment_tools/model_optimizer \
+       && python3 -m pip install --upgrade pip \
+       && python3 -m pip install -r requirements.txt; \
+    fi
 
 # pipebench
 COPY ./pipebench/requirements.txt /
@@ -119,7 +120,9 @@ RUN mkdir -p $SOURCE_DIR/workspace/.cl-cache
 ENV cl_cache_dir=/home/pipeline-zoo/workspace/.cl-cache
 
 # Carl Fix Temporary
-RUN dpkg --force-depends -i /opt/intel/solutions/assets/carls_fix/*.deb
+RUN if [ -d /opt/intel/solutions/assets/carls_fix ]; then \
+       dpkg --force-depends -i /opt/intel/solutions/assets/carls_fix/*.deb; \
+    fi
 
 ENTRYPOINT ["/usr/bin/demo-bash"]
 
