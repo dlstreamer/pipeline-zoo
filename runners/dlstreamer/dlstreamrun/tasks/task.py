@@ -165,6 +165,9 @@ def find_model(model, models_root, result=None):
     if model == "full_frame":
         return model
 
+    if model.endswith("jsonl"):
+        return model
+
     if (result is None):
         result = SimpleNamespace()
         
@@ -256,6 +259,13 @@ def decode_properties(config, queue_config, model, _input, systeminfo):
                                      post_proc)
 
     return template
+
+def _detections_from_reference(config, model, model_name, systeminfo):
+    module_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "add_detections.py")
+    
+    return "gvapython module={} class=AddDetections arg=[\\\"{}\\\"]".format(module_path,
+                                                                             model_name)
         
 def inference_properties(config, model, model_name, systeminfo):
 
@@ -266,6 +276,9 @@ def inference_properties(config, model, model_name, systeminfo):
 
     if (not result["enabled"]):
         return ""
+
+    if model_name.endswith("jsonl"):
+        return _detections_from_reference(config,model,model_name,systeminfo)
 
     result.setdefault("device","CPU")
     threads = number_of_physical_threads(systeminfo)
@@ -445,7 +458,7 @@ class ObjectDetection(Task):
         command_path = os.path.join(dirname,
                                  basename.replace('piperun.yml',"gst-launch.sh"))
         with open(command_path,"w") as command_file:
-            command_file.write("{}\n".format(' '.join(standalone_args).replace('(','\(').replace(')','\)')))
+            command_file.write("{}\n".format(' '.join(standalone_args).replace('(','\(').replace(')','\)').replace('"','\\"')))
         os.chmod(command_path,stat.S_IXGRP | stat.S_IXOTH | stat.S_IEXEC | stat.S_IWUSR | stat.S_IROTH | stat.S_IRUSR)
         self.completed = None
         super().__init__(piperun_config, args, *pos_args, **keywd_args)

@@ -285,12 +285,21 @@ def _load_workload(args):
         workload_name = os.path.basename(workload.media) if workload_name == "" else workload_name
         if (args.save_workload):
             workload_name = args.save_workload
+        if getattr(workload._namespace,"use-reference-detections",False):
+            workload_name+=".using-reference-detections"
+            
         args.workload_name = workload_name
+
+        media_name = os.path.basename(workload.media)
+
+        if getattr(workload._namespace,"use-reference-detections",False):
+            media_name+=".using-reference-detections"
+        
         args.workload_root = os.path.join(args.
                                           workspace_root,
                                           workload.pipeline,
                                           "workloads",
-                                          os.path.basename(workload.media),
+                                          media_name,
                                           workload.scenario.source)
 
         

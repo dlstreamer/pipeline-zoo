@@ -36,9 +36,24 @@ class ObjectDetection(Task):
         self._pipeline = pipeline
         self._args = args
         self._fps_stats = None
+        self._use_reference_detections = getattr(self._workload._namespace,
+                                                 "use-reference-detections",
+                                                 False)
+        self._task_name = self._pipeline._namespace.task
+        if (self._task_name != "object-classification"
+            and self._use_reference_detections):
+            args.parser.error("use reference detections only valid for classification pipelines")
         
     def _create_piperun_config(self, run_root, runner_config):
-        piperun_config = {"pipeline":self._pipeline._document}
+
+        if self._use_reference_detections:
+            self._pipeline._document["detection-model"] = (
+                os.path.join(self._args.workload_root,
+                             "reference",
+                             "detection.objects.jsonl")
+                )
+
+        piperun_config = {"pipeline":self._pipeline._document}       
         filename = "{}.piperun.yml".format(self._args.workload_name)
         pipe_uuid = uuid.uuid1()
         pipe_directory = os.path.join("/tmp",str(pipe_uuid))
@@ -193,6 +208,27 @@ class ObjectDetection(Task):
             
         return reference
 
+    def _write_detection_reference(self, reference, reference_target):
+        reference_path = os.path.join(reference_target, "detection.objects.jsonl")
+        try:
+            with open(reference_path,"w") as reference_file:
+                for result in reference:
+                    reference_file.write(json.dumps(result))
+                    reference_file.write('\n')
+        except Exception as error:
+            print("Can't write reference! {}".format(error))
+                                    
+    
+    def _remove_classifications(self, reference):
+        for result in reference:
+            if "objects" in result:
+                for object_ in result["objects"]:
+                    keys = list(object_.keys())
+                    detection_keys = ["detection",'h','roi_type','w','x','y']
+                    for key in keys:
+                        if key not in detection_keys:
+                            del object_[key]
+
 
     def _read_input_paths(self, input_directory):
 
@@ -269,4 +305,8 @@ class ObjectDetection(Task):
                 os.remove(extra_input)
             except Exception as error:
                 print(error)
+
+        if self._use_reference_detections:
+            self._remove_classifications(reference)
+            self._write_detection_reference(reference,reference_target)
             

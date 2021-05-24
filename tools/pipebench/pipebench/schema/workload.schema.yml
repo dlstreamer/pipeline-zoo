@@ -11,6 +11,9 @@ properties:
   media:
     type: string
     format: path
+  use-reference-detections:
+    type: boolean
+    default: false
   measurement:
     type: object
     default: {}
