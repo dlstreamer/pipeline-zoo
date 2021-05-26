@@ -279,7 +279,8 @@ class Model(Handler):
             command = self._create_download_command(model,output_dir)
             print(' '.join(command))
             subprocess.run(command)
-            command = self._create_convert_command(model,output_dir)
+            if model!="mobilenetv2_7":
+                command = self._create_convert_command(model,output_dir)
             print(' '.join(command))
             subprocess.run(command)
             model_path = self._find_model_root(model,output_dir)
