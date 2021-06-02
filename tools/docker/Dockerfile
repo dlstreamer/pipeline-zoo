@@ -123,5 +123,9 @@ ENV XDG_RUNTIME_DIR=/home/.xdg_runtime_dir
 RUN mkdir -p $SOURCE_DIR/workspace/.cl-cache
 ENV cl_cache_dir=/home/pipeline-zoo/workspace/.cl-cache
 
+# Bash History
+
+ENV HISTFILE=/home/pipeline-zoo/workspace/.bash_history
+
 # work dir
 WORKDIR /home/pipeline-zoo/workspace
