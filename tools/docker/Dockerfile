@@ -56,7 +56,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     nlohmann-json3-dev \
     numactl \
     libjemalloc-dev \
-    python3 && \
+    python3 \
+    lsb-release \
+    vim && \
     rm -rf /var/lib/apt/lists/*
 
 ENV nlohmann_json_DIR=/usr/lib/cmake
