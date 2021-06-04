@@ -467,6 +467,8 @@ def _write_density_result(density,
                           workload,
                           config,
                           results,
+                          min_failure_iteration,
+                          max_success_iteration,
                           runner):
     
     iteration_results = {}
@@ -494,7 +496,7 @@ def _write_density_result(density,
     last = []
     second_to_last = []
     if (results):
-        iteration = results[-1]
+        iteration = results[max_success_iteration]
         last.append("Streams: {}".format(iteration[1]))
         last.extend(_density_result_strings(iteration[0],config))
         if (len(iteration[0])>1):
@@ -504,7 +506,7 @@ def _write_density_result(density,
                                                                            mean(values["avg"])))
                                                                                                                 
         if (len(results)>1):
-            iteration = results[-2]
+            iteration = results[min_failure_iteration]
             second_to_last.append("Streams: {}".format(iteration[1]))
             second_to_last.extend(_density_result_strings(iteration[0],config))
             if (len(iteration[0])>1):
@@ -581,13 +583,17 @@ def _check_density(results, config):
         per_stream_results = results[0]
         range_results = [_check_ranges(stream_result,ranges) for stream_result in per_stream_results]
     else:
-        number_of_streams = len(results[0])
-    
+        #number_of_streams = len(results[0])
+        per_stream_results = results[0]
+ 
+        average = mean ([stream_result.avg for stream_result in per_stream_results])
+        minimum = min  ([stream_result.avg for stream_result in per_stream_results])
+        maximum = max  ([stream_result.avg for stream_result in per_stream_results])
         total_result = FpsReport(0,
-                                 results[1]["min"]/number_of_streams,
-                                 results[1]["max"]/number_of_streams,
+                                 average,
+                                 maximum,
                                  0,
-                                 results[1]["avg"]/number_of_streams,
+                                 minimum,
                                  None,
                                  None)
         
@@ -656,13 +662,20 @@ def _measure_density(throughput,
     current_result = None
     iteration = 0
     iteration_results = []
+    iteration_results_map = {}
     max_iterations = config["max-iterations"]
     frame_rate = config["fps"]
     if (not config["limit-frame-rate"]):
         frame_rate = -1
+
+    max_success = -1
+    min_failure = -1
+    max_success_iteration = -1
+    min_failure_iteration = -1
+    search_method = config["search-method"]
     
-    while (
-            (first_result == current_result)
+    while ( ( (max_success==-1) or (min_failure==-1) or (min_failure-max_success>1) )
+            #(first_result == current_result)
             and (num_streams>=config["min-streams"]) and (num_streams<=config["max-streams"])
             and (max_iterations<0 or iteration < max_iterations)
     ):
@@ -700,15 +713,55 @@ def _measure_density(throughput,
                       "Number of Streams: {}".format(num_streams),
                       "Passed: {}".format(success)])
         iteration_results.append((density_result,num_streams))
+        iteration_results_map[num_streams] = success
         if (first_result is None):
             first_result = success
         current_result = success
+        old_num_streams = num_streams
+        calculated_num_streams = int(sum ([stream_result.avg for stream_result in results[0]])/config['fps'])
         if (success):
+            calculated_num_streams += 1
             if (density < num_streams):
                 density = num_streams
-            num_streams += 1
+            if (num_streams > max_success):
+                max_success = num_streams
+                max_success_iteration = iteration
+
+            if search_method == "linear":
+                num_streams += 1
+            else:
+                if (min_failure==-1):
+                    num_streams *= 2
+                else:
+                    num_streams = int(((min_failure - max_success) / 2) + max_success)
+                if calculated_num_streams < num_streams and calculated_num_streams not in iteration_results_map:
+                    num_streams = calculated_num_streams
         else:
-            num_streams -= 1
+            if (min_failure==-1) or (num_streams < min_failure):
+                min_failure = num_streams
+                min_failure_iteration = iteration
+
+            if search_method == "linear":
+                num_streams -= 1
+            else:
+                if (max_success == -1):
+                    num_streams = int(num_streams / 2)
+                else:
+                    num_streams = int(((min_failure - max_success) / 2) + max_success)
+                if (calculated_num_streams > num_streams) and (calculated_num_streams not in iteration_results_map):
+                    num_streams = calculated_num_streams
+                elif (calculated_num_streams-1 > num_streams) and (calculated_num_streams-1 not in iteration_results_map):
+                    num_streams = calculated_num_streams-1
+        
+        if (num_streams>config["max-streams"]):
+            num_streams = config["max-streams"]
+
+        if (num_streams<config["min-streams"]):
+            num_streams = config["min-streams"]
+        
+        if (num_streams == old_num_streams) or (num_streams in iteration_results_map):
+            break
+
         iteration += 1
 
     _write_density_result(density,
@@ -716,6 +769,8 @@ def _measure_density(throughput,
                           workload,
                           config,
                           iteration_results,
+                          min_failure_iteration,
+                          max_success_iteration,
                           args.runner)
     return density
 

@@ -92,6 +92,10 @@ properties:
           max-streams:
             type: integer
             default: 100
-        required: [fps, max-streams, min-streams, warm-up, sample-size, duration, max-iterations, numa-aware, per-stream]  
+          search-method:
+            type: string
+            default: linear
+            enum: [binary, linear]
+        required: [fps, max-streams, min-streams, warm-up, sample-size, duration, max-iterations, numa-aware, per-stream, search-method]  
       
 required: [scenario, measurement]

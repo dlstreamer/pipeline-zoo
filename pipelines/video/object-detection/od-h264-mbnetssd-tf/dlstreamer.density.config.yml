@@ -6,9 +6,9 @@ decode:
   max-threads: 1
   device: CPU
 detect:
-  cpu-throughput-streams: 2
-  nireq: 3
-  ie-config: "CPU_THREADS_NUM=2,CPU_BIND_THREAD=NO"
+  cpu-throughput-streams: 1
+  nireq: 2
+  ie-config: "CPU_THREADS_NUM=1,CPU_BIND_THREAD=NO"
   pre-process-backend: ie
   precision: FP32-INT8
   
