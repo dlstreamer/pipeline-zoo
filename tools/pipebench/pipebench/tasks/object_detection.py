@@ -306,7 +306,6 @@ class ObjectDetection(Task):
             except Exception as error:
                 print(error)
 
-        if self._use_reference_detections:
-            self._remove_classifications(reference)
-            self._write_detection_reference(reference,reference_target)
+        self._remove_classifications(reference)
+        self._write_detection_reference(reference,reference_target)
             
