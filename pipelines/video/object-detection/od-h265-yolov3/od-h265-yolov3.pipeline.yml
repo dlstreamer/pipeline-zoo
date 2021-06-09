@@ -1,0 +1,8 @@
+# Defines ob-h265-yolov3 Pipeline of type object-detection
+
+task: object-detection
+
+model: yolo-v3-tf
+
+inputs.media.type.media-type: video/x-h265
+
