@@ -105,9 +105,11 @@ def measure(args):
     task = Task.create_task(workload, args)
     _prepare(task, workload, args)
 
-    target_dir_suffix = "{runner}{platform}{config}".format(runner = args.runner,
-                                                            platform = ".{}".format(args.platform) if args.platform else "",
-                                                            config = ".{}".format(args.runner_config) if args.runner_config else "")
+    config_suffix = args.save_runner_config if args.save_runner_config else args.runner_config
+    target_dir_suffix = "{runner}{platform}{config}".format(
+        runner = args.runner,
+        platform = ".{}".format(args.platform) if args.platform else "",
+        config = ".{}".format(config_suffix) if config_suffix else "")
     
     # create output folder for runner
 
