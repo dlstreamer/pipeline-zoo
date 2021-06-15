@@ -210,7 +210,8 @@ def queue_properties(config, model, systeminfo):
 def decode_properties(config, queue_config, model, _input, systeminfo):
 
     media_type_map = defaultdict(lambda:{"CPU":"decodebin","GPU":"vaapidecodebin"},
-                                 {"video/x-h264": {"CPU":"avdec_h264", "GPU":"vaapih264dec"}})
+                                 {"video/x-h264": {"CPU":"avdec_h264", "GPU":"vaapih264dec"},
+                                  "video/x-h265": {"CPU":"avdec_h265", "GPU":"vaapih265dec"}})
 
     result = config
     post_proc = ""
