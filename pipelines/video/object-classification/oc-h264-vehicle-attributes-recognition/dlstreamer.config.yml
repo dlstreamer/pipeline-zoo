@@ -1,0 +1,7 @@
+# Runner specific configuration
+
+run: "python3 dlstreamrun"
+
+detect:
+  device: CPU
+  

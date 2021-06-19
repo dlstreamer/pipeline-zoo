@@ -1,0 +1,8 @@
+# Defines ob-h264-person-vehicle-bike-detection-crossroad Pipeline of type object-detection
+
+task: object-detection
+
+model: person-vehicle-bike-detection-crossroad-0078
+
+inputs.media.type.media-type: video/x-h264
+
