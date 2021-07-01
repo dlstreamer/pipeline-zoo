@@ -5,7 +5,7 @@ decode:
   caps: video/x-raw\(memory:VASurface\)
 classify-0:
   device: GPU.0
-  nireq: 4
+  nireq: 1
   batch-size: 1
   pre-process-backend: vaapi-surface-sharing
   precision: FP32-INT8

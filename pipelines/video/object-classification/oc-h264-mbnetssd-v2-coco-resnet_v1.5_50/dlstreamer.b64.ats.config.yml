@@ -4,13 +4,13 @@ decode:
   caps: video/x-raw\(memory:VASurface\)
 detect:
   device: GPU.0
-  nireq: 4
+  nireq: 1
   batch-size: 64
   pre-process-backend: vaapi-surface-sharing
   precision: FP32-INT8
 classify-0:
   device: GPU.0
-  nireq: 4
+  nireq: 1
   batch-size: 64
   pre-process-backend: vaapi-surface-sharing
   precision: FP32-INT8

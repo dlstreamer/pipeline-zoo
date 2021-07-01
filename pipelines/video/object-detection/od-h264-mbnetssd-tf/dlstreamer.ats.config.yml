@@ -1,8 +1,8 @@
 run: python3 dlstreamrun
 detect:
   device: GPU.0
-  nireq: 2
-  batch-size: 8
+  nireq: 1
+  batch-size: 1
   inference-region: full-frame
   precision: FP32-INT8
 decode:
