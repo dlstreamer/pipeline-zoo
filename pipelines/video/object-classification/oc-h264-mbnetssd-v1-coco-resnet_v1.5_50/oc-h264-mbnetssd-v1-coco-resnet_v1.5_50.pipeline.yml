@@ -2,7 +2,7 @@
 
 task: object-classification
 
-detection-model: ssd_mobilenet_v1_coco
+detection-model: ssd_mobilenet_v1_coco_INT8
 
 classification-models: [resnet_v1.5_50_i8_INT8]
 
