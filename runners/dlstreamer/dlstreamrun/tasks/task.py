@@ -237,7 +237,7 @@ def decode_properties(config, queue_config, model, _input, systeminfo):
         if result["device"] == "GPU":
             post_proc = " ! vaapipostproc ! {}".format(result["post-proc-caps"])
         elif result["device"] == "CPU":
-            post_proc = " ! videoconvert ! videoscale ! {}".format(result["post-proc-caps"])
+            post_proc = " ! videoscale ! videoconvert ! {}".format(result["post-proc-caps"])
 
     queue_name = "decode-queue"
     queue_config.setdefault("element", "queue")
