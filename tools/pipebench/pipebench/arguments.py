@@ -75,6 +75,7 @@ def _get_parser(program_name="pipebench"):
     download_parser.set_defaults(command=pipebench.commands.download)
 
     download_parser.add_argument("--force", required=False, dest="force",action="store_true", default=False)
+    download_parser.add_argument("--silent", required=False, dest="silent",action="store_true", default=False)
 
     measure_parser = subparsers.add_parser("measure")
     measure_parser.add_argument("pipeline",

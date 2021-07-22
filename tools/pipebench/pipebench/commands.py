@@ -258,7 +258,10 @@ def _download_pipeline(pipeline, args):
                        
         command = _create_download_command(pipeline,args)
 
-        subprocess.run(command)
+        output = subprocess.DEVNULL if args.silent else None
+        
+        subprocess.run(command, stdout=output, stderr=output)
+        
     else:
         print("Pipeline found, skipping download")
 
