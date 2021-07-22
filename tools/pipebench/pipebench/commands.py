@@ -106,7 +106,7 @@ def measure(args):
     _prepare(task, workload, args)
 
     config_suffix = args.save_runner_config if args.save_runner_config else args.runner_config
-    target_dir_suffix = "{runner}{platform}{config}".format(
+    target_dir_suffix = "{runner}{config}{platform}".format(
         runner = args.runner,
         platform = ".{}".format(args.platform) if args.platform else "",
         config = ".{}".format(config_suffix) if config_suffix else "")
