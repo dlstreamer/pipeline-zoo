@@ -7,7 +7,7 @@ ARG BASE=openvino/ubuntu18_data_dev:2021.1
 ARG PIPELINE_ZOO_PLATFORM=DEFAULT
 FROM ubuntu:18.04 as MODEL_ZOO
 ARG MODEL_PROC_VERSION=v1.2.1
-ARG MODEL_ZOO_VERSION=2021.2
+ARG MODEL_ZOO_VERSION=2021.3
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y -q --no-install-recommends \
@@ -119,12 +119,13 @@ COPY --from=MODEL_ZOO /media-analytics-pipeline-zoo/models /opt/intel/openvino/d
 RUN mkdir -p $SOURCE_DIR/workspace/.cl-cache
 ENV cl_cache_dir=/home/pipeline-zoo/workspace/.cl-cache
 
-# Carl Fix Temporary
-RUN if [ -d /opt/intel/solutions/assets/carls_fix ]; then \
-       dpkg --force-depends -i /opt/intel/solutions/assets/carls_fix/*.deb; \
-    fi
+# XDG_RUNTIME_DIR
+RUN mkdir -p /home/.xdg_runtime_dir
+ENV XDG_RUNTIME_DIR=/home/.xdg_runtime_dir
+
+# Bash History
+ENV HISTFILE=/home/pipeline-zoo/workspace/.bash_history
+
+WORKDIR /home/pipeline-zoo/workspace
 
 ENTRYPOINT ["/usr/bin/demo-bash"]
-
-# work dir
-WORKDIR /home/pipeline-zoo/workspace
