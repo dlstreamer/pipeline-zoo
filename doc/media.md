@@ -14,6 +14,14 @@ New media can be added to the repository following these steps.
    ./pipeline-zoo/tools/docker/run.sh -v /home/nnshah1/new_media:/home/new_media
 
    ```
+   
+1. change the working directory to the mounted media folder,
+   the files to be uploaded will be created here.
+
+   ```
+   cd /home/new_media
+   ```   
+
 1. Use the pipeline zoo upload utility to create a basic preview and readme for the media.
    
    ```
