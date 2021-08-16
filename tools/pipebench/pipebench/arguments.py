@@ -132,6 +132,9 @@ def _get_parser(program_name="pipebench"):
                                 required=False,
                                 default=False)
 
+    measure_parser.add_argument("--measurement-directory",
+                                required=False,
+                                default="")
     
     measure_parser.add_argument("--force", required=False, dest="force",action="store_true", default=False)
 

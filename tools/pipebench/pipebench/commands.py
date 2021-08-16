@@ -122,8 +122,15 @@ def measure(args):
     
     if (args.add_timestamp):
         timestamp = "_{}".format(int(time.time()))
+
+    target_root = args.pipeline_root
+
+    if (args.measurement_directory):
+        target_root = os.path.abspath(os.path.join(args.measurement_directory,
+                                                   os.path.basename(args.pipeline_root)))
+                                                   
         
-    target_dirs = [ os.path.join(args.pipeline_root,
+    target_dirs = [ os.path.join(target_root,
                                  "measurements",
                                  args.workload_name+timestamp,
                                  workload.scenario.source,
@@ -142,11 +149,16 @@ def measure(args):
     for target_dir in target_dirs:
         if (not os.path.isdir(target_dir)):
             create_directory(target_dir)
-
+    
     # write out workload file
     _write_workload(workload, os.path.dirname(os.path.dirname(target_dirs[0])), args)
     if (args.save_workload):
         _write_workload(workload, args.pipeline_root, args)
+
+    # copy systeminfo
+
+    shutil.copy(os.path.join(args.workload_root, "systeminfo.json"),
+                os.path.dirname(os.path.dirname(target_dirs[0])))
 
     previous_throughput = _read_existing_throughput(target_dirs[0],args)
 
@@ -325,16 +337,12 @@ def _prepare(task, workload, args):
 
     if (not os.path.isdir(args.workload_root)):
         create_directory(args.workload_root)
-        measurement_directory = args.workload_root.replace("workloads","measurements")
-        create_directory(measurement_directory)
 
         command = _create_systeminfo_command(args.workload_root,
                                              args)
     
         subprocess.run(command,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         
-        shutil.copy(os.path.join(args.workload_root,"systeminfo.json"),
-                    measurement_directory)
 
     directories = [os.path.join(args.workload_root,suffix) for suffix in ["input", "reference"]]
                 
