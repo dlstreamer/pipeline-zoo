@@ -8,22 +8,15 @@ TAG=
 RUN_PREFIX=
 
 # Platforms
-declare -A PLATFORMS=(["DEFAULT"]=1 ["VCAC-A"]=2 ["ATS"]=3)
+declare -A PLATFORMS=(["DEFAULT"]=1 ["ATS"]=3)
 PLATFORM=DEFAULT
 
 # Base Images
-DEFAULT_BASE_IMAGE=openvino/ubuntu20_data_dev:2021.3_vaapi_fix
-VCAC_A_BASE_IMAGE=openvino/ubuntu18_data_dev:2021.2
+DEFAULT_BASE_IMAGE=openvino/ubuntu20_data_dev:2021.4
 ATS_BASE_IMAGE=intel-media-analytics:latest
-
-# Model Zoo Versions
-VCAC_A_MODEL_ZOO_VERSION=2021.2
-ATS_MODEL_ZOO_VERSION=2021.2
-DEFAULT_MODEL_ZOO_VERSION=2021.3
 
 # Model Proc Versions
 ATS_MODEL_PROC_VERSION=v1.3 
-VCAC_A_MODEL_PROC_VERSION=v1.3
 DEFAULT_MODEL_PROC_VERSION=v1.4.1
 
 DOCKERFILE_DIR=$(dirname "$(readlink -f "$0")")
@@ -64,14 +57,6 @@ get_options() {
                 shift
             else
                 error 'ERROR: "--model_proc_version" requires an argument.'
-            fi
-            ;;
-	--model-zoo-version)
-            if [ "$2" ]; then
-                MODEL_ZOO_VERSION=$2
-                shift
-            else
-                error 'ERROR: "--model_zoo_version" requires an argument.'
             fi
             ;;
         --build-arg)
@@ -145,10 +130,6 @@ get_options() {
 	    BASE_IMAGE=${PLATFORM_PREFIX}_BASE_IMAGE
 	    BASE_IMAGE=${!BASE_IMAGE}
 	fi
-	if [ -z "$MODEL_ZOO_VERSION" ]; then
-	    MODEL_ZOO_VERSION=${PLATFORM_PREFIX}_MODEL_ZOO_VERSION
-	    MODEL_ZOO_VERSION=${!MODEL_ZOO_VERSION}
-	fi
 	if [ -z "$MODEL_PROC_VERSION" ]; then
 	    MODEL_PROC_VERSION=${PLATFORM_PREFIX}_MODEL_PROC_VERSION
 	    MODEL_PROC_VERSION=${!MODEL_PROC_VERSION}
@@ -204,7 +185,6 @@ fi
 
 BUILD_ARGS+=" --build-arg REGISTRY=$REGISTRY "
 BUILD_ARGS+=" --build-arg BASE=$BASE_IMAGE "
-BUILD_ARGS+=" --build-arg MODEL_ZOO_VERSION=$MODEL_ZOO_VERSION "
 BUILD_ARGS+=" --build-arg MODEL_PROC_VERSION=$MODEL_PROC_VERSION "
 BUILD_ARGS+=" --build-arg PIPELINE_ZOO_PLATFORM=$PLATFORM "
 

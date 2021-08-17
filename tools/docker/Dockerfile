@@ -8,7 +8,6 @@ ARG PIPELINE_ZOO_PLATFORM=DEFAULT
 ARG REGISTRY=
 FROM ${REGISTRY}ubuntu:18.04 as MODEL_ZOO
 ARG MODEL_PROC_VERSION=v1.4.1
-ARG MODEL_ZOO_VERSION=2021.3
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y -q --no-install-recommends \
