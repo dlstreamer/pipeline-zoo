@@ -176,6 +176,9 @@ class Media(Handler):
         media_list_path = os.path.join(pipeline_root,
                                        "media.list.yml")
 
+        if not os.path.isfile(media_list_path):
+            return
+
         media_list = load_document(media_list_path)
         
         for media in media_list:
@@ -296,6 +299,9 @@ class Model(Handler):
     def download(self, pipeline, pipeline_root, item = None, item_list = None):
         
         model_list_path = os.path.join(pipeline_root,"models.list.yml")
+
+        if not os.path.isfile(model_list_path):
+            return
 
         model_list = load_document(model_list_path)
         

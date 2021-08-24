@@ -14,6 +14,7 @@ from pipebench.schema.documents import rgetattr
 from pipebench.tasks.frame_info import FrameInfo
 import pipebench.tasks as tasks
 from threading import Thread
+from threading import Lock
 import time
 from pipebench.util import print_action
 import sys
@@ -60,7 +61,16 @@ MEDIA_TYPES = {
                                  "method=file file-format=json-lines file-path={}/objects.jsonl",
                                  "fakesink",
                                  [],
-                                 [])              
+                                 []),
+    "video/x-raw":MediaType("urisourcebin uri={}",
+                            "decodebin ! videoconvert",
+                            None,
+                            None,
+                            "raw.bin",
+                            None,
+                            "multifilesink location={}/frame_%06d.raw.bin",
+                            ["mp4"],
+                            ["raw.bin"])             
 }
 
 INFERENCE_ELEMENTS = {
@@ -160,6 +170,9 @@ def create_reference(source_dir,
                      target_dir,
                      media_type,
                      models,
+                     region = None,
+                     resolution = None,
+                     color_space = None,
                      output_caps=None,
                      timeout=60,
                      individual_frames=True):
@@ -175,7 +188,7 @@ def create_reference(source_dir,
     else:
         source = "filesrc location={}/stream.{} ! \"{}\"".format(source_dir,
                                                                  source_media_type.elementary_stream_extensions[0],
-                                                                 caps.split(',')[0])
+                                                                 caps)
 
     if "PIPELINE_ZOO_PLATFORM" in os.environ and os.environ["PIPELINE_ZOO_PLATFORM"]=="VCAC_A":
         decode = "avdec_h264 "
@@ -184,23 +197,33 @@ def create_reference(source_dir,
     else:
         decode = "decodebin"
 
-    detect = _create_inference_elements(models,"detect")
+    crop = None
+
+    csc = None
+    if color_space:
+        csc = "videoconvert"
+
+    scale = None
+    if resolution:
+        scale = "videoscale"
+
+    detect = _create_inference_elements(models, "detect")
     properties = {}
     if detect and detect[0]=="full_frame":
         properties['inference-region']="full-frame"
         detect = []
     classify = _create_inference_elements(models,"classify",properties=properties)
 
-    output_media_type = MEDIA_TYPES[media_type]
-
+    output_media_type = MEDIA_TYPES[media_type.split(',')[0]]
     metapublish = None
     metaconvert = None
-    if (output_media_type.metapublish):
-        
+    capsfilter = None
+    
+    if (output_media_type.metapublish):        
         metaconvert = "gvametaconvert add-empty-results=true source=\"{}\"".format(original_media_source)
         metapublish = "gvametapublish " + output_media_type.metapublish.format(target_dir)
-
-
+    else:
+        capsfilter = media_type
 
     frame_info = None
     if (not output_media_type.encoded_caps):
@@ -210,9 +233,8 @@ def create_reference(source_dir,
     else:
         with open(os.path.join(target_dir,"caps.json"),"w") as caps_file:
             caps = {"caps":output_media_type.encoded_caps}
-            json.dump(caps,caps_file)
-    
-        
+            json.dump(caps, caps_file)
+            
     sink = "fakesink"
     if (output_media_type.sink.format(target_dir)):
         sink = output_media_type.sink.format(target_dir)
@@ -222,14 +244,14 @@ def create_reference(source_dir,
         timeout_element='gvapython module={} class=Timeout arg=[{}]'.format(FRAME_INFO_MODULE,
                                                                             timeout)
 
-    elements = [source,timeout_element,decode]
+    elements = [source, timeout_element, decode, crop, scale, csc]
     elements.extend(detect)
     elements.extend(classify)
-    elements.extend([metaconvert,metapublish,frame_info,sink])
+    elements.extend([metaconvert, metapublish, capsfilter, frame_info, sink])
 
     elements = [ element for element in elements if element ]       
         
-    return gst_launch(elements,vaapi=False)
+    return gst_launch(elements, vaapi=False)
 
 
 def read_caps(input_path):
@@ -269,12 +291,10 @@ def create_encoded_stream(target_dir, media_type, media, individual_frames=True)
 class MediaSink(Thread):
 
     def _load_frame_sizes(self):
-            
         frame_paths = [ os.path.join(self._reference_directory, path)
                          for path in os.listdir(self._reference_directory)
                          if path.endswith(self._media_type.frame_extension) ]
-
-        frame_paths.sort(key= lambda item: int(item.split('_')[1].split('.')[0]))
+        frame_paths.sort(key= lambda item: int(item.split('_')[-1].split('.')[0]))
         
         frame_sizes = [ os.path.getsize(path) for path in frame_paths if os.path.isfile(path) ]
 
@@ -287,11 +307,12 @@ class MediaSink(Thread):
                  reference_directory = None,
                  warm_up = 0,
                  sample_size = 1,
-                 save_pipeline_output=False,
-                 output_dir=None,
+                 save_pipeline_output = False,
+                 output_dir = None,
+                 semaphore = None,
                  *args,
                  **kwargs):
-
+        self._semaphore = semaphore
         self._reference_directory = reference_directory
         self._source_path = source_path
         self._warm_up = warm_up
@@ -312,7 +333,7 @@ class MediaSink(Thread):
         self._stopped = False
         self._save_pipeline_output = save_pipeline_output
         self._output_file = None
-        if ("jsonl" in self._media_type.encoded_caps):
+        if (self._media_type.encoded_caps) and ("jsonl" in self._media_type.encoded_caps):
             self._frame_sizes = None
             self.run = self.read_lines
             if self._save_pipeline_output:
@@ -341,6 +362,9 @@ class MediaSink(Thread):
     def read_lines(self):
 
         while(not self._stopped):
+
+            if (self._semaphore):
+                self._semaphore.acquire()
             
             print_action("Starting: pipebench memory sink",
                          ["Started: {}".format(time.time()),
@@ -397,10 +421,70 @@ class MediaSink(Thread):
 
 
     def read_frames(self):
-        pass
+        input_len = len(self._frame_sizes)
+
+        while(not self._stopped):
+
+            if (self._semaphore):
+                self._semaphore.acquire()
+
+            print_action("Starting: pipebench memory sink",
+                         ["Started: {}".format(time.time()),
+                          "URI: {}".format(self._source_uri)])
+
+
+            with open(self._source_path,"rb") as source_fifo:
+                self.connected = True
+                bytes_read = 1
+                # read input frame
+                while(bytes_read):
+                    bytes_read = 0
+                    frame_size = self._frame_sizes[self._frame_count %input_len]
+                    while(bytes_read<frame_size):
+                        bytes_read = 0 if self._stopped else bytes_read + len(source_fifo.read(frame_size-bytes_read))
+                        if (not bytes_read):
+                            self._end_time = time.time()
+                            break
+
+                    if (bytes_read):
+
+                        self._frame_count += 1
+
+                        if (self._frame_count % self._sample_size == 0):
+                            self._sample_count += 1
+                            if (self._sample_count >= self._warm_up):
+                                current_time = time.time()
+                                if (not self._start_time):
+                                    self._start_time = current_time
+                                    self._last_start_time = current_time
+                                    self._start_frame_count = self._frame_count
+                                    continue
+                                self._last_sample_fps = self._sample_size / (current_time - self._last_start_time)
+                                if (self._last_sample_fps > self._max_sample_fps):
+                                    self._max_sample_fps = self._last_sample_fps
+                                if (self._last_sample_fps < self._min_sample_fps):
+                                    self._min_sample_fps = self._last_sample_fps
+                                self._total_sample_fps += self._last_sample_fps
+                                self._avg_sample_fps = self._total_sample_fps / (self._sample_count-self._warm_up)
+                                self._last_start_time = current_time
+                                self._avg_fps = (self._frame_count - self._start_frame_count) / (current_time - self._start_time)
+
+            self.connected = False
+            if not self._end_time:
+                self._end_time = time.time()
+            print_action("Ended: pipebench memory sink",
+                         ["Ended: {}".format(time.time()),
+                          "URI: {}".format(self._source_uri),
+                          "Frames Read: {}".format(self._frame_count)])
+            if self._output_file:
+                self._output_file.close()   
+        
 
 
 class MediaSource(Thread):
+
+    _frame_cache = {}
+    _frame_cache_lock = Lock()
 
     def _read_file(self,path):
         with open(path,"rb") as input:
@@ -408,15 +492,29 @@ class MediaSource(Thread):
 
     def _read_input(self):
 
-        frame_paths = [ os.path.join(self._input_directory, path)
-                         for path in os.listdir(self._input_directory)
-                         if path.endswith(self._media_type.frame_extension) ]
-             
-        frame_paths = [ frame_path for frame_path in frame_paths if os.path.isfile(frame_path) ]
-        
-        frame_paths.sort(key= lambda item: int(os.path.basename(item).split('_')[1].split('.')[0]))
+        cache_key = (self._input_directory,self._media_type.frame_extension)
 
-        return [self._read_file(frame_path) for frame_path in frame_paths]
+        frames = None
+
+        with MediaSource._frame_cache_lock:
+        
+            frames = MediaSource._frame_cache.get(cache_key, None)
+
+            if not frames:
+                
+                frame_paths = [ os.path.join(self._input_directory, path)
+                                for path in os.listdir(self._input_directory)
+                                if path.endswith(self._media_type.frame_extension) ]
+            
+                frame_paths = [ frame_path for frame_path in frame_paths if os.path.isfile(frame_path) ]
+                
+                frame_paths.sort(key= lambda item: int(os.path.basename(item).split('_')[1].split('.')[0]))
+
+                MediaSource._frame_cache[cache_key] = [self._read_file(frame_path) for frame_path in frame_paths]
+                
+                frames = MediaSource._frame_cache[cache_key]
+        
+        return frames
 
     
     def __init__(self,

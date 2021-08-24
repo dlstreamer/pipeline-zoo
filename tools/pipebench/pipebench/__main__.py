@@ -13,6 +13,7 @@ from pipebench.schema.documents import load_schemas
 from pipebench.schema.documents import load_tasks
 from pipebench.tasks.object_detection import ObjectDetection
 from pipebench.tasks.object_classification import ObjectClassification
+from pipebench.tasks.decode_vpp import DecodeVPP
 from util import print_action
 import shlex
 import shutil

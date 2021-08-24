@@ -53,8 +53,9 @@ class ObjectDetection(Task):
     names = ["object-detection"]
 
     caps_to_extension = {"video/x-h264":"x-h264.bin",
-                         "metadata/objects":"objects.jsonl"}
-
+                         "metadata/objects":"objects.jsonl",
+                         "video/x-raw":"raw.bin"}
+    
     supported_uri_schemes = ["pipe","file"]
     
     def _load_input_sizes(self):
@@ -76,18 +77,35 @@ class ObjectDetection(Task):
         return input_sizes
 
     def _load_reference(self):
+
+        output_caps = self._piperun_config["outputs"][0]["caps"].split(',')
+
+        extension = self.caps_to_extension[output_caps[0]]
+
     
         reference_path = os.path.join(self._piperun_config["runner-config"]["workload-root"],
-                                      self._piperun_config["runner-config"]["reference"])
+                                      "reference")
+
+        reference_paths = [ os.path.join(reference_path,path) for path in os.listdir(reference_path)
+                            if path.endswith(extension) ]
+        
+        reference_paths.sort()
 
         reference = []
+        
         try:
-            with open(reference_path,"r") as reference_file:
-                for result in reference_file:
-                    try:
-                        reference.append(json.loads(result))
-                    except Exception as error:
-                        print(error)
+            if extension.endswith("jsonl"):
+                for path in reference_paths:
+                    with open(path,"r") as reference_file:
+                        for result in reference_file:
+                            try:
+                                reference.append(json.loads(result))
+                            except Exception as error:
+                                print(error)
+            else:
+                for path in reference_paths:
+                    with open(path,"rb") as reference_file:
+                        reference.append(reference_file.read())
         except Exception as error:
             print("Can't load reference! {}".format(error))
             
@@ -116,7 +134,7 @@ class ObjectDetection(Task):
 
         uri = self._piperun_config["outputs"][0]["uri"]
         parsed_uri = parse.urlparse(uri)
-
+        
         if (not parsed_uri.scheme in self.supported_uri_schemes):
             raise Exception("output scheme {} not supported".format(parsed_uri.scheme))
 
@@ -128,7 +146,12 @@ class ObjectDetection(Task):
         count = 0
         input_len = len(self._input_sizes)
         output_len = len(self._outputs)
+        print(input_len)
+        print(output_len)
         assert(input_len == output_len)
+        output_caps = self._piperun_config["outputs"][0]["caps"].split(',')
+        extension = self.caps_to_extension[output_caps[0]]
+
         with open(self._input_path,"rb") as input_fifo:
             print("connected to input")
             with open(self._output_path,"wb",buffering = 0 ) as output_fifo:
@@ -148,7 +171,10 @@ class ObjectDetection(Task):
                         count+=1
                         print("received frame: {}".format(count))
                         print("writing output: {}".format(count))
-                        output_fifo.write(bytes("{}\n".format(json.dumps(self._outputs[count%output_len])),"utf-8"))
+                        if extension.endswith("jsonl"):
+                            output_fifo.write(bytes("{}\n".format(json.dumps(self._outputs[count%output_len])),"utf-8"))
+                        else:
+                            output_fifo.write(self._outputs[count%output_len])
                     else:
                         return
         
@@ -158,3 +184,10 @@ class ObjectClassification(ObjectDetection, Task):
 
     def __init__(self, piperun_config, args, *pos_args, **keywd_args):
         super().__init__(piperun_config, args,*pos_args,**keywd_args)
+
+
+class DecodeVPP(ObjectDetection, Task):
+    names = ["decode-vpp"]
+
+    def __init__(self, piperun_config, args, *pos_args, **keywd_args):
+        super().__init__(piperun_config, args, *pos_args,**keywd_args)
