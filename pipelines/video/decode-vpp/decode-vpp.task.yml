@@ -1,0 +1,79 @@
+# Decode VPP  Task
+
+description: "Decode VPP"
+
+inputs:
+  media:
+    type:
+      media-type: video/*
+    operator: video-source.media
+outputs:
+  media:
+    type:
+      media-type: video/x-raw
+    operator: vpp.frame
+properties:
+  region:
+    type: object
+    properties:
+      bottom:
+        type: number
+      top:
+        type: number
+      left:
+        type: number
+      right:
+        type: number
+    operator: vpp.region
+  color-space:
+    type: string
+    operator: vpp.color-space
+  resolution:
+    type: object
+    properties:
+      width:
+        type: number
+      height:
+        type: number
+    operator: vpp.resolution
+operators:
+  video-source:
+    inputs:
+      media: inputs.media
+  decode:
+    inputs:
+      frame: video-source.frame
+  vpp:
+    inputs:
+      frame: decode.frame
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
+

@@ -1,0 +1,8 @@
+# Defines decode h264 i420 pipeline
+
+task: decode-vpp
+
+inputs.media.type.media-type: video/x-h264
+
+color-space: bgra
+

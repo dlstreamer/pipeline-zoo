@@ -59,15 +59,34 @@ crop:
   outputs:
     frame:
       type: video/x-raw
+  properties:
+    fixed-region:
+      type: object
+      properties:
+        bottom:
+          type: number
+        top:
+          type: number
+        left:
+          type: number
+        right:
+          type: number 
 
 scale:
   inputs:
     frame:
       type: video/x-raw
-
   outputs:
     frame:
       type: video/x-raw
+  properties:
+    resolution:
+      type: object
+      properties:
+        width:
+          type: number
+        height:
+          type: number
 
 csc:
   inputs:
@@ -76,7 +95,10 @@ csc:
   outputs:
     frame:
       type: video/x-raw
-
+  properties:
+    color-space:
+      type: string
+      
 inference:
   inputs:
     frame:
@@ -127,6 +149,50 @@ attach-attributes:
     objects:
       type:
         media-type: metadata/objects
+
+vpp:
+  properties:
+    region:
+      type: object
+      properties:
+        bottom:
+          type: number
+        top:
+          type: number
+        left:
+          type: number
+        right:
+          type: number
+      operator: crop.fixed-region
+  color-space:
+    type: string
+    operator: csc.color-space
+  resolution:
+    type: object
+    properties:
+      width:
+        type: number
+      height:
+        type: number
+    operator: scale.resolution
+  inputs:
+    frame:
+      type: video/x-raw
+      operator: crop.frame
+  outputs:
+    frame:
+      type: video/x-raw
+      operator: csc.frame
+  operators:
+    crop:
+      inputs:
+        frame: inputs.frame
+    scale:
+      inputs:
+        frame: crop.frame
+    csc:
+      inputs:
+        frame: scale.frame
           
 classify:
   properties:
