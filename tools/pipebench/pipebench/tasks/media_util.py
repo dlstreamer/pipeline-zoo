@@ -113,7 +113,10 @@ def gst_launch(elements,vaapi=True):
         env = dict(os.environ)
         if ("GST_VAAPI_ALL_DRIVERS" in env):            
             del env['GST_VAAPI_ALL_DRIVERS']
-       
+        feature_rank = "vaapidecodebin:NONE"
+        if ("GST_PLUGIN_FEATURE_RANK" in env):
+            feature_rank = "{},{}".format(env["GST_PLUGIN_FEATURE_RANK"], feature_rank)
+        env["GST_PLUGIN_FEATURE_RANK"] = feature_rank
     result = subprocess.run(commandargs, env=env, check=False)
     return result.returncode == 0
 
