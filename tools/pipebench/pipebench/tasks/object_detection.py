@@ -73,6 +73,7 @@ class ObjectDetection(Task):
             
         input = {"uri":self._input_uri,
                  "caps":self._input_caps,
+                 "extended-caps":read_caps(os.path.join(self._args.workload_root,"input"))["caps"],
                  "source":find_media(self._workload.media,self._pipeline.pipeline_root)}
 
         self._output_caps = ObjectDetection.OUTPUT_CAPS
@@ -134,6 +135,7 @@ class ObjectDetection(Task):
             warm_up,
             frame_rate,
             sample_size,
+            semaphore = None,
             numa_node = None):
         
         # create piperun config
@@ -159,6 +161,7 @@ class ObjectDetection(Task):
                          sample_size = sample_size,
                          save_pipeline_output = self._args.save_pipeline_output,
                          output_dir = os.path.dirname(piperun_config_path),
+                         semaphore = semaphore,
                          daemon=True)
         sink.start()
         

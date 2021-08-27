@@ -10,6 +10,9 @@ import atexit
 import psutil
 import yaml
 import json
+from tasks.decode_vpp import DecodeVPP
+from tasks.object_detection import ObjectDetection
+from tasks.object_classification import ObjectClassification
 from tasks.task import Task
 import sys
 import signal

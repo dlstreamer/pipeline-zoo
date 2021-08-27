@@ -28,7 +28,7 @@ import tempfile
 import time
 from statistics import mean
 import subprocess
-
+from threading import Semaphore
 
 
 def _get_runner_config(measurement, workload, args, add_default_platform=False):
@@ -698,6 +698,7 @@ def _measure_density(throughput,
                      ["Iteration: {}".format(iteration,),
                       "Number of Streams: {}".format(num_streams)])
 
+        semaphore = Semaphore(0)
         
         for stream_index in range(num_streams):
 
@@ -714,10 +715,14 @@ def _measure_density(throughput,
                                              config["warm-up"],
                                              frame_rate,
                                              config["sample-size"],
-                                             numa_node)
+                                             semaphore = semaphore,
+                                             numa_node = numa_node)
 
             runners.append((source,sink,runner,run_directory))
 
+        for stream_index in range(num_streams): 
+            semaphore.release()
+        
         results = _wait_for_task(runners, config["duration"] + 10)
         success, density_result =_check_density(results, config)
         _print_density_result(density_result, config)
