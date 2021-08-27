@@ -9,7 +9,6 @@
 #include "modelutil.hpp"
 #include "models/detection_model_ssd.h"
 #include "pipelines/async_pipeline.h"
-#include "pipelines/config_factory.h"
 #include <gflags/gflags.h>
 #include <utils/images_capture.h>
 #include <utils/default_flags.hpp>
