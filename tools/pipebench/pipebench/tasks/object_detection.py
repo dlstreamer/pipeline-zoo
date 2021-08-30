@@ -44,7 +44,7 @@ class ObjectDetection(Task):
             and self._use_reference_detections):
             args.parser.error("use reference detections only valid for classification pipelines")
         
-    def _create_piperun_config(self, run_root, runner_config):
+    def _create_piperun_config(self, run_root, runner_config, number_of_streams=1):
 
         if self._use_reference_detections:
             self._pipeline._document["detection-model"] = (
@@ -55,35 +55,45 @@ class ObjectDetection(Task):
 
         piperun_config = {"pipeline":self._pipeline._document}       
         filename = "{}.piperun.yml".format(self._args.workload_name)
-        pipe_uuid = uuid.uuid1()
-        pipe_directory = os.path.join("/tmp",str(pipe_uuid))
-        create_directory(pipe_directory)
-        if (self._workload.scenario.source=="memory"):
-            self._input_caps = read_caps(os.path.join(self._args.workload_root,"input"))["caps"]
-            self._input_path = "{}/input".format(pipe_directory)
-            self._input_uri = "pipe://{}".format(self._input_path)
-        elif (self._workload.scenario.source=="disk"):
-            self._input_caps = read_caps(os.path.join(self._args.workload_root,"input"))["caps"].split(',')[0]
-            media_type = MEDIA_TYPES[self._input_caps]
-            self._input_path = os.path.join(self._args.workload_root,
-                                            "input",
-                                            "stream.{}".format(media_type.elementary_stream_extensions[0]))
-            self._input_uri = "file://{}".format(self._input_path)
 
-            
-        input = {"uri":self._input_uri,
-                 "caps":self._input_caps,
-                 "extended-caps":read_caps(os.path.join(self._args.workload_root,"input"))["caps"],
-                 "source":find_media(self._workload.media,self._pipeline.pipeline_root)}
+        self._output_caps = []
+        self._output_paths = []
+        self._output_uris = []
+        self._input_caps = []
+        self._input_paths = []
+        self._input_uris = []
+        inputs = []
+        outputs = []
+        for i in range(number_of_streams):        
+            pipe_uuid = uuid.uuid1()
+            pipe_directory = os.path.join("/tmp",str(pipe_uuid))
+            create_directory(pipe_directory)
+            if (self._workload.scenario.source=="memory"):
+                self._input_caps.append(read_caps(os.path.join(self._args.workload_root,"input"))["caps"])
+                self._input_paths.append("{}/input".format(pipe_directory))
+                self._input_uris.append( "pipe://{}".format(self._input_paths[-1]))
+            elif (self._workload.scenario.source=="disk"):
+                self._input_caps.append(read_caps(os.path.join(self._args.workload_root,"input"))["caps"].split(',')[0])
+                media_type = MEDIA_TYPES[self._input_caps[-1]]
+                self._input_paths.append(os.path.join(self._args.workload_root,
+                                                "input",
+                                                "stream.{}".format(media_type.elementary_stream_extensions[0])))
+                self._input_uris.append("file://{}".format(self._input_paths[-1]))
 
-        self._output_caps = ObjectDetection.OUTPUT_CAPS
-        self._output_path = "{}/output".format(pipe_directory)
-        self._output_uri = "pipe://{}".format(self._output_path)
-        output = {"uri":self._output_uri,
-                  "caps":self._output_caps}
+
+            inputs.append( {"uri":self._input_uris[-1],
+                            "caps":self._input_caps[-1],
+                            "extended-caps":read_caps(os.path.join(self._args.workload_root,"input"))["caps"],
+                            "source":find_media(self._workload.media,self._pipeline.pipeline_root)})
+
+            self._output_caps.append(ObjectDetection.OUTPUT_CAPS)
+            self._output_paths.append( "{}/output".format(pipe_directory))
+            self._output_uris.append("pipe://{}".format(self._output_paths[-1]))
+            outputs.append({"uri":self._output_uris[-1],
+                            "caps":self._output_caps[-1]})
         
-        piperun_config["inputs"] = [input]
-        piperun_config["outputs"] = [output]
+        piperun_config["inputs"] = inputs
+        piperun_config["outputs"] = outputs
         piperun_config["runner-config"] = runner_config
         piperun_config["models-root"] = os.path.join(self._pipeline.pipeline_root,"models")
         piperun_config["pipeline-root"] = self._pipeline.pipeline_root
@@ -135,37 +145,42 @@ class ObjectDetection(Task):
             warm_up,
             frame_rate,
             sample_size,
+            number_of_streams=1,
             semaphore = None,
             numa_node = None):
         
         # create piperun config
         
-        piperun_config_path = self._create_piperun_config(run_root, runner_config)
+        piperun_config_path = self._create_piperun_config(run_root, runner_config, number_of_streams)
+        sinks = []
+        sources = []
+        
+        for stream_index in range(number_of_streams):
 
-        try:
+            try:
+                if (self._workload.scenario.source=="memory"):
+                    os.unlink(self._input_paths[stream_index])
+                os.unlink(self._output_paths[stream_index])
+            except:
+                pass
+
             if (self._workload.scenario.source=="memory"):
-                os.unlink(self._input_path)
-            os.unlink(self._output_path)
-        except:
-            pass
+                os.mkfifo(self._input_paths[stream_index])
+            os.mkfifo(self._output_paths[stream_index])
 
-        if (self._workload.scenario.source=="memory"):
-            os.mkfifo(self._input_path)
-        os.mkfifo(self._output_path)
-        
-        # start read thread
-        sink = MediaSink(self._output_path,
-                         self._output_uri,
-                         self._output_caps,
-                         warm_up = warm_up,
-                         sample_size = sample_size,
-                         save_pipeline_output = self._args.save_pipeline_output,
-                         output_dir = os.path.dirname(piperun_config_path),
-                         semaphore = semaphore,
-                         daemon=True)
-        sink.start()
-        
-        
+            # start read thread
+            sink = MediaSink(self._output_paths[stream_index],
+                             self._output_uris[stream_index],
+                             self._output_caps[stream_index],
+                             warm_up = warm_up,
+                             sample_size = sample_size,
+                             save_pipeline_output = self._args.save_pipeline_output,
+                             output_dir = os.path.dirname(piperun_config_path),
+                             semaphore = semaphore,
+                             daemon=True)
+            sink.start()
+            sinks.append(sink)
+
         runner_process = start_pipeline_runner(self._args.runner,
                                                runner_config,
                                                run_root,
@@ -174,21 +189,23 @@ class ObjectDetection(Task):
                                                os.path.join(self._args.workload_root,"systeminfo.json"),
                                                redirect=self._args.redirect,
                                                numa_node = numa_node)
-        
-        # start writer thread
-        if (self._workload.scenario.source=="memory"):
-            source = MediaSource(self._input_path,
-                                 self._input_uri,
-                                 self._input_caps,
-                                 elapsed_time = -1,
-                                 frame_rate = frame_rate,
-                                 input_directory=os.path.join(self._args.workload_root,"input"),daemon=True)
-            source.start()
-        else:
-            source = None
 
+        for stream_index in range(number_of_streams):
+
+            # start writer thread
+            if (self._workload.scenario.source=="memory"):
+                source = MediaSource(self._input_path[stream_index],
+                                     self._input_uris[stream_index],
+                                     self._input_caps[stream_index],
+                                     elapsed_time = -1,
+                                     frame_rate = frame_rate,
+                                     input_directory=os.path.join(self._args.workload_root,"input"),daemon=True)
+                source.start()
+            else:
+                source = None
+            sources.append(source)
         
-        return source, sink, runner_process
+        return sources, sinks, runner_process
 
     def _load_reference(self, reference_target):
     

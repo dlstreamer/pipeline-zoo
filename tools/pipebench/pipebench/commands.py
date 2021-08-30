@@ -378,26 +378,28 @@ def _print_fps(runners, totals):
 
     template = "{stream} FPS:{stats.fps:04.4f} Min: {stats.min:04.4f} Max: {stats.max:04.4f} Avg: {stats.avg:04.4f} {end}"
     output = []
-    for index, (source, sink, runner_process, _) in enumerate(runners):
-        if (not source or source.is_alive()):
-            
-            stats = sink.get_fps()
-            if stats.start and stats.end:
-                end = "Start: {:.4f} End: {:.4f}".format(stats.start,stats.end)
-            else:
-                end = ""
+    stream_index = 0
+    for (sources, sinks, runner_process, _) in runners:
+        for index, source in enumerate(sources):
+            if (not source or source.is_alive()):
+                stats = sinks[index].get_fps()
+                if stats.start and stats.end:
+                    end = "Start: {:.4f} End: {:.4f}".format(stats.start,stats.end)
+                else:
+                    end = ""
 
-            if (stats.min<sys.maxsize):
-                total_fps += stats.fps
-                output.append(template.format(stream=stream_template.format(index=index),
-                                              stats=stats,
-                                              end=end))
+                if (stats.min<sys.maxsize):
+                    total_fps += stats.fps
+                    output.append(template.format(stream=stream_template.format(index=stream_index),
+                                                  stats=stats,
+                                                  end=end))
+            stream_index+=1
     if (len(runners) == 1):
         totals["total"] = stats.fps
         totals["min"] = stats.min
         totals["max"] = stats.max
         totals["avg"] = stats.avg
-    elif ((total_fps > -1) and (len(output) == len(runners))):
+    elif ((total_fps > -1) and (len(output) == stream_index-1)):
         totals["total"]+=total_fps
         if (total_fps>=totals["max"]):
             totals["max"]=total_fps
@@ -436,19 +438,20 @@ def _wait_for_task(runners, duration):
     return_codes = []
     start = time.time()
     totals = {}
-    for (source, sink, runner_process, run_directory) in runners:
-        while(((not source or source.is_alive()) and (runner_process.poll() is None))
-              and ((time.time()-start) < duration)):
-            if (source):
-                source.join(1)
-            else:
-                time.sleep(1)
-            _print_fps(runners, totals)
+    for (sources, sinks, runner_process, run_directory) in runners:
+        for source in sources:
+            while(((not source or source.is_alive()) and (runner_process.poll() is None))
+                  and ((time.time()-start) < duration)):
+                if (source):
+                    source.join(1)
+                else:
+                    time.sleep(1)
+                _print_fps(runners, totals)
 
-        if (source):
-            source.stop()
-        if (source and source.connected):
-            source.join()
+            if (source):
+                source.stop()
+            if (source and source.connected):
+                source.join()
 
         runner_process.terminate()
         try:
@@ -456,11 +459,11 @@ def _wait_for_task(runners, duration):
         except:
             runner_process.kill()
         runner_process.wait()
-        
-        sink.stop()
-        if (sink.connected):
-            sink.join(10)
-        results.append(sink.get_fps())
+        for sink in sinks:
+            sink.stop()
+            if (sink.connected):
+                sink.join(10)
+            results.append(sink.get_fps())
         return_codes.append((runner_process.returncode,run_directory))
         
     if ("total" in totals):
@@ -710,15 +713,15 @@ def _measure_density(throughput,
             if (numa_nodes):
                 numa_node = stream_index % numa_nodes
 
-            source, sink, runner  = task.run(run_directory,
-                                             runner_config,
-                                             config["warm-up"],
-                                             frame_rate,
-                                             config["sample-size"],
-                                             semaphore = semaphore,
-                                             numa_node = numa_node)
+            sources, sinks, runner  = task.run(run_directory,
+                                               runner_config,
+                                               config["warm-up"],
+                                               frame_rate,
+                                               config["sample-size"],
+                                               semaphore = semaphore,
+                                               numa_node = numa_node)
 
-            runners.append((source,sink,runner,run_directory))
+            runners.append((sources,sinks,runner,run_directory))
 
         for stream_index in range(num_streams): 
             semaphore.release()
@@ -814,13 +817,13 @@ def _measure_throughput(task,
 
     config = workload._document["measurement"].get("throughput", {})
     print_action("Measuring Throughput",[config])
-    source, sink, runner = task.run(run_directory,
+    sources, sinks, runner = task.run(run_directory,
                                     runner_config,
                                     config["warm-up"],
                                     -1,
                                     config["sample-size"])
 
-    per_stream_results, totals = _wait_for_task([(source, sink, runner,run_directory)],
+    per_stream_results, totals = _wait_for_task([(sources, sinks, runner,run_directory)],
                                                 config["duration"])
 
     _write_throughput_result(run_directory, workload, config, totals, args.runner)
