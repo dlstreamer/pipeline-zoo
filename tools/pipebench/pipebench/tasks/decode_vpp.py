@@ -59,7 +59,7 @@ class DecodeVPP(Task):
             if (self._workload.scenario.source=="memory"):
                 self._input_caps.append(read_caps(os.path.join(self._args.workload_root,"input"))["caps"])
                 self._input_paths.append( "{}/input".format(pipe_directory))
-                self._input_uris.append( "pipe://{}".format(self._input_path))
+                self._input_uris.append( "pipe://{}".format(self._input_paths[-1]))
             elif (self._workload.scenario.source=="disk"):
                 self._input_caps.append(read_caps(os.path.join(self._args.workload_root,"input"))["caps"].split(',')[0])
                 media_type = MEDIA_TYPES[self._input_caps[-1]]
@@ -72,7 +72,7 @@ class DecodeVPP(Task):
             inputs.append({"uri":self._input_uris[-1],
                            "caps":self._input_caps[-1],
                            "extended-caps":read_caps(os.path.join(self._args.workload_root,"input"))["caps"],
-                           "source":find_media(self._workload.media,self._pipeline.pipeline_root)}
+                           "source":find_media(self._workload.media,self._pipeline.pipeline_root)})
 
             self._output_caps.append(DecodeVPP.OUTPUT_CAPS)
 
@@ -83,7 +83,7 @@ class DecodeVPP(Task):
                 self._output_caps[-1] += ",height={},width={}".format(self._pipeline._document["resolution"]["height"],
                                                                   self._pipeline._document["resolution"]["width"])
             self._output_paths.append("{}/output".format(pipe_directory))
-            self._output_uris.append("pipe://{}".format(self._output_path))
+            self._output_uris.append("pipe://{}".format(self._output_paths[-1]))
             outputs.append({"uri":self._output_uris[-1],
                             "caps":self._output_caps[-1]})
         
@@ -124,33 +124,33 @@ class DecodeVPP(Task):
         
         piperun_config_path = self._create_piperun_config(run_root, runner_config, number_of_streams)
         sinks = []
-        source = []
+        sources = []
+        for stream_index in range(number_of_streams):
+            try:
+                if (self._workload.scenario.source=="memory"):
+                    os.unlink(self._input_paths[stream_index])
+                os.unlink(self._output_paths[stream_index])
+            except:
+                pass
 
-        try:
             if (self._workload.scenario.source=="memory"):
-                os.unlink(self._input_path)
-            os.unlink(self._output_path)
-        except:
-            pass
+                os.mkfifo(self._input_paths[stream_index])
+            os.mkfifo(self._output_paths[stream_index])
 
-        if (self._workload.scenario.source=="memory"):
-            os.mkfifo(self._input_path)
-        os.mkfifo(self._output_path)
-        
-        # start read thread
-        sink = MediaSink(self._output_path,
-                         self._output_uri,
-                         self._output_caps,
-                         reference_directory = os.path.join(self._args.workload_root,
-                                                            "reference"),
-                         warm_up = warm_up,
-                         sample_size = sample_size,
-                         save_pipeline_output = self._args.save_pipeline_output,
-                         output_dir = os.path.dirname(piperun_config_path),
-                         semaphore = semaphore,
-                         daemon=True)
-        sink.start()
-        
+            # start read thread
+            sink = MediaSink(self._output_paths[stream_index],
+                             self._output_uris[stream_index],
+                             self._output_caps[stream_index],
+                             reference_directory = os.path.join(self._args.workload_root,
+                                                                "reference"),
+                             warm_up = warm_up,
+                             sample_size = sample_size,
+                             save_pipeline_output = self._args.save_pipeline_output,
+                             output_dir = os.path.dirname(piperun_config_path),
+                             semaphore = semaphore,
+                             daemon=True)
+            sink.start()
+            sinks.append(sink)
         
         runner_process = start_pipeline_runner(self._args.runner,
                                                runner_config,
@@ -160,21 +160,22 @@ class DecodeVPP(Task):
                                                os.path.join(self._args.workload_root,"systeminfo.json"),
                                                redirect=self._args.redirect,
                                                numa_node = numa_node)
-        
-        # start writer thread
-        if (self._workload.scenario.source=="memory"):
-            source = MediaSource(self._input_path,
-                                 self._input_uri,
-                                 self._input_caps,
-                                 elapsed_time = -1,
-                                 frame_rate = frame_rate,
-                                 input_directory=os.path.join(self._args.workload_root,"input"),daemon=True)
-            source.start()
-        else:
-            source = None
 
+        for stream_index in range(number_of_streams):
+            # start writer thread
+            if (self._workload.scenario.source=="memory"):
+                source = MediaSource(self._input_paths[stream_index],
+                                     self._input_uris[stream_index],
+                                     self._input_caps[stream_index],
+                                     elapsed_time = -1,
+                                     frame_rate = frame_rate,
+                                     input_directory=os.path.join(self._args.workload_root,"input"),daemon=True)
+                source.start()
+            else:
+                source = None
+            sources.append(source)
         
-        return source, sink, runner_process
+        return sources, sinks, runner_process
 
     def _load_reference(self, reference_target):
     
