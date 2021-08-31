@@ -399,7 +399,7 @@ def _print_fps(runners, totals):
         totals["min"] = stats.min
         totals["max"] = stats.max
         totals["avg"] = stats.avg
-    elif ((total_fps > -1) and (len(output) == stream_index-1)):
+    elif ((total_fps > -1) and (len(output) == stream_index)):
         totals["total"]+=total_fps
         if (total_fps>=totals["max"]):
             totals["max"]=total_fps
@@ -689,7 +689,7 @@ def _measure_density(throughput,
     max_success_iteration = -1
     min_failure_iteration = -1
     search_method = config["search-method"]
-    
+    streams_per_process = runner_config.get("streams-per-process",1)
     while ( ( (max_success==-1) or (min_failure==-1) or (min_failure-max_success>1) )
             #(first_result == current_result)
             and (num_streams>=config["min-streams"]) and (num_streams<=config["max-streams"])
@@ -703,11 +703,18 @@ def _measure_density(throughput,
 
         semaphore = Semaphore(0)
         
-        for stream_index in range(num_streams):
-
+        for stream_index in range(0,num_streams,streams_per_process):
+            end_stream_index = stream_index + streams_per_process -1
+            if end_stream_index >= num_streams:
+                end_stream_index = num_streams - 1
+            if streams_per_process > 1:
+                run_directory_suffix = "streams_{}_{}".format(stream_index,end_stream_index)
+            else:
+                run_directory_suffix = "stream_{}".format(stream_index)
+                
             run_directory = os.path.join(target_dir,
                                          "iteration_{}".format(iteration),
-                                         "stream_{}".format(stream_index))
+                                         run_directory_suffix)
             create_directory(run_directory)
 
             if (numa_nodes):
@@ -719,7 +726,8 @@ def _measure_density(throughput,
                                                frame_rate,
                                                config["sample-size"],
                                                semaphore = semaphore,
-                                               numa_node = numa_node)
+                                               numa_node = numa_node,
+                                               number_of_streams=(end_stream_index-stream_index+1))
 
             runners.append((sources,sinks,runner,run_directory))
 

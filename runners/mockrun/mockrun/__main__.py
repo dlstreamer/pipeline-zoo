@@ -43,10 +43,12 @@ if __name__ == '__main__':
     
 
     args.piperun_config = load_document(args.piperun_config)
-
-    task = Task.create_task(args.piperun_config,args)
-
-    task.start()
-    task.join()
+    tasks = []
+    for stream_index,_ in enumerate(args.piperun_config["inputs"]): 
+        task = Task.create_task(args.piperun_config,args,stream_index)
+        task.start()
+        tasks.append(task)
+    for task in tasks:
+        task.join()
         
     

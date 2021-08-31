@@ -194,7 +194,7 @@ class ObjectDetection(Task):
 
             # start writer thread
             if (self._workload.scenario.source=="memory"):
-                source = MediaSource(self._input_path[stream_index],
+                source = MediaSource(self._input_paths[stream_index],
                                      self._input_uris[stream_index],
                                      self._input_caps[stream_index],
                                      elapsed_time = -1,

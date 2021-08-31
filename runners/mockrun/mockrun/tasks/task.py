@@ -26,7 +26,7 @@ class Task(threading.Thread, metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def __init__(self, piperun_config, args,*pos_args,**keywd_args):
+    def __init__(self, piperun_config, args,stream_index, *pos_args,**keywd_args):
         super().__init__(*pos_args,**keywd_args)
 
     @abc.abstractmethod
@@ -34,7 +34,7 @@ class Task(threading.Thread, metaclass=abc.ABCMeta):
         pass
 
     @classmethod
-    def create_task(cls, piperun_config, args, *pos_args,**keywd_args):
+    def create_task(cls, piperun_config, args, stream_index,*pos_args,**keywd_args):
         if (not cls.task_map):
             cls.task_map = {}
             tasks = [task_class for task_class in Task.__subclasses__()]
@@ -44,7 +44,7 @@ class Task(threading.Thread, metaclass=abc.ABCMeta):
                                         
         task_name = piperun_config["pipeline"]["task"]
 
-        return  cls.task_map[task_name](piperun_config, args, *pos_args, **keywd_args)
+        return  cls.task_map[task_name](piperun_config, args, stream_index, *pos_args, **keywd_args)
 
 
 
@@ -60,7 +60,7 @@ class ObjectDetection(Task):
     
     def _load_input_sizes(self):
 
-        input_caps = self._piperun_config["inputs"][0]["caps"].split(',')
+        input_caps = self._piperun_config["inputs"][self._stream_index]["caps"].split(',')
 
         extension = self.caps_to_extension[input_caps[0]]
             
@@ -78,7 +78,7 @@ class ObjectDetection(Task):
 
     def _load_reference(self):
 
-        output_caps = self._piperun_config["outputs"][0]["caps"].split(',')
+        output_caps = self._piperun_config["outputs"][self._stream_index]["caps"].split(',')
 
         extension = self.caps_to_extension[output_caps[0]]
 
@@ -96,6 +96,8 @@ class ObjectDetection(Task):
         try:
             if extension.endswith("jsonl"):
                 for path in reference_paths:
+                    if os.path.basename(path)!="objects.jsonl":
+                        continue
                     with open(path,"r") as reference_file:
                         for result in reference_file:
                             try:
@@ -112,19 +114,20 @@ class ObjectDetection(Task):
         return reference
 
     
-    def __init__(self, piperun_config, args, *pos_args, **keywd_args):
+    def __init__(self, piperun_config, args, stream_index, *pos_args, **keywd_args):
         self._piperun_config = piperun_config
         self._args = args
+        self._stream_index = stream_index
         self._outputs = self._load_reference()
         self._input_sizes = self._load_input_sizes()
         
-        if ( len(self._piperun_config["inputs"])!=1):
-            raise Exception("Only support single input")
+        #if ( len(self._piperun_config["inputs"])!=1):
+         #   raise Exception("Only support single input")
 
-        if ( len(self._piperun_config["outputs"])!=1):
-            raise Exception("Only support single input")
+#        if ( len(self._piperun_config["outputs"])!=1):
+ #           raise Exception("Only support single input")
 
-        uri = self._piperun_config["inputs"][0]["uri"]
+        uri = self._piperun_config["inputs"][stream_index]["uri"]
         parsed_uri = parse.urlparse(uri)
 
         if (not parsed_uri.scheme in self.supported_uri_schemes):
@@ -132,7 +135,7 @@ class ObjectDetection(Task):
 
         self._input_path = parsed_uri.path
 
-        uri = self._piperun_config["outputs"][0]["uri"]
+        uri = self._piperun_config["outputs"][stream_index]["uri"]
         parsed_uri = parse.urlparse(uri)
         
         if (not parsed_uri.scheme in self.supported_uri_schemes):
@@ -140,7 +143,7 @@ class ObjectDetection(Task):
 
         self._output_path = parsed_uri.path
         
-        super().__init__(piperun_config, args,*pos_args,**keywd_args)
+        super().__init__(piperun_config, args,stream_index, *pos_args,**keywd_args)
         
     def run(self):
         count = 0
@@ -149,13 +152,13 @@ class ObjectDetection(Task):
         print(input_len)
         print(output_len)
         assert(input_len == output_len)
-        output_caps = self._piperun_config["outputs"][0]["caps"].split(',')
+        output_caps = self._piperun_config["outputs"][self._stream_index]["caps"].split(',')
         extension = self.caps_to_extension[output_caps[0]]
 
         with open(self._input_path,"rb") as input_fifo:
-            print("connected to input")
+            print("connected to input stream: {}".format(self._stream_index))
             with open(self._output_path,"wb",buffering = 0 ) as output_fifo:
-                print("connected to output")
+                print("connected to output stream: {}".format(self._stream_index))
                 # read input frame
                 while(True):
                     bytes_read = 0
@@ -169,8 +172,8 @@ class ObjectDetection(Task):
 
                     if (bytes_read):
                         count+=1
-                        print("received frame: {}".format(count))
-                        print("writing output: {}".format(count))
+                        print("received frame: {} stream: {}".format(count,self._stream_index))
+                        print("writing output: {} stream: {}".format(count,self._stream_index))
                         if extension.endswith("jsonl"):
                             output_fifo.write(bytes("{}\n".format(json.dumps(self._outputs[count%output_len])),"utf-8"))
                         else:
