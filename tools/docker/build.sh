@@ -179,6 +179,7 @@ get_options "$@"
 
 if [ $PLATFORM = "ATS" ]; then
     DOCKERFILE="$DOCKERFILE_DIR/intel-media-analytics/Dockerfile"
+    SOURCE_DIR=$(builtin cd $DOCKERFILE_DIR; cd ../../; pwd)
 fi
 
 # BUILD IMAGE

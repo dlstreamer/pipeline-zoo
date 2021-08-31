@@ -3,11 +3,11 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
-ARG BASE=openvino/ubuntu18_data_dev:2021.1
+ARG BASE=openvino/ubuntu20_data_dev:2021.3_vaapi_fix
 ARG PIPELINE_ZOO_PLATFORM=DEFAULT
 FROM ubuntu:18.04 as MODEL_ZOO
-ARG MODEL_PROC_VERSION=v1.2.1
-ARG MODEL_ZOO_VERSION=2021.2
+ARG MODEL_PROC_VERSION=v1.4.1
+ARG MODEL_ZOO_VERSION=2021.3
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y -q --no-install-recommends \
@@ -22,7 +22,7 @@ RUN wget https://github.com/openvinotoolkit/open_model_zoo/archive/refs/tags/${M
 
 FROM ${BASE} as media-analytics-pipeline-zoo
 ARG BASE=intel-media-analytics:latest
-ARG PIPELINE_ZOO_PLATFORM=DEFAULT
+ARG PIPELINE_ZOO_PLATFORM=ATS
 
 ENV PIPELINE_ZOO_PLATFORM=$PIPELINE_ZOO_PLATFORM
 ENV PIPELINE_ZOO_BASE_IMAGE=$BASE
@@ -65,7 +65,7 @@ RUN if [ -d /opt/intel/solutions/dldt/deployment_tools/model-optimizer ]; then \
     fi
 
 # pipebench
-COPY ./pipebench/requirements.txt /
+COPY ./tools/pipebench/requirements.txt /
 RUN pip3 install  --no-cache-dir -r /requirements.txt
 RUN rm -f /requirements.txt
 RUN ln -s /home/pipeline-zoo/tools/pipebench/pipebench/__main__.py /usr/local/bin/pipebench
@@ -79,28 +79,28 @@ RUN printf 'eval "$(shtab --shell=bash pipebench.arguments._get_parser_shtab)"' 
   | tee "$(pkg-config --variable=completionsdir bash-completion)"/pipebench
 
 # systeminfo
-COPY ./systeminfo/requirements.txt /
+COPY ./tools/systeminfo/requirements.txt /
 RUN pip3 install  --no-cache-dir -r /requirements.txt
 RUN rm -f /requirements.txt
 
 # uploader
-COPY ./uploader/requirements.txt /
+COPY ./tools/uploader/requirements.txt /
 RUN pip3 install  --no-cache-dir -r /requirements.txt
 RUN rm -f /requirements.txt
 
 # downloader
-COPY ./downloader/requirements.txt /
+COPY ./tools/downloader/requirements.txt /
 RUN pip3 install  --no-cache-dir -r/requirements.txt
 RUN rm -f /requirements.txt
 
 # tests
-COPY ./tests/requirements.txt /
+COPY ./tools/tests/requirements.txt /
 RUN pip3 install  --no-cache-dir -r /requirements.txt
 RUN rm -f /requirements.txt
 
 # Patches
 #COPY ./docker/patches/video_frame.py /opt/intel/openvino/data_processing/dl_streamer/python/gstgva/video_frame.py
-COPY ./docker/patches/video_frame.py /opt/intel/solutions/lib/python3.8/site-packages/gstgva/video_frame.py
+COPY ./tools/docker/patches/video_frame.py /opt/intel/solutions/lib/python3.8/site-packages/gstgva/video_frame.py
 
 # model proc
 RUN mkdir -p /opt/intel/dl_streamer/samples/model_proc
@@ -115,16 +115,34 @@ ENV OPEN_MODEL_ZOO_ROOT=/opt/intel/openvino/deployment_tools/open_model_zoo
 # pipeline zoo models
 COPY --from=MODEL_ZOO /media-analytics-pipeline-zoo/models /opt/intel/openvino/deployment_tools/open_model_zoo/models/media-analytics-pipeline-zoo/models
 
+COPY ./tools/downloader /home/pipeline-zoo/tools/downloader/
+COPY ./tools/uploader /home/pipeline-zoo/tools/uploader/
+COPY ./tools/pipebench /home/pipeline-zoo/tools/pipebench/
+COPY ./tools/systeminfo /home/pipeline-zoo/tools/systeminfo/
+COPY ./pipelines /home/pipeline-zoo/pipelines
+COPY ./runners /home/pipeline-zoo/runners
+
 #Open CL Cache
 RUN mkdir -p $SOURCE_DIR/workspace/.cl-cache
 ENV cl_cache_dir=/home/pipeline-zoo/workspace/.cl-cache
 
-# Carl Fix Temporary
-RUN if [ -d /opt/intel/solutions/assets/carls_fix ]; then \
-       dpkg --force-depends -i /opt/intel/solutions/assets/carls_fix/*.deb; \
-    fi
+# XDG_RUNTIME_DIR
+RUN mkdir -p /home/.xdg_runtime_dir
+ENV XDG_RUNTIME_DIR=/home/.xdg_runtime_dir
+
+# run pipebench download
+RUN mkdir /home/pipeline-zoo/workspace \
+ && cd /home/pipeline-zoo/workspace \
+ && pipebench download od-h265-mbnetssd-v1-coco \
+ && pipebench download od-h264-mbnetssd-v1-coco \
+ && pipebench download oc-h264-full_frame-resnet_v1.5_50 \
+ && pipebench download oc-h265-full_frame-resnet_v1.5_50 \
+ && pipebench download oc-h264-mbnetssd-v1-coco-resnet_v1.5_50 \
+ && pipebench download oc-h265-mbnetssd-v1-coco-resnet_v1.5_50;
+
+# Bash History
+ENV HISTFILE=/home/pipeline-zoo/workspace/.bash_history
+
+WORKDIR /home/pipeline-zoo/workspace
 
 ENTRYPOINT ["/usr/bin/demo-bash"]
-
-# work dir
-WORKDIR /home/pipeline-zoo/workspace
