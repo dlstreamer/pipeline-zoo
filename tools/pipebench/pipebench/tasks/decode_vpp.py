@@ -39,46 +39,56 @@ class DecodeVPP(Task):
         self._task_name = self._pipeline._namespace.task
 
 
-    def _create_piperun_config(self, run_root, runner_config):
+    def _create_piperun_config(self, run_root, runner_config, number_of_streams=1):
 
         piperun_config = {"pipeline":self._pipeline._document}       
         filename = "{}.piperun.yml".format(self._args.workload_name)
-        pipe_uuid = uuid.uuid1()
-        pipe_directory = os.path.join("/tmp",str(pipe_uuid))
-        create_directory(pipe_directory)
-        if (self._workload.scenario.source=="memory"):
-            self._input_caps = read_caps(os.path.join(self._args.workload_root,"input"))["caps"]
-            self._input_path = "{}/input".format(pipe_directory)
-            self._input_uri = "pipe://{}".format(self._input_path)
-        elif (self._workload.scenario.source=="disk"):
-            self._input_caps = read_caps(os.path.join(self._args.workload_root,"input"))["caps"].split(',')[0]
-            media_type = MEDIA_TYPES[self._input_caps]
-            self._input_path = os.path.join(self._args.workload_root,
-                                            "input",
-                                            "stream.{}".format(media_type.elementary_stream_extensions[0]))
-            self._input_uri = "file://{}".format(self._input_path)
 
-            
-        input = {"uri":self._input_uri,
-                 "caps":self._input_caps,
-                 "extended-caps":read_caps(os.path.join(self._args.workload_root,"input"))["caps"],
-                 "source":find_media(self._workload.media,self._pipeline.pipeline_root)}
+        self._output_caps = []
+        self._output_paths = []
+        self._output_uris = []
+        self._input_caps = []
+        self._input_paths = []
+        self._input_uris = []
+        inputs = []
+        outputs = []
+        for i in range(number_of_streams):
+            pipe_uuid = uuid.uuid1()
+            pipe_directory = os.path.join("/tmp",str(pipe_uuid))
+            create_directory(pipe_directory)
+            if (self._workload.scenario.source=="memory"):
+                self._input_caps.append(read_caps(os.path.join(self._args.workload_root,"input"))["caps"])
+                self._input_paths.append( "{}/input".format(pipe_directory))
+                self._input_uris.append( "pipe://{}".format(self._input_path))
+            elif (self._workload.scenario.source=="disk"):
+                self._input_caps.append(read_caps(os.path.join(self._args.workload_root,"input"))["caps"].split(',')[0])
+                media_type = MEDIA_TYPES[self._input_caps[-1]]
+                self._input_paths = os.path.join(self._args.workload_root,
+                                                "input",
+                                                "stream.{}".format(media_type.elementary_stream_extensions[0]))
+                self._input_uris.append("file://{}".format(self._input_paths[-1]))
 
-        self._output_caps = DecodeVPP.OUTPUT_CAPS
 
-        if "color-space" in self._pipeline._document:
-            self._output_caps += ",format={}".format(self._pipeline._document["color-space"].upper())
+            inputs.append({"uri":self._input_uris[-1],
+                           "caps":self._input_caps[-1],
+                           "extended-caps":read_caps(os.path.join(self._args.workload_root,"input"))["caps"],
+                           "source":find_media(self._workload.media,self._pipeline.pipeline_root)}
 
-        if "resolution" in self._pipeline._document:
-            self._output_caps += ",height={},width={}".format(self._pipeline._document["resolution"]["height"],
-                                                              self._pipeline._document["resolution"]["width"])
-        self._output_path = "{}/output".format(pipe_directory)
-        self._output_uri = "pipe://{}".format(self._output_path)
-        output = {"uri":self._output_uri,
-                  "caps":self._output_caps}
+            self._output_caps.append(DecodeVPP.OUTPUT_CAPS)
+
+            if "color-space" in self._pipeline._document:
+                self._output_caps[-1] += ",format={}".format(self._pipeline._document["color-space"].upper())
+
+            if "resolution" in self._pipeline._document:
+                self._output_caps[-1] += ",height={},width={}".format(self._pipeline._document["resolution"]["height"],
+                                                                  self._pipeline._document["resolution"]["width"])
+            self._output_paths.append("{}/output".format(pipe_directory))
+            self._output_uris.append("pipe://{}".format(self._output_path))
+            outputs.append({"uri":self._output_uris[-1],
+                            "caps":self._output_caps[-1]})
         
-        piperun_config["inputs"] = [input]
-        piperun_config["outputs"] = [output]
+        piperun_config["inputs"] = inputs
+        piperun_config["outputs"] = outputs
         piperun_config["runner-config"] = runner_config
         piperun_config["models-root"] = os.path.join(self._pipeline.pipeline_root,"models")
         piperun_config["pipeline-root"] = self._pipeline.pipeline_root
@@ -106,12 +116,15 @@ class DecodeVPP(Task):
             warm_up,
             frame_rate,
             sample_size,
+            number_of_streams=1,
             semaphore = None,
             numa_node = None):
         
         # create piperun config
         
-        piperun_config_path = self._create_piperun_config(run_root, runner_config)
+        piperun_config_path = self._create_piperun_config(run_root, runner_config, number_of_streams)
+        sinks = []
+        source = []
 
         try:
             if (self._workload.scenario.source=="memory"):
