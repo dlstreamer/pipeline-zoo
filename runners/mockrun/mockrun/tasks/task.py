@@ -120,12 +120,6 @@ class ObjectDetection(Task):
         self._stream_index = stream_index
         self._outputs = self._load_reference()
         self._input_sizes = self._load_input_sizes()
-        
-        #if ( len(self._piperun_config["inputs"])!=1):
-         #   raise Exception("Only support single input")
-
-#        if ( len(self._piperun_config["outputs"])!=1):
- #           raise Exception("Only support single input")
 
         uri = self._piperun_config["inputs"][stream_index]["uri"]
         parsed_uri = parse.urlparse(uri)
