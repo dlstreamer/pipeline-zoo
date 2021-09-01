@@ -50,7 +50,7 @@ def output_to_sink(_output):
                               "kafka":"kafka"})
 
     media_type_map = defaultdict(None,
-                                 {"metadata/objects": "gvametaconvert add-empty-results=true ! gvametapublish {} ! fakesink",
+                                 {"metadata/objects": "gvametaconvert add-empty-results=true ! gvametapublish {} ! gvafpscounter ! fakesink async=false",
                                   "video/x-raw": "{} ! filesink location=\"{}\""})
 
     caps = _output["caps"].split(',')
@@ -215,7 +215,8 @@ def vpp_properties(config,
                    color_space,
                    region,
                    resolution,
-                   systeminfo):
+                   systeminfo,
+                   channel_number=0):
 
     elements =[]
 
@@ -235,11 +236,11 @@ def vpp_properties(config,
         if resolution:
             video_scale_config = config.setdefault("videoscale", {})
             properties = ["{}={}".format(key,value) for key,value in video_scale_config.items()]
-            elements.append("videoscale name=videoscale {}".format(" ".join(properties)))
+            elements.append("videoscale name={} {}".format("videoscale"+str(channel_number), " ".join(properties)))
         if color_space:
             video_convert_config = config.setdefault("videoconvert",{})
             properties = ["{}={}".format(key,value) for key,value in video_convert_config.items()]
-            elements.append("videoconvert name=videoconvert {}".format(" ".join(properties)))
+            elements.append("videoconvert name={} {}".format("videoconvert"+str(channel_number), " ".join(properties)))
     elif config["device"] == "GPU":
         post_proc_element = "vaapipostproc"
         
@@ -249,12 +250,12 @@ def vpp_properties(config,
         postproc_config = config.setdefault(post_proc_element,{})
         properties = ["{}={}".format(key,value) for key,value in postproc_config.items()]
         elements.append("{} name={} {}".format(post_proc_element,
-                                               post_proc_element,
+                                               post_proc_element+str(channel_number),
                                                " ".join(properties)))
 
     queue_name = "vpp-queue"
     queue_config.setdefault("element", "queue")
-    queue_config.setdefault("name", queue_name)
+    queue_config.setdefault("name", queue_name + str(channel_number))
     queue_config.setdefault("enabled", False)
 
     vpp_queue_properties = queue_properties(queue_config,
@@ -271,7 +272,7 @@ def vpp_properties(config,
 
     
 
-def decode_properties(config, queue_config, model, _input, systeminfo):
+def decode_properties(config, queue_config, model, _input, systeminfo, channel_number = 0):
 
     media_type_map = defaultdict(lambda:{"CPU":"decodebin","GPU":"vaapidecodebin"},
                                  {"video/x-h264": {"CPU":"avdec_h264", "GPU":"vaapih264dec"},
@@ -295,7 +296,7 @@ def decode_properties(config, queue_config, model, _input, systeminfo):
     media_type = _input["caps"].split(",")[0]
 
     result.setdefault("element",media_type_map[media_type][result["device"]])
-    result.setdefault("name", "decode")
+    result.setdefault("name", "decode" + str(channel_number))
 
     if result["element"] in ["vaapih264dec","vaapih265dec","msdkh264dec","msdkh265dec"]:
         if ("max-threads" in result):
@@ -313,7 +314,7 @@ def decode_properties(config, queue_config, model, _input, systeminfo):
 
     queue_name = "decode-queue"
     queue_config.setdefault("element", "queue")
-    queue_config.setdefault("name", queue_name)
+    queue_config.setdefault("name", queue_name+str(channel_number))
     queue_config.setdefault("enabled", False)
 
     decode_queue_properties = queue_properties(queue_config,

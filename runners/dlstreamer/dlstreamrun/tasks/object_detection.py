@@ -3,6 +3,7 @@ import stat
 import time
 import shlex
 import subprocess
+import copy
 from tasks.task import Task
 from tasks.task import input_to_src
 from tasks.task import decode_properties
@@ -12,17 +13,100 @@ from tasks.task import queue_properties
 from tasks.task import inference_properties
 
 
-class ObjectDetection(Task):
+class Channel():
 
-    supported_tasks = ["object-detection"]
+    def __init__(self, input, output, model, runner_config, detect_model_name, system_info, caps, channel_number):
+        self.classify_model_config = None
 
-    supported_uri_schemes = ["pipe", "file", "rtsp"]
-    
-    detect_model_config = "model"
+        self.input = input
 
-    classify_model_config = None
-    
-    def _set_classify_properties(self, detect_model_name=""):
+        self._src_element = input_to_src(input)
+        self._sink_element = output_to_sink(output)
+        self._model = model
+
+        self._runner_config = runner_config
+        self._runner_config.setdefault("detect",{})
+        self._runner_config["detect"].setdefault("element","gvadetect")
+        self._runner_config["detect"].setdefault("name", "detect" + str(channel_number))
+        self._runner_config["detect"].setdefault("enabled",True)
+
+        queue_name = "detect-queue"
+        queue_config = self._runner_config.setdefault(queue_name,{})
+        queue_config.setdefault("element", "queue")
+        queue_config.setdefault("name", queue_name+str(channel_number))
+        queue_config.setdefault("enabled", False)
+
+        self._detect_queue_properties = queue_properties(queue_config,
+                                                            self._model,
+                                                            system_info)
+
+        self._detect_properties = inference_properties(self._runner_config["detect"],
+                                                        self._model,
+                                                        detect_model_name,
+                                                        system_info)
+
+        self._runner_config.setdefault("decode", {"device":"CPU"})
+
+        queue_name = "decode-queue"
+        queue_config = self._runner_config.setdefault(queue_name,{})
+
+        self._decode_properties = decode_properties(self._runner_config["decode"],
+                                                        queue_config,
+                                                        self._model,
+                                                        input,
+                                                        system_info, channel_number)
+
+
+        self._classify_properties = self._set_classify_properties(detect_model_name=detect_model_name,
+                                                                  channel_number=channel_number)
+
+
+        if ("msdk" in self._decode_properties):
+                caps = input["extended-caps"]
+
+        self._elements = [self._src_element,
+                            caps,
+                            self._decode_properties,
+                            self._detect_queue_properties,
+                            self._detect_properties,
+                            self._classify_properties,
+                            self._sink_element]
+
+
+    def get_channel_standalone_pipeline_elements(self):
+
+        standalone_elements = self._create_standalone_elements()
+
+        elements = " ! ".join([element for element in self._elements if element])
+        standalone_elements = " ! ".join([element for element in standalone_elements if element])
+
+        return standalone_elements
+
+    def get_channel_pipeline_elements(self):
+
+        standalone_elements = self._create_standalone_elements()
+
+        elements = " ! ".join([element for element in self._elements if element])
+
+        return elements
+
+    def _create_standalone_elements(self):
+
+        demux = ( "qtdemux" if os.path.splitext(
+            self.input["source"])[1]==".mp4" else "")
+        
+        return ["urisourcebin uri=file://{}".format(
+            self.input["source"]),
+                demux,
+                "parsebin",
+                self._decode_properties,
+                self._detect_queue_properties,
+                self._detect_properties,
+                self._classify_properties,
+                "gvametaconvert add-empty-results=true ! gvametapublish method=file file-format=json-lines file-path=/tmp/result.jsonl ! gvafpscounter ! fakesink async=false"
+        ]
+
+    def _set_classify_properties(self, detect_model_name="",channel_number=0):
         result = ""
         elements = []
         if (self.classify_model_config):
@@ -36,7 +120,7 @@ class ObjectDetection(Task):
                 classify_config = self._runner_config.setdefault(element_name,
                                                                  {})
                 classify_config.setdefault("element","gvaclassify")
-                classify_config.setdefault("name",element_name)
+                classify_config.setdefault("name",element_name+str(channel_number))
                 classify_config.setdefault("enabled", True)
 
                 if detect_model_name=="full_frame":
@@ -45,7 +129,7 @@ class ObjectDetection(Task):
                 queue_name = "classify-{}-queue".format(index)
                 queue_config = self._runner_config.setdefault(queue_name,{})
                 queue_config.setdefault("element", "queue")
-                queue_config.setdefault("name", queue_name)
+                queue_config.setdefault("name", queue_name+str(channel_number))
                 queue_config.setdefault("enabled", classify_config["enabled"])
                 
                 elements.append(queue_properties(queue_config,
@@ -60,94 +144,40 @@ class ObjectDetection(Task):
             
         return result
 
-    def _create_standalone_elements(self):
+    
 
-        demux = ( "qtdemux" if os.path.splitext(
-            self._piperun_config["inputs"][0]["source"])[1]==".mp4" else "")
-        
-        return ["urisourcebin uri=file://{}".format(
-            self._piperun_config["inputs"][0]["source"]),
-                demux,
-                "parsebin",
-                self._decode_properties,
-                self._detect_queue_properties,
-                self._detect_properties,
-                self._classify_properties,
-                "gvametaconvert add-empty-results=true ! gvametapublish method=file file-format=json-lines file-path=/tmp/result.jsonl ! gvafpscounter ! fakesink"
-        ]
+class ObjectDetection(Task):
 
+    supported_tasks = ["object-detection"]
+
+    supported_uri_schemes = ["pipe", "file", "rtsp"]
+    
+    detect_model_config = "model"
     
     def __init__(self, piperun_config, args, *pos_args, **keywd_args):
         self._piperun_config = piperun_config
         self._my_args = args
-        if len(self._piperun_config["inputs"]) != 1:
-            raise Exception("Only support single input")
-
-        if len(self._piperun_config["outputs"]) != 1:
-            raise Exception("Only support single output")
-
-
-        self._src_element = input_to_src(self._piperun_config["inputs"][0])
-        self._sink_element = output_to_sink(self._piperun_config["outputs"][0])
-        self._runner_config = self._piperun_config["runner-config"]
 
         detect_model_name = self._piperun_config["pipeline"][self.detect_model_config]
         
-        self._model = find_model(detect_model_name,
+        model = find_model(detect_model_name,
                                  self._piperun_config["models-root"])
 
-        self._runner_config.setdefault("detect",{})
-        self._runner_config["detect"].setdefault("element","gvadetect")
-        self._runner_config["detect"].setdefault("name","detect")
-        self._runner_config["detect"].setdefault("enabled",True)
+        channels = []
 
-        queue_name = "detect-queue"
-        queue_config = self._runner_config.setdefault(queue_name,{})
-        queue_config.setdefault("element", "queue")
-        queue_config.setdefault("name", queue_name)
-        queue_config.setdefault("enabled", False)
-        
-        self._detect_queue_properties = queue_properties(queue_config,
-                                                         self._model,
-                                                         self._my_args.systeminfo)
-        
-        self._detect_properties = inference_properties(self._runner_config["detect"],
-                                                       self._model,
-                                                       detect_model_name,
-                                                       self._my_args.systeminfo)
+        for i in range(len(self._piperun_config["inputs"])):
+            caps = self._piperun_config["inputs"][i]["caps"]
 
-        self._runner_config.setdefault("decode", {"device":"CPU"})
+            channels.append(Channel(self._piperun_config["inputs"][i], self._piperun_config["outputs"][i], model, copy.deepcopy(self._piperun_config["runner-config"]), detect_model_name,
+                                    self._my_args.systeminfo, caps, i))
 
-        queue_name = "decode-queue"
-        queue_config = self._runner_config.setdefault(queue_name,{})
+        elements = ""
+        standalone_elements = ""
 
-        self._decode_properties = decode_properties(self._runner_config["decode"],
-                                                    self._runner_config["decode-queue"],
-                                                    self._model,
-                                                    self._piperun_config["inputs"][0],
-                                                    self._my_args.systeminfo)
+        for channel in channels:
+            standalone_elements = standalone_elements + channel.get_channel_standalone_pipeline_elements() + " "
+            elements = elements + channel.get_channel_pipeline_elements() + " "
 
-        self._classify_properties = self._set_classify_properties(detect_model_name=detect_model_name)
-
-        # "src ! caps ! decode ! detect ! classify ! metaconvert ! metapublish ! sink "
-
-        caps = self._piperun_config["inputs"][0]["caps"]
-        
-        if ("msdk" in self._decode_properties):
-            caps = self._piperun_config["inputs"][0]["extended-caps"]
-        
-        self._elements = [self._src_element,
-                          caps,
-                          self._decode_properties,
-                          self._detect_queue_properties,
-                          self._detect_properties,
-                          self._classify_properties,
-                          self._sink_element]
-
-        standalone_elements = self._create_standalone_elements()
-
-        elements = " ! ".join([element for element in self._elements if element])
-        standalone_elements = " ! ".join([element for element in standalone_elements if element])
         command = "gst-launch-1.0 " + elements
         standalone_command = "gst-launch-1.0 " + standalone_elements
         self._commandargs = shlex.split(command)
@@ -176,3 +206,4 @@ class ObjectDetection(Task):
             else:
                 max_attempts -= 1
         self.completed = completed
+
