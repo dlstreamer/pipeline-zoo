@@ -15,14 +15,15 @@ from tasks.task import inference_properties
 
 class Channel():
 
-    def __init__(self, input, output, model, runner_config, detect_model_name, system_info, caps, channel_number):
-        self.classify_model_config = None
+    def __init__(self, input, output, model_root, runner_config, detect_model_name, classify_model_config, system_info, caps, channel_number):
 
+        self.classify_model_config = classify_model_config
+        
         self.input = input
 
         self._src_element = input_to_src(input)
         self._sink_element = output_to_sink(output)
-        self._model = model
+        self._model = find_model(detect_model_name, model_root)
 
         self._runner_config = runner_config
         self._runner_config.setdefault("detect",{})
@@ -57,7 +58,7 @@ class Channel():
                                                         system_info, channel_number)
 
 
-        self._classify_properties = self._set_classify_properties(detect_model_name=detect_model_name,
+        self._classify_properties = self._set_classify_properties(model_root, system_info, detect_model_name=detect_model_name,
                                                                   channel_number=channel_number)
 
 
@@ -106,16 +107,16 @@ class Channel():
                 "gvametaconvert add-empty-results=true ! gvametapublish method=file file-format=json-lines file-path=/tmp/result.jsonl ! gvafpscounter ! fakesink async=false"
         ]
 
-    def _set_classify_properties(self, detect_model_name="",channel_number=0):
+    def _set_classify_properties(self, model_root, system_info, detect_model_name="", channel_number=0):
         result = ""
         elements = []
         if (self.classify_model_config):
-            classify_model_list = self._piperun_config["pipeline"][self.classify_model_config]
+            classify_model_list = self.classify_model_config
             for index, model_name in enumerate(classify_model_list):
                 if (isinstance(model_name,list)):
                     raise Exception("Dependent Classification Not Supported")
                 model = find_model(model_name,
-                                   self._piperun_config["models-root"])
+                                   model_root)
                 element_name = "classify-{}".format(index)
                 classify_config = self._runner_config.setdefault(element_name,
                                                                  {})
@@ -134,11 +135,11 @@ class Channel():
                 
                 elements.append(queue_properties(queue_config,
                                                  model,
-                                                 self._my_args.systeminfo))
+                                                 system_info))
                 elements.append(inference_properties(classify_config,
                                                      model,
                                                      model_name,
-                                                     self._my_args.systeminfo))
+                                                     system_info))
             if (elements):
                 result = " ! ".join([element for element in elements if element])
             
@@ -153,6 +154,8 @@ class ObjectDetection(Task):
     supported_uri_schemes = ["pipe", "file", "rtsp"]
     
     detect_model_config = "model"
+
+    classify_model_config = None
     
     def __init__(self, piperun_config, args, *pos_args, **keywd_args):
         self._piperun_config = piperun_config
@@ -165,11 +168,16 @@ class ObjectDetection(Task):
 
         channels = []
 
+        classify_model_config = None
+
+        if self.classify_model_config:
+            classify_model_config = self._piperun_config["pipeline"][self.classify_model_config]
+
         for i in range(len(self._piperun_config["inputs"])):
             caps = self._piperun_config["inputs"][i]["caps"]
 
-            channels.append(Channel(self._piperun_config["inputs"][i], self._piperun_config["outputs"][i], model, copy.deepcopy(self._piperun_config["runner-config"]), detect_model_name,
-                                    self._my_args.systeminfo, caps, i))
+            channels.append(Channel(self._piperun_config["inputs"][i], self._piperun_config["outputs"][i], self._piperun_config["models-root"], copy.deepcopy(self._piperun_config["runner-config"]), detect_model_name,
+                                    classify_model_config, self._my_args.systeminfo, caps, i))
 
         elements = ""
         standalone_elements = ""
