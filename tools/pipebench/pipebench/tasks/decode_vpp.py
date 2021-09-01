@@ -63,9 +63,9 @@ class DecodeVPP(Task):
             elif (self._workload.scenario.source=="disk"):
                 self._input_caps.append(read_caps(os.path.join(self._args.workload_root,"input"))["caps"].split(',')[0])
                 media_type = MEDIA_TYPES[self._input_caps[-1]]
-                self._input_paths = os.path.join(self._args.workload_root,
+                self._input_paths.append(os.path.join(self._args.workload_root,
                                                 "input",
-                                                "stream.{}".format(media_type.elementary_stream_extensions[0]))
+                                                "stream.{}".format(media_type.elementary_stream_extensions[0])))
                 self._input_uris.append("file://{}".format(self._input_paths[-1]))
 
 
