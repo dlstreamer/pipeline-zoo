@@ -1,0 +1,12 @@
+run: python3 dlstreamrun
+detect:
+  device: GPU
+  inference-region: full-frame
+  ie-config: "CLDNN_PLUGIN_THROTTLE=1"
+  precision: FP16
+decode:
+  device: GPU
+detect-queue:
+  enabled: false
+decode-queue:
+  enabled: false
