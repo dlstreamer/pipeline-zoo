@@ -689,7 +689,7 @@ def _measure_density(throughput,
     max_success_iteration = -1
     min_failure_iteration = -1
     search_method = config["search-method"]
-    streams_per_process = runner_config.get("streams-per-process",1)
+    streams_per_process = runner_config.get("streams-per-process", 1)
     while ( ( (max_success==-1) or (min_failure==-1) or (min_failure-max_success>1) )
             #(first_result == current_result)
             and (num_streams>=config["min-streams"]) and (num_streams<=config["max-streams"])

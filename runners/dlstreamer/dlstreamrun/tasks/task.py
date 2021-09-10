@@ -272,7 +272,7 @@ def vpp_properties(config,
 
     
 
-def decode_properties(config, queue_config, model, _input, systeminfo, channel_number = 0):
+def decode_properties(config, queue_config, _input, systeminfo, channel_number = 0):
 
     media_type_map = defaultdict(lambda:{"CPU":"decodebin","GPU":"vaapidecodebin"},
                                  {"video/x-h264": {"CPU":"avdec_h264", "GPU":"vaapih264dec"},
