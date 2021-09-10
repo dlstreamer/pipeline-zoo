@@ -1,0 +1,16 @@
+run: python3 dlstreamrun
+decode:
+  device: GPU
+  caps: video/x-raw\(memory:VASurface\)
+detect:
+  device: GPU
+  nireq: 4
+  batch-size: 64
+  pre-process-backend: vaapi-surface-sharing
+  precision: FP32-INT8
+  inference-interval: 5
+decode-queue:
+  enabled: false
+detect-queue:
+  enabled: false
+

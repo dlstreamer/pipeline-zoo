@@ -1,0 +1,17 @@
+# Runner specific configuration
+run: "python3 dlstreamrun"
+decode:
+  device: GPU
+  caps: video/x-raw\(memory:VASurface\)
+classify-0:
+  device: GPU
+  nireq: 4
+  batch-size: 64
+  pre-process-backend: vaapi-surface-sharing
+  precision: FP32-INT8
+detect-queue:
+  enabled: false
+decode-queue:
+  enabled: false
+classify-0-queue:
+  enabled: false
