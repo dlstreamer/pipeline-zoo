@@ -26,6 +26,8 @@ ARG PIPELINE_ZOO_PLATFORM=ATS
 
 ENV PIPELINE_ZOO_PLATFORM=$PIPELINE_ZOO_PLATFORM
 ENV PIPELINE_ZOO_BASE_IMAGE=$BASE
+# the base docker image rearranges the directory structure
+ENV INTEL_OPENVINO_DIR=/opt/intel/openvino
 
 USER root
 

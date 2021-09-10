@@ -230,8 +230,10 @@ class Pipeline(Handler):
 
 class Model(Handler):
 
-#    dldt_root = "/opt/intel/dldt/"
-    dldt_root = "/opt/intel/openvino/deployment_tools"
+    openvino_root = os.environ.get("INTEL_OPENVINO_DIR", "/opt/intel/openvino")
+    
+    dldt_root =  os.path.join(openvino_root, "deployment_tools")
+
     model_downloader = os.path.join(dldt_root,"open_model_zoo/tools/downloader/downloader.py")
 
     model_converter = os.path.join(dldt_root,"open_model_zoo/tools/downloader/converter.py")
