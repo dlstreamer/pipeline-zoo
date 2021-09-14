@@ -2,7 +2,7 @@
 
 task: object-detection
 
-model: ssd_mobilenet_v1_coco
+model: ssd_mobilenet_v1_coco_INT8
 
 inputs.media.type.media-type: video/x-h264
 
