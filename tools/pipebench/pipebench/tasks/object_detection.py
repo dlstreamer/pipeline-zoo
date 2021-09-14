@@ -84,7 +84,7 @@ class ObjectDetection(Task):
             inputs.append( {"uri":self._input_uris[-1],
                             "caps":self._input_caps[-1],
                             "extended-caps":read_caps(os.path.join(self._args.workload_root,"input"))["caps"],
-                            "source":find_media(self._workload.media,self._pipeline.pipeline_root)})
+                            "source":find_media(self._workload.media,self._pipeline.pipeline_root,media_type_keys=[self._input_caps[-1]])})
 
             self._output_caps.append(ObjectDetection.OUTPUT_CAPS)
             self._output_paths.append( "{}/output".format(pipe_directory))
@@ -267,8 +267,7 @@ class ObjectDetection(Task):
         # todo resolve properties of task by filling in details from pipeline
 
         input_media_type = getattr(self._pipeline._namespace, "inputs.media.type.media-type")
-
-        input_media = find_media(self._workload.media, self._pipeline.pipeline_root)
+        input_media = find_media(self._workload.media, self._pipeline.pipeline_root,media_type_keys=[input_media_type])
 
         input_target = os.path.join(workload_root, "input")
 

@@ -81,9 +81,11 @@ INFERENCE_ELEMENTS = {
     "audio-detect":"gvaaudiodetect"
 }
 
-def _get_media_extensions():
+def _get_media_extensions(media_type_keys = None):
     result = set()
-    for media_type in MEDIA_TYPES.values():
+    for media_type_key, media_type in MEDIA_TYPES.items():
+        if media_type_keys and media_type_key not in media_type_keys:
+            continue
         if (media_type.frame_extension):
             result.add(media_type.frame_extension)
         for container_format in media_type.container_formats:
@@ -92,23 +94,26 @@ def _get_media_extensions():
             result.add(extension)
     return result
 
-def find_media(media, pipeline_root):
-    extensions = [ ".{}".format(extension) for extension in _get_media_extensions() ]
+def find_media(media, pipeline_root, media_type_keys = None):
+    extensions = [ ".{}".format(extension) for extension in _get_media_extensions(media_type_keys) ]
     media_root = os.path.join(os.path.join(pipeline_root, "media"), media)
-    file_paths = [
-        file_path for file_path in os.listdir(media_root)
-        if os.path.isfile(os.path.join(media_root, file_path)) and
-        os.path.splitext(file_path)[1] in extensions
-    ]
-
-    media_base = os.path.basename(media)
-    candidate_filenames = ["{}.{}".format(media_base, extension) for extension in extensions]
-    for candidate_filename in candidate_filenames:
-        if candidate_filename in file_paths:
-            return os.path.join(media_root, candidate_filename)
-
-    if len(file_paths) == 1:
-        return os.path.join(media_root, file_paths[0])
+    if os.path.isdir(media_root):
+        file_paths = [
+            file_path for file_path in os.listdir(media_root)
+            if os.path.isfile(os.path.join(media_root, file_path)) and
+            os.path.splitext(file_path)[1] in extensions
+        ]
+        media_base = os.path.basename(media)
+        candidate_filenames = ["{}{}".format(media_base, extension) for extension in extensions]
+        for candidate_filename in candidate_filenames:
+            if candidate_filename in file_paths:
+                return os.path.join(media_root, candidate_filename)   
+        if len(file_paths) == 1:
+            return os.path.join(media_root, file_paths[0])
+    elif os.path.isfile(media_root) and os.path.splitext(media_root)[1] in extensions:
+        return media_root
+    else:
+        return None
     return None
 
 
