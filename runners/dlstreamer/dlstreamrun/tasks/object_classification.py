@@ -17,5 +17,4 @@ class ObjectClassification(ObjectDetection, Task):
         for i in range(len(self._piperun_config["inputs"])):
             self._channels[i].add_classify_element(copy.deepcopy(classify_model_config))
 
-        self.create_channels()
         self.create_command()
