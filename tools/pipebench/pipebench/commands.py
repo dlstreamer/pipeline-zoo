@@ -727,6 +727,7 @@ def _measure_density(throughput,
                                                config["sample-size"],
                                                semaphore = semaphore,
                                                numa_node = numa_node,
+                                               starting_stream_index = stream_index,
                                                number_of_streams=(end_stream_index-stream_index+1))
 
             runners.append((sources,sinks,runner,run_directory))

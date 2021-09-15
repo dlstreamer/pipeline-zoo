@@ -117,6 +117,7 @@ class DecodeVPP(Task):
             frame_rate,
             sample_size,
             number_of_streams=1,
+            starting_stream_index=0,
             semaphore = None,
             numa_node = None):
         
@@ -141,6 +142,7 @@ class DecodeVPP(Task):
             sink = MediaSink(self._output_paths[stream_index],
                              self._output_uris[stream_index],
                              self._output_caps[stream_index],
+                             stream_index = stream_index + starting_stream_index,
                              reference_directory = os.path.join(self._args.workload_root,
                                                                 "reference"),
                              warm_up = warm_up,

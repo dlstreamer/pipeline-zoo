@@ -309,6 +309,7 @@ class MediaSink(Thread):
                  source_path,
                  source_uri,
                  caps,
+                 stream_index = 0,
                  reference_directory = None,
                  warm_up = 0,
                  sample_size = 1,
@@ -343,7 +344,7 @@ class MediaSink(Thread):
             self.run = self.read_lines
             if self._save_pipeline_output:
                 self._output_file = open(os.path.join(output_dir,
-                                                      "objects.jsonl"),
+                                                      "stream_{}.objects.jsonl".format(stream_index)),
                                          "wb")
         else:
             self._frame_sizes = self._load_frame_sizes()

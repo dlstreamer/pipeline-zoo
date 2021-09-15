@@ -146,6 +146,7 @@ class ObjectDetection(Task):
             frame_rate,
             sample_size,
             number_of_streams=1,
+            starting_stream_index=0,
             semaphore = None,
             numa_node = None):
         
@@ -172,6 +173,7 @@ class ObjectDetection(Task):
             sink = MediaSink(self._output_paths[stream_index],
                              self._output_uris[stream_index],
                              self._output_caps[stream_index],
+                             stream_index = stream_index + starting_stream_index,
                              warm_up = warm_up,
                              sample_size = sample_size,
                              save_pipeline_output = self._args.save_pipeline_output,
