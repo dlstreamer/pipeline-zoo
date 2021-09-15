@@ -8,8 +8,8 @@ detect:
   batch-size: 64
   pre-process-backend: vaapi-surface-sharing
   precision: FP32-INT8
+  model-instance-id: det
 decode-queue:
   enabled: false
 detect-queue:
   enabled: false
-

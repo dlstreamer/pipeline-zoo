@@ -9,6 +9,7 @@ detect:
   pre-process-backend: vaapi-surface-sharing
   precision: FP32-INT8
   inference-interval: 5
+  model-instance-id: det
 decode-queue:
   enabled: false
 detect-queue:
