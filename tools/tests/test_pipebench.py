@@ -12,9 +12,6 @@ import glob
 import pytest
 import json
 
-pipelines = ["od-h264-mbnetssd"]
-#             "od-h264-yolov3"]
-
 timeout_sec = 60
 
 test_workspace = "/home/test_workspace"     
