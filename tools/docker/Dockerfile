@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
-ARG BASE=openvino/ubuntu20_data_dev:2021.3_vaapi_fix
+ARG BASE=openvino/ubuntu20_data_dev:2021.4.1
 ARG PIPELINE_ZOO_PLATFORM=DEFAULT
 ARG REGISTRY=
 FROM ${REGISTRY}ubuntu:18.04 as MODEL_ZOO
