@@ -7,6 +7,7 @@ detect:
   nireq: 4
   batch-size: 64
   pre-process-backend: vaapi-surface-sharing
+  pre-process-config: "VAAPI_FAST_SCALE_LOAD_FACTOR=1"
   precision: FP32-INT8
   inference-interval: 5
   model-instance-id: det
