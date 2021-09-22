@@ -80,11 +80,11 @@ class ObjectDetection(Task):
                                                 "stream.{}".format(media_type.elementary_stream_extensions[0])))
                 self._input_uris.append("file://{}".format(self._input_paths[-1]))
 
-
+            media_type_key = read_caps(os.path.join(self._args.workload_root,"input"))["caps"].split(',')[0]
             inputs.append( {"uri":self._input_uris[-1],
                             "caps":self._input_caps[-1],
                             "extended-caps":read_caps(os.path.join(self._args.workload_root,"input"))["caps"],
-                            "source":find_media(self._workload.media,self._pipeline.pipeline_root,media_type_keys=[self._input_caps[-1]])})
+                            "source":find_media(self._workload.media,self._pipeline.pipeline_root,media_type_keys=[media_type_key])})
 
             self._output_caps.append(ObjectDetection.OUTPUT_CAPS)
             self._output_paths.append( "{}/output".format(pipe_directory))

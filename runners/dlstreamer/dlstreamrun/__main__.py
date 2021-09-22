@@ -5,7 +5,7 @@
 * SPDX-License-Identifier: BSD-3-Clause
 '''
 
-import os
+import os, traceback
 import atexit
 import psutil
 import yaml
@@ -81,6 +81,9 @@ if __name__ == '__main__':
         pass
     
     except Exception as error:
+        print("\n\n")
+        traceback.print_tb(error.__traceback__)
+        print("\n\n")
         if (parser):
             parser.error("\n\n{}\n\n".format(error))
         else:
