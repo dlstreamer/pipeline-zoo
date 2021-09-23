@@ -157,14 +157,16 @@ get_options() {
     fi
 
     if [[ $PLATFORM =~ "ATS" ]] || [[ $IMAGE =~ "ats" ]]; then
-       CAPADD="--cap-add SYS_ADMIN" 
-       ENTRYPOINT="--entrypoint /bin/hello-bash"
-       DEVICE=${DEVICE:-/dev/dri/renderD128}
-       DEVICE_GRP=$(ls -g $DEVICE | awk '{print $3}' | xargs getent group | awk -F: '{print $3}')
-       ENVIRONMENT+=" -e DEVICE=$DEVICE"
-       DEVICES="--device=$DEVICE"
-       if [ -e /dev/dri/by-path ]; then BY_PATH="-v /dev/dri/by-path:/dev/dri/by-path"; fi
-       DEVICEGRP="--group-add $DEVICE_GRP $BY_PATH"
+        CAPADD="--cap-add SYS_ADMIN"
+        if [ -z "$ENTRYPOINT" ]; then  # else means that user override it using --entrypoint argument
+            ENTRYPOINT="--entrypoint /bin/hello-bash"
+        fi
+        DEVICE=${DEVICE:-/dev/dri/renderD128}
+        DEVICE_GRP=$(ls -g $DEVICE | awk '{print $3}' | xargs getent group | awk -F: '{print $3}')
+        ENVIRONMENT+=" -e DEVICE=$DEVICE"
+        DEVICES="--device=$DEVICE"
+        if [ -e /dev/dri/by-path ]; then BY_PATH="-v /dev/dri/by-path:/dev/dri/by-path"; fi
+        DEVICEGRP="--group-add $DEVICE_GRP $BY_PATH"
     fi
 
     if [ -z "$IMAGE" ]; then
