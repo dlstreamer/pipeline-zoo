@@ -1,0 +1,10 @@
+# Defines decode h264 and scale pipeline
+
+task: decode-vpp
+
+inputs.media.type.media-type: video/x-h264
+
+resolution:
+  height: 300
+  width: 300
+

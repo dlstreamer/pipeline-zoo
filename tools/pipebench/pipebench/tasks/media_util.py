@@ -62,6 +62,15 @@ MEDIA_TYPES = {
                                  "fakesink",
                                  [],
                                  []),
+    "metadata/line-per-frame":MediaType(None,
+                                        None,
+                                        None,
+                                        "metadata/objects,format=jsonl",
+                                        None,
+                                        "method=file file-format=json-lines file-path={}/objects.jsonl",
+                                        "fakesink",
+                                        [],
+                                        []),
     "video/x-raw":MediaType("urisourcebin uri={}",
                             "decodebin ! videoconvert",
                             None,
@@ -339,6 +348,8 @@ class MediaSink(Thread):
         self._stopped = False
         self._save_pipeline_output = save_pipeline_output
         self._output_file = None
+        self._output_dir = output_dir
+        self._stream_index = stream_index
         if (self._media_type.encoded_caps) and ("jsonl" in self._media_type.encoded_caps):
             self._frame_sizes = None
             self.run = self.read_lines
@@ -442,12 +453,19 @@ class MediaSink(Thread):
             with open(self._source_path,"rb") as source_fifo:
                 self.connected = True
                 bytes_read = 1
+                frame = bytearray()
                 # read input frame
                 while(bytes_read):
                     bytes_read = 0
                     frame_size = self._frame_sizes[self._frame_count %input_len]
+                    frame.clear()
                     while(bytes_read<frame_size):
-                        bytes_read = 0 if self._stopped else bytes_read + len(source_fifo.read(frame_size-bytes_read))
+                        if self._stopped:
+                            bytes_read = 0
+                        else:
+                            bytes_ = source_fifo.read(frame_size-bytes_read)
+                            frame.extend(bytes_)
+                            bytes_read = bytes_read + len(bytes_)
                         if (not bytes_read):
                             self._end_time = time.time()
                             break
@@ -455,6 +473,13 @@ class MediaSink(Thread):
                     if (bytes_read):
 
                         self._frame_count += 1
+
+                        if self._save_pipeline_output:
+                            with open(os.path.join(self._output_dir,
+                                                   "stream_{}.frame_{:06d}.raw.bin".format(self._stream_index,
+                                                                                           self._frame_count)),
+                                      "wb") as output:
+                                output.write(frame)
 
                         if (self._frame_count % self._sample_size == 0):
                             self._sample_count += 1

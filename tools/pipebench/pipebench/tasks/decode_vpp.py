@@ -74,14 +74,18 @@ class DecodeVPP(Task):
                            "extended-caps":read_caps(os.path.join(self._args.workload_root,"input"))["caps"],
                            "source":find_media(self._workload.media,self._pipeline.pipeline_root,media_type_keys=[media_type_key])})
 
-            self._output_caps.append(DecodeVPP.OUTPUT_CAPS)
+            if self._args.save_pipeline_output:
+                self._output_caps.append(DecodeVPP.OUTPUT_CAPS)
+                if "color-space" in self._pipeline._document:
+                    self._output_caps[-1] += ",format={}".format(self._pipeline._document["color-space"].upper())
 
-            if "color-space" in self._pipeline._document:
-                self._output_caps[-1] += ",format={}".format(self._pipeline._document["color-space"].upper())
+                if "resolution" in self._pipeline._document:
+                    self._output_caps[-1] += ",height={},width={}".format(self._pipeline._document["resolution"]["height"],
+                                                                          self._pipeline._document["resolution"]["width"])
 
-            if "resolution" in self._pipeline._document:
-                self._output_caps[-1] += ",height={},width={}".format(self._pipeline._document["resolution"]["height"],
-                                                                  self._pipeline._document["resolution"]["width"])
+            else:
+                self._output_caps.append("metadata/line-per-frame,format=jsonl")
+                
             self._output_paths.append("{}/output".format(pipe_directory))
             self._output_uris.append("pipe://{}".format(self._output_paths[-1]))
             outputs.append({"uri":self._output_uris[-1],

@@ -1,0 +1,7 @@
+# Runner specific configuration
+run: "python3 dlstreamrun"
+decode:
+  device: CPU
+vpp:
+  device: CPU
+

@@ -51,7 +51,8 @@ def output_to_sink(_output):
 
     media_type_map = defaultdict(None,
                                  {"metadata/objects": "gvametaconvert add-empty-results=true ! gvametapublish {} ! gvafpscounter ! fakesink async=false",
-                                  "video/x-raw": "{} ! filesink location=\"{}\""})
+                                  "metadata/line-per-frame": "gvametaconvert add-empty-results=true ! gvametapublish {} ! gvafpscounter ! fakesink async=false",
+                                  "video/x-raw": "gvafpscounter ! filesink location=\"{}\""})
 
     caps = _output["caps"].split(',')
     
@@ -69,7 +70,7 @@ def output_to_sink(_output):
             path = "file-path={}".format(parsed_uri.path)
         template = template.format(" ".join([method, _format, path]))
     elif template and ('filesink' in template):
-        template = template.format(_output["caps"],parsed_uri.path)
+        template = template.format(parsed_uri.path)
 
     return template
     
@@ -229,6 +230,16 @@ def vpp_properties(config,
     else:
         config.setdefault("device", "CPU")
 
+    output_caps = "! video/x-raw"
+        
+    if config["device"] == "GPU":
+        output_caps = "! video/x-raw(memory:VASurface)"
+    
+    if color_space:
+        output_caps += ",format={}".format(color_space.upper())
+    if resolution:
+        output_caps += ",height={},width={}".format(resolution["height"],
+                                                    resolution["width"])
 
     if config["device"] == "CPU":        
         if region:
@@ -265,8 +276,9 @@ def vpp_properties(config,
         vpp_queue_properties = " ! {}".format(vpp_queue_properties)
 
     
-    template = "{} {}".format("! ".join(elements),
-                              vpp_queue_properties)
+    template = "{} {} {}".format("! ".join(elements),
+                                 output_caps,
+                                 vpp_queue_properties)
 
     return template
 
