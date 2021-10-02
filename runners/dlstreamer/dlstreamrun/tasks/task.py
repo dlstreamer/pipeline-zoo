@@ -39,7 +39,7 @@ def input_to_src(_input):
         element = "filesrc location=\"{}\" ! {} ! {}".format(parsed_uri.path,media_type,parser)
     return element
 
-def output_to_sink(_output):
+def output_to_sink(_output,config,channel_number=0):
 
     parsed_uri = parse.urlparse(_output["uri"])  
 
@@ -50,13 +50,28 @@ def output_to_sink(_output):
                               "kafka":"kafka"})
 
     media_type_map = defaultdict(None,
-                                 {"metadata/objects": "gvametaconvert add-empty-results=true ! gvametapublish {} ! gvafpscounter ! fakesink async=false",
-                                  "metadata/line-per-frame": "gvametaconvert add-empty-results=true ! gvametapublish {} ! gvafpscounter ! fakesink async=false",
-                                  "video/x-raw": "gvafpscounter ! filesink location=\"{}\""})
+                                 {"metadata/objects": "gvametaconvert add-empty-results=true ! gvametapublish {} ! gvafpscounter ! {}",
+                                  "metadata/line-per-frame": "gvametaconvert add-empty-results=true ! gvametapublish {} ! {}",
+                                  "video/x-raw": "{}"})
 
     caps = _output["caps"].split(',')
-    
     template = media_type_map[caps[0]]
+    
+    sink_name = "sink"+str(channel_number)   
+    sink_config = config.setdefault("sink",{})
+
+    if "metadata" in caps[0]:
+        sink_config.setdefault("element", "fakesink")
+    else:
+        sink_config.setdefault("element", "filesink")
+
+    sink_config.setdefault("async","false")
+    sink_config["name"] = sink_name
+    if sink_config["element"] == 'filesink':
+        sink_config.setdefault("location",parsed_uri.path)
+
+    sink_properties = " ".join(["{}={}".format(key,value) for key,value in sink_config.items() if key != "element" and key != "enabled"])
+    sink = "{} {}".format(sink_config["element"], sink_properties)
 
     if template and ("metapublish" in template):
     
@@ -68,9 +83,9 @@ def output_to_sink(_output):
         path = ""
         if "file" in method:
             path = "file-path={}".format(parsed_uri.path)
-        template = template.format(" ".join([method, _format, path]))
-    elif template and ('filesink' in template):
-        template = template.format(parsed_uri.path)
+        template = template.format(" ".join([method, _format, path]),sink)
+    elif template:
+        template = template.format(sink)
 
     return template
     
@@ -275,11 +290,13 @@ def vpp_properties(config,
     if (vpp_queue_properties):
         vpp_queue_properties = " ! {}".format(vpp_queue_properties)
 
-    
-    template = "{} {} {}".format("! ".join(elements),
-                                 output_caps,
-                                 vpp_queue_properties)
-
+    if elements:
+        template = "{} {} {}".format("! ".join(elements),
+                                     output_caps,
+                                     vpp_queue_properties)
+    else:
+        template = ""
+   
     return template
 
     

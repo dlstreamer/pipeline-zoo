@@ -60,7 +60,9 @@ class Channel():
         self._caps = caps
 
     def add_sink_element(self, output):
-        self._sink_element = output_to_sink(output)
+        self._sink_element = output_to_sink(output,
+                                            self._runner_config,
+                                            self.channel_number)
 
     def add_decode_element(self):
         self._runner_config.setdefault("decode", {"device":"CPU"})
