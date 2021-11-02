@@ -1,0 +1,124 @@
+MIT License
+
+Copyright (c) 2021 Intel Corporation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+
+END OF TERMS AND CONDITIONS
+
+APPENDIX: SILENT DOWNLOAD OF SOFTWARE COMPONENTS 
+
+In addition to the above license, the software, tools, scripits 
+automatically download software, libraries, ML models, datasets
+with the following licenses -
+
+  DL Models
+  =========
+    ssd_mobilenet_v1_coco_INT8
+    Resnet_v1.5_50_INT8
+    yolov3_INT8
+    yolov4_INT8
+
+        Apache 2.0 License 
+
+  Demos/ Samples
+  ==============
+    OpenVINO Model Zoo G-API Interactive Face Detection Demo 
+        
+        Apache License 
+
+  Datasets 
+  ========
+    Pexels 
+        
+        Pexels License 
+    
+    Image-net 
+
+        Image-net License
+
+    MSCOCO
+
+        Creative Commons Attribution 4.0 License
+
+  Video Samples
+  =============
+    Sample Videos 
+        CC-BY-4.0 License
+
+  Tools/ Libraries
+  ================
+    PCM
+    CMake
+        
+        BSD-3 Clause License
+    
+    psutil
+
+        BSD-3 Clause "New" or "Revised" License
+
+    python3
+        
+        PSF License
+
+    graphviz-dev
+          
+        Eclipse Public License v1.0
+
+    pciutils
+    bash-completion
+    lsb-release
+    dmidecode
+    
+        GPL v2.0 License
+
+    Vim
+       
+       Vim License    
+
+    numactl
+
+        LGPL 2.1 License
+
+    jemalloc
+
+        BSD-2 clause License
+
+    Distro
+    ffmpeg-python
+    shtab
+    test-generator
+        
+        Apache License 2.0
+
+    python-gitlab
+        
+        LGPL 3.0 License 
+
+    libPAPI
+        
+        PAPI License (Revised BSD template)
+
+   Docker images
+   =============
+   OpenVINO Image
+
+        Intel openVINO Distribution License 
+   
