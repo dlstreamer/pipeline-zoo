@@ -2,7 +2,7 @@
 ## Installation 
 1. Clone Repo
    ```
-   git clone https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/pipeline-zoo.git
+   git clone https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo.git
    ```
 2. Build Pipeline Zoo Environment
    ```
