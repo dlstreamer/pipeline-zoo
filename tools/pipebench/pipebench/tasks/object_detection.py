@@ -299,34 +299,34 @@ class ObjectDetection(Task):
         input_paths = self._read_input_paths(input_target)
 
         models = self._get_models()
-        
-        reference_target = os.path.join(workload_root, "reference")
 
-        # Todo: get from task document
-        output_media_type = "metadata/objects"
+        if self._args.generate_reference:
+            reference_target = os.path.join(workload_root, "reference")
 
+            # Todo: get from task document
+            output_media_type = "metadata/objects"
 
-        existing_files = [ file_path for file_path in os.listdir(reference_target)
-                           if os.path.isfile(os.path.join(reference_target,file_path)) ]
+            existing_files = [ file_path for file_path in os.listdir(reference_target)
+                               if os.path.isfile(os.path.join(reference_target,file_path)) ]
 
-        if (existing_files):
-            print("Existing reference, skipping generation")
-        else:
-            create_reference(input_target,
-                             reference_target,
-                             output_media_type,
-                             models,
-                             timeout=timeout,
-                             individual_frames=individual_frames)
+            if (existing_files):
+                print("Existing reference, skipping generation")
+            else:
+                create_reference(input_target,
+                                 reference_target,
+                                 output_media_type,
+                                 models,
+                                 timeout=timeout,
+                                 individual_frames=individual_frames)
 
-        reference = self._load_reference(reference_target)
+            reference = self._load_reference(reference_target)
 
-        for extra_input in input_paths[len(reference):]:
-            try:
-                os.remove(extra_input)
-            except Exception as error:
-                print(error)
+            for extra_input in input_paths[len(reference):]:
+                try:
+                    os.remove(extra_input)
+                except Exception as error:
+                    print(error)
 
-        self._remove_classifications(reference)
-        self._write_detection_reference(reference,reference_target)
+            self._remove_classifications(reference)
+            self._write_detection_reference(reference,reference_target)
             

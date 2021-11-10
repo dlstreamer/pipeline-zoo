@@ -272,34 +272,36 @@ class DecodeVPP(Task):
             )
 
         input_paths = self._read_input_paths(input_target)
-        
-        reference_target = os.path.join(workload_root, "reference")
-
-        # Todo: get from task document
-        output_media_type = "video/x-raw"
-        color_space = None
-        resolution = None
-        if "color-space" in self._pipeline._document:
-            output_media_type+= ",format={}".format(self._pipeline._document["color-space"].upper())
-            color_space = self._pipeline._document["color-space"].upper()
-        if "resolution" in self._pipeline._document:
-            output_media_type += ",height={},width={}".format(self._pipeline._document["resolution"]["height"],
-                                                              self._pipeline._document["resolution"]["width"])
-            resolution = self._pipeline._document["resolution"]
 
 
-        existing_files = [ file_path for file_path in os.listdir(reference_target)
-                           if os.path.isfile(os.path.join(reference_target,file_path)) ]
+        if self._args.generate_reference:
+            reference_target = os.path.join(workload_root, "reference")
 
-        if (existing_files):
-            print("Existing reference, skipping generation")
-        else:
-            create_reference(input_target,
-                             reference_target,
-                             output_media_type,
-                             [],
-                             color_space = color_space,
-                             resolution = resolution,
-                             timeout=timeout,
-                             individual_frames=individual_frames)
+            # Todo: get from task document
+            output_media_type = "video/x-raw"
+            color_space = None
+            resolution = None
+            if "color-space" in self._pipeline._document:
+                output_media_type+= ",format={}".format(self._pipeline._document["color-space"].upper())
+                color_space = self._pipeline._document["color-space"].upper()
+            if "resolution" in self._pipeline._document:
+                output_media_type += ",height={},width={}".format(self._pipeline._document["resolution"]["height"],
+                                                                  self._pipeline._document["resolution"]["width"])
+                resolution = self._pipeline._document["resolution"]
+
+
+            existing_files = [ file_path for file_path in os.listdir(reference_target)
+                               if os.path.isfile(os.path.join(reference_target,file_path)) ]
+
+            if (existing_files):
+                print("Existing reference, skipping generation")
+            else:
+                create_reference(input_target,
+                                 reference_target,
+                                 output_media_type,
+                                 [],
+                                 color_space = color_space,
+                                 resolution = resolution,
+                                 timeout=timeout,
+                                 individual_frames=individual_frames)
             
