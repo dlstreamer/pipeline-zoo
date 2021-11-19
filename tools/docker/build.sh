@@ -12,7 +12,7 @@ declare -A PLATFORMS=(["DEFAULT"]=1 ["ATS"]=3)
 PLATFORM=DEFAULT
 
 # Base Images
-DEFAULT_BASE_IMAGE=openvino/ubuntu20_data_dev:2021.4.1
+DEFAULT_BASE_IMAGE=openvino/ubuntu20_data_dev:2021.4.2
 ATS_BASE_IMAGE=intel-media-analytics:latest
 
 # Model Proc Versions
