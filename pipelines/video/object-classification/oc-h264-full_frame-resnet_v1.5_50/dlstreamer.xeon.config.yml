@@ -1,12 +1,9 @@
 run: "python3 dlstreamrun"
 decode:
-  max-threads: 1
   device: CPU
   post-proc-caps: video/x-raw,format=BGRx,width=224,height=224
 classify-0:
+  device: CPU
   precision: FP32-INT8
-  cpu-throughput-streams: 1
-  nireq: 2
   inference-region: full-frame
   pre-process-backend: ie
-  ie-config: "CPU_THREADS_NUM=1,CPU_BIND_THREAD=NO"

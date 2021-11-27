@@ -1,0 +1,8 @@
+run: "python3 dlstreamrun"
+decode:
+  device: CPU
+vpp:
+  device: CPU
+  color-space: BGRA
+  videoconvert:
+    n-threads: 0

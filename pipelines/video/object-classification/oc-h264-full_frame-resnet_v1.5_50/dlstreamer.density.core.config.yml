@@ -1,0 +1,11 @@
+run: "python3 dlstreamrun"
+streams-per-process: 2
+decode:
+  device: GPU
+  post-proc-caps: video/x-raw(memory:VASurface)
+classify-0:
+  device: GPU
+  precision: FP32-INT8
+  pre-process-backend: vaapi
+  gpu-throughput-streams: 1
+  batch-size: 16
