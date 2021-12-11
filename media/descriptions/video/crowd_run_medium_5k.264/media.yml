@@ -1,0 +1,7 @@
+description: Crowd run medium 5k 264
+files:
+- name: crowd_run_medium_5k.264.mp4
+  sha256: 15e0cf1078f45c31b44aa54e66e1cf92325981027234771bae0ec92427a5ca25
+  size: 125190115
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/crowd_run_medium_5k.264/crowd_run_medium_5k.264.mp4
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

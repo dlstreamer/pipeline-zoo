@@ -1,0 +1,12 @@
+%YAML 1.0
+---
+description: mobilenetv2_7
+task_type: 'classification'
+files:
+- name: FP32/mobilenetv2_7.onnx
+  size: 14246826
+  sha256: c1c513582d56afceff8516c73804e484c81c6a830712ab6d682253f4a3cd042f
+  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/mobilenetv2_7/FP32/mobilenetv2_7.onnx
+framework: onnx
+model_optimizer_args: ["--log_level", "CRITICAL"]
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

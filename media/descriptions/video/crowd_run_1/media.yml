@@ -1,0 +1,7 @@
+description: Crowd run 1
+files:
+- name: crowd_run_1.265
+  sha256: 1689cf90e8b31160faa68c82ec6fa837a58c3d5c6ba87ae387151cef0d7e9346
+  size: 9087495
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/crowd_run_1/crowd_run_1.265
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

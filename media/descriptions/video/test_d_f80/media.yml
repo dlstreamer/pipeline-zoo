@@ -1,0 +1,7 @@
+description: test_d_f80
+files:
+- name: test_d_f80.265
+  sha256: 72c1bd7542c796e81c02629d5531437d7224b0420025233ae9ef04f8f34a1eb4
+  size: 4303712
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/test_d_f80/test_d_f80.265
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

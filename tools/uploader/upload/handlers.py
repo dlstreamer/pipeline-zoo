@@ -9,6 +9,8 @@ import os
 import shutil
 import mdutils
 import ffmpeg
+import yaml
+import hashlib
 
 class Handler(object, metaclass=abc.ABCMeta):
 
@@ -87,5 +89,25 @@ class Media(Handler):
         readme = mdutils.MdUtils(file_name=os.path.join(directory,"README.md"),title=os.path.basename(subdirectory))
         readme.new_line(readme.new_inline_image("Preview",os.path.basename(preview)))
         readme.create_md_file()
-        
-        
+
+        self._prepare_description(os.path.basename(subdirectory), os.path.basename(self._args.source), os.path.join(directory,"media.yml"))
+
+
+
+    def _prepare_description(self, description, media_name, description_path):
+        self._args.source
+        description = {"description" : description, "files" : {"name" : media_name, "sha256" : self._calulate_sha256(self._args.source), "size" : self._calculate_file_size(self._args.source), "source" : "PUT URL HERE"}, "license" : "https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE"}
+
+        with open(description_path, 'w') as file:
+                yaml.dump(description, file)
+
+    def _calculate_file_size(self, file_path):
+        return os.path.getsize(file_path)
+
+    def _calulate_sha256(self, file_path):
+        sha256 = hashlib.sha256()
+        block_size=65536
+        with open(file_path, 'rb') as f:
+            for block in iter(lambda: f.read(block_size), b''):
+                sha256.update(block)
+        return sha256.hexdigest()

@@ -1,0 +1,12 @@
+description: >-
+  test d f 9000
+files:
+  - name: test_d_f9000.h265
+    size: 484167600
+    sha256: 77811bfb62abdc0b56af6820b9faa90559538d50102e631c3ad336cfc0a07cc7
+    source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/media/-/raw/main/video/test_d_f9000/test_d_f9000.h265?inline=false
+  - name: test_d_f9000.h264
+    size: 744630233
+    sha256: c3763a4105e1f2d1bb9d7e7a996015d94f52c9ce161c9511d07cadce2b5b7406
+    source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/media/-/raw/main/video/test_d_f9000/test_d_f9000.h264?inline=false
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

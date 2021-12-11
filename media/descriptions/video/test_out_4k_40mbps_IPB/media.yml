@@ -1,0 +1,7 @@
+description: Test out 4k 40mbps IPB
+files:
+- name: test_out_4k_40mbps_IPB.265
+  sha256: dfcc74148ae0bfa9705a5af2ce399facee9f024d54d0b262d983129018cab0d8
+  size: 6060276
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/test_out_4k_40mbps_IPB/test_out_4k_40mbps_IPB.265
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

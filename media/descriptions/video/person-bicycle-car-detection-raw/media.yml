@@ -1,0 +1,7 @@
+description: Person bicycle car-detection
+files:
+- name: person-bicycle-car-detection.264
+  sha256: 42e6cd27f4b24886e3175571c3fd9699a16cf6dd193688aff8e306b8905805b2
+  size: 3865059
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/person-bicycle-car-detection-raw/person-bicycle-car-detection.264
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

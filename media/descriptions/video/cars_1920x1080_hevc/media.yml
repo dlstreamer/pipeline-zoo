@@ -1,0 +1,7 @@
+description: Cars 1920x1080 HEVC
+files:
+- name: cars_1920x1080_hevc.265
+  sha256: ba379cbc60cfedd23aae21a757bdcb2097207066b8855ab6a395c099a119dfe8
+  size: 988146
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/cars_1920x1080_hevc/cars_1920x1080_hevc.265
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

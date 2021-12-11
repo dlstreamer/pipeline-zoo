@@ -1,0 +1,7 @@
+description: Pexels Videos 4585
+files:
+- name: Pexels-Videos-4585.264
+  sha256: e3b311d02a1f11a43f472f2e9aa452b3a7466c84f1c0c984fcdeb02125847daa
+  size: 4119415
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/Pexels-Videos-4585/Pexels-Videos-4585.264
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

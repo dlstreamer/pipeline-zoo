@@ -10,14 +10,20 @@ import shutil
 import mdutils
 import ffmpeg
 import yaml
+import json
 import subprocess
 import shlex
 import tempfile
 from util import create_directory
 from util import print_action
 import gitlab
+from github import Github
+import github
 import urllib.parse
 import requests
+import hashlib
+import netrc
+from tqdm import tqdm
 
 class Handler(object, metaclass=abc.ABCMeta):
 
@@ -121,57 +127,70 @@ class Runner(Handler):
 
             self._build_runner(document,
                                target_runner)
-        
+class GithubUrlConverter:
+    def __init__(self):
+        self._github = self._connect_to_repo()
+
+    def convert(self, original_url):
+        converted_url = original_url
+
+        url_info = urllib.parse.urlparse(original_url)
+
+        if  "github.com" in url_info.netloc:
+            repo_name = url_info.path.split("/")[1] + "/" + url_info.path.split("/")[2]
+            try:
+                repo = self._github.get_repo(repo_name)
+            except:
+                return original_url
+
+            converted_url = self._get_download_url(repo, url_info.path.split("/")[-1], "/".join(url_info.path.split("/")[5:-1]))
+
+        return converted_url
+
+    def _get_lfs_download_url(self, repo, file_path):
+        file_content = repo.get_contents(file_path)
+        return file_content.download_url
+
+    def _get_download_url(self, repo, file_name, file_dir):
+        files_content = repo.get_dir_contents(file_dir)
+        for file_content in files_content:
+                if file_content.name == file_name:
+                    if file_content.size > 200:
+                        return file_content.download_url
+                    else:
+                        return self._get_lfs_download_url(repo, os.path.join(file_dir, file_name))
+
+        return None
+
+    def _connect_to_repo(self):
+
+        token = os.getenv('GITHUB_TOKEN')
+
+        if not token:
+            try:
+                netrc_file = netrc.netrc()
+                auth_tokens = netrc_file.authenticators("github.com")
+                token = auth_tokens[2]
+            except:
+                token=None
+
+        github = Github(token)
+        return github
 
 
 class Media(Handler):
-    
-    LFS_POINTER_SIZE = 200
 
-    def __init__(self,args):
+    def __init__(self, args):
         self._args = args
-        os.environ['NO_PROXY']='gitlab.devtools.intel.com'
-        os.environ['no_proxy']='gitlab.devtools.intel.com'
+        self._media_descriptions_root = os.path.abspath(
+            os.path.join(__file__,
+                         "../../../../media/descriptions"))
 
-    def _lfs(self, path):
-        try:
-            if os.path.getsize(path) <= Media.LFS_POINTER_SIZE:
-                with open(path) as f:
-                    for line in f:
-                        if ("git-lfs" in line):
-                            return True
-        except Exception as error:
-            print(error)
-        return False
-        
-    def _download_lfs(self, path, target_path):
-        url = "{}/-/raw/main/{}".format(self._args.media_root,path)
-        print(url,flush=True)
-        request = requests.get(url,allow_redirects=True)
-        
-        with open(target_path,"wb") as f:
-            f.write(request.content)
-    
-    def _copy_gitlab_tree(self,path,target):
-        parsed_url = urllib.parse.urlparse(self._args.media_root)
-        gl = gitlab.Gitlab("{}://{}".format(parsed_url.scheme,parsed_url.netloc))
-        project = gl.projects.get(parsed_url.path[1:])
-        file_paths = project.repository_tree(path)
-        for file_path in file_paths:
-            target_path = os.path.join(target, file_path["path"])            
-            os.makedirs(os.path.dirname(target_path),exist_ok=True)
-            with open(target_path, 'wb') as f:
-                project.files.raw(file_path=file_path["path"], ref='main', streamed=True, action=f.write)
-
-            if (self._lfs(target_path)):
-                self._download_lfs(file_path["path"], target_path)
-            
     def download(self,
                  pipeline,
                  pipeline_root,
                  item=None,
                  item_list= None):
-
 
         media_list_path = os.path.join(pipeline_root,
                                        "media.list.yml")
@@ -180,28 +199,101 @@ class Media(Handler):
             return
 
         media_list = load_document(media_list_path)
+
+        if media_list:
+            print_action("Downloading Media")
         
         for media in media_list:
-
             if (item) and (item != media):
                 continue
-
             
-            target_root = os.path.join(self._args.destination,
+            target_root_path = os.path.join(self._args.destination,
                                        os.path.join(pipeline,"media"))
-            target_media = os.path.join(target_root,media)
+            target_media_path = os.path.join(target_root_path, media)
 
             if (self._args.force):
                 try:
-                    shutil.rmtree(target_media)
+                    shutil.rmtree(target_media_path)
                 except:
                     pass
             
-            if os.path.isdir(target_media):
+            if os.path.isdir(target_media_path):
                 print("Media Directory {0} Exists - Skipping".format(media))
                 continue
             
-            self._copy_gitlab_tree(media, target_root)
+            self._process_config(media, target_root_path)
+
+    def _get_media_config_file(self, media_config_path):
+        yaml_path = os.path.join(self._media_descriptions_root, media_config_path)
+        yaml_path = os.path.join(yaml_path, "media.yml")
+        contents = load_document(yaml_path)
+        return contents
+
+    def _process_config(self, media_config_path, target_path):
+        config_file = self._get_media_config_file(media_config_path)
+        target = os.path.join(target_path, media_config_path)
+        os.makedirs(target, exist_ok=True)
+
+        for file in config_file["files"]:
+            media_file = os.path.join(target, file["name"])
+            if not self._download_media(file["source"], media_file):
+                continue
+
+            if not self._check_size(media_file, file["size"]) or not self._check_hash(media_file, file["sha256"]):
+                os.remove(media_file)
+                return False
+
+            if "convert-command" in file:
+                self._ffmpeg_convert(media_file, file["convert-command"])
+
+    def _download_media(self, url, target_path):
+        print("\t Downloading {}".format(url))
+        url_converter = GithubUrlConverter()
+        url = url_converter.convert(url)
+
+        response = requests.get(url,allow_redirects=True, stream=True)
+        total_size_in_bytes= int(response.headers.get('content-length', 0))
+
+        if response.status_code != 200:
+            print ("Can't download: {}\nReturn code: {}".format(url, response.status_code))
+            return False
+
+        block_size = 1024 #1 Kibibyte
+        progress_bar = tqdm(total=total_size_in_bytes, unit='iB', unit_scale=True)
+        with open(target_path, "wb") as f:
+            for data in response.iter_content(block_size):
+                progress_bar.update(len(data))
+                f.write(data)
+        progress_bar.close()
+
+        return True
+
+    def _check_size(self, file_path, expected_size):
+        download_size = os.path.getsize(file_path)
+        return download_size == expected_size
+
+    def _check_hash(self, file_path, expected_hash):
+        sha256 = hashlib.sha256()
+        block_size=65536
+        with open(file_path, 'rb') as f:
+            for block in iter(lambda: f.read(block_size), b''):
+                sha256.update(block)
+        
+        return sha256.hexdigest() == expected_hash
+
+    def _ffmpeg_convert(self, source_path, command):
+        ffmpeg_cmd = ["ffmpeg", '-i', source_path]
+        ffmpeg_args = shlex.split(command)
+        
+        output_file_name = ffmpeg_args[-1]
+
+        output_file = os.path.join(os.path.dirname(source_path), output_file_name)
+        ffmpeg_args[-1] = output_file
+        ffmpeg_cmd = ffmpeg_cmd + ffmpeg_args
+
+        print("FFMPEG CMD: " + str(ffmpeg_cmd))
+
+        p = subprocess.Popen(ffmpeg_cmd, shell=False)
             
 class Pipeline(Handler):
     def __init__(self,args):
@@ -268,9 +360,25 @@ class Model(Handler):
             for filepath in files:
                 if os.path.splitext(filepath)[0]==model:
                     return os.path.join(root,filepath)
+
+    def modify_download_url(self, model_path):
+        model_path = os.path.join(model_path, "model.yml")
+        model_config = load_document(model_path)
+
+        for file in model_config["files"]:
+            url_covnerter = GithubUrlConverter()
+            url = url_covnerter.convert(file["source"])
+            file["source"] = url
+
+        with open(model_path, 'w') as model_description_file:
+                yaml.dump(model_config, model_description_file)
+
         
     
     def _download_and_convert_model(self, pipeline, pipeline_root, model):
+        for model_dir in os.listdir("/opt/intel/openvino/deployment_tools/open_model_zoo/models/media-analytics-pipeline-zoo/"):
+            if model_dir == model:
+                self.modify_download_url(os.path.join("/opt/intel/openvino/deployment_tools/open_model_zoo/models/media-analytics-pipeline-zoo/", model_dir))
 
         target_root = os.path.join(self._args.destination,
                               os.path.join(pipeline,"models"))

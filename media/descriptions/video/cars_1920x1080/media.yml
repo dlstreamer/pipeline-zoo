@@ -1,0 +1,7 @@
+description: Cars 1920x1080
+files:
+- name: cars_1920x1080.264
+  sha256: d11e8d95fc7c79d10fedfa0a337e950113f0de552a29d87a34bba35ee9f2a899
+  size: 3712999
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/cars_1920x1080/cars_1920x1080.264
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

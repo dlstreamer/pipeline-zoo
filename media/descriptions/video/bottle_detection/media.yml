@@ -1,0 +1,7 @@
+description: Bottle Detection
+files:
+- name: bottle_detection.mp4
+  sha256: d52ba94aedf8a923c342fe9ea1d2bd85f712c4cc0f49a6de1bac43eebe3a48ff
+  size: 504961
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/bottle_detection/bottle_detection.mp4
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

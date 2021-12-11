@@ -1,0 +1,7 @@
+description: 2m
+files:
+- name: 2m.264
+  sha256: 2bce4f5fae599e5798cd688836bccc2b5faf1bba8a98c39b74777a4d0408c60d
+  size: 12539603
+  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/media/-/raw/main/video/2m/2m.264?inline=false
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

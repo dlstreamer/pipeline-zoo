@@ -181,6 +181,9 @@ get_options() {
         NAME=${IMAGE//[\:]/_}
     fi
 
+    if [[ "$GITHUB_TOKEN" ]]; then
+        ENVIRONMENT+=" -e GITHUB_TOKEN=$GITHUB_TOKEN"
+    fi
 }
 
 show_options() {

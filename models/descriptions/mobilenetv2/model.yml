@@ -1,0 +1,15 @@
+%YAML 1.0
+---
+description: mobilenetv2
+task_type: 'classification'
+files:
+- name: FP32/mobilenetv2.xml
+  size: 135756
+  sha256: 66343cf1a2aa6ee7e83bca81292bbcbab281215a0afcdcc051cbffb800a4cde0
+  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/mobilenetv2/FP32/mobilenetv2.xml
+- name: FP32/mobilenetv2.bin
+  size: 13955528
+  sha256: 5e49227226a1abd8efc8cd4f766ade7c47d073b26a622bd953bfcd3baa43ac0b
+  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/mobilenetv2/FP32/mobilenetv2.bin
+framework: dldt
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

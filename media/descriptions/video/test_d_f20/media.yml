@@ -1,0 +1,7 @@
+description: test_d_f20
+files:
+- name: test_d_f20.265
+  sha256: 5a6c22b6abc0fdfaad3e2c618f67df31d3bca6eb8a96baa38ce726e43a0da75d
+  size: 1075928
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/test_d_f20/test_d_f20.265
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

@@ -1,0 +1,7 @@
+description: People detection
+files:
+- name: people-detection.mp4
+  sha256: 18ffe8672d741e3e29c9d891d22c59d453720b086c25b35c88b393d55f92f693
+  size: 5482579
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/people-detection/people-detection.mp4
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

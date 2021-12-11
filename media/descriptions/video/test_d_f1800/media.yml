@@ -1,0 +1,7 @@
+description: test_d_f1800
+files:
+- name: test_d_1800.265
+  sha256: 6d2093a4679d3a48b1bc7fc0495560688648fbf0e0347b9b7dca1fe1eda9aa6a
+  size: 96833520
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/test_d_f1800/test_d_1800.265
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

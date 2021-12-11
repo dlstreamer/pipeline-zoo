@@ -1,0 +1,7 @@
+description: test_c_f9000
+files:
+- name: test_c_f9000.h265
+  sha256: d2435b7fbc8ed50c8bdb211fbb36870aa2ff48ac92a8cd39df37480903d9933b
+  size: 371686500
+  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/media/-/raw/main/video/test_c_f9000/test_c_f9000.h265?inline=false
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

@@ -1,0 +1,7 @@
+description: Road Short
+files:
+- name: Road-Short.mp4
+  sha256: 9c686b78a102442433a63d0f01e1212736513d0ff06581c6db1fabbd29eb58c1
+  size: 49906354
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/Road-Short/Road-Short.mp4
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

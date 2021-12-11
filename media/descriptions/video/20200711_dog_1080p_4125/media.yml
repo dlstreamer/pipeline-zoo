@@ -1,0 +1,7 @@
+description: 20200711_dog_1080p_4125
+files:
+- name: 20200711_dog_1080p_4125.mp4
+  sha256: da2c95414d1ff52f8ea97934e4f58d9b627410d0071ffd03f377e6f68793d5e5
+  size: 86926454
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/raw/main/video/20200711_dog_1080p_4125/20200711_dog_1080p_4125.mp4
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

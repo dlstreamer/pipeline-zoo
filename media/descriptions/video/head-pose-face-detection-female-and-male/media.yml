@@ -1,0 +1,7 @@
+description: Head pose face detection female and male
+files:
+- name: head-pose-face-detection-female-and-male.mp4
+  sha256: 58ead6c58d7fe7df69f4a02003e49b76b7d33103ac21f4fa7028aa3b487a7d12
+  size: 16558366
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/head-pose-face-detection-female-and-male/head-pose-face-detection-female-and-male.mp4
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

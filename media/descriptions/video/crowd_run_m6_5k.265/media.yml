@@ -1,0 +1,7 @@
+description: Crowd run m6 5k 265
+files:
+- name: crowd_run_m6_5k.265.mp4
+  sha256: 51bbd82143aaf8ad6004abb615b8df7ed3a23c418be874b702fc605dc8a85b05
+  size: 129449184
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/crowd_run_m6_5k.265/crowd_run_m6_5k.265.mp4
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

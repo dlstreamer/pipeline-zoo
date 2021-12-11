@@ -1,0 +1,7 @@
+description: Cars
+files:
+- name: cars_128x96.h265
+  sha256: 92f404af73f191a888d848fdf8dbd6266f0f892c507372431e1b4c2efce8f740
+  size: 42821
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/cars/cars_128x96.h265
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

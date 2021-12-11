@@ -1,0 +1,7 @@
+description: Netflix Narrator 1
+files:
+- name: Netflix_Narrator_1.265
+  sha256: d1dbc2475d8e390f82514fd38001cc818a80de8f9049b2044e7fc119fa6051b1
+  size: 1028426
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/Netflix_Narrator_1/Netflix_Narrator_1.265
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

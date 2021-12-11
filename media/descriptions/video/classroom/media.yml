@@ -1,0 +1,7 @@
+description: Classroom
+files:
+- name: classroom.mp4
+  sha256: a69bd5e39ff0e74286d13bcbfdadddd307b85decd2d9853db7518e0028785e31
+  size: 13548133
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/classroom/classroom.mp4
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

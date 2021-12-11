@@ -1,0 +1,7 @@
+description: Marina UHD 30FPS HEVC 6Mbps Landscape 9min
+files:
+- name: Marina-UHD-30FPS-HEVC-6Mbps-Landscape_9min.mp4
+  sha256: 983c59a610c52857e1a9b7526e12f6618cdcdf8acad64c16c0bd6a0dce815ef0
+  size: 428361228
+  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/media/-/raw/main/video/Marina-UHD-30FPS-HEVC-6Mbps-Landscape_9min/Marina-UHD-30FPS-HEVC-6Mbps-Landscape_9min.mp4?inline=false
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

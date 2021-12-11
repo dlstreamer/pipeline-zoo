@@ -1,0 +1,7 @@
+description: Uniform video FHD HEVC
+files:
+- name: Uniform_video_FHD_HEVC.mp4
+  sha256: 73b50acefc758b65fd2873e4d8006ada1049126f0124c7224672ebb2a54011a4
+  size: 41924665
+  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/media/-/raw/main/video/Uniform_video_FHD_HEVC/Uniform_video_FHD_HEVC.mp4?inline=false
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

@@ -55,6 +55,7 @@ def check_download(pipeline):
 
 @pytest.mark.timeout(120)
 def test_download(pipeline):
+    print("GITHUB_TOKEN: " + str(os.getenv("GITHUB_TOKEN")))
     test_cmd = "pipebench --workspace {} download {} --force ".format(test_workspace,pipeline)
     
     exitcode, err = run_cmd(test_cmd);

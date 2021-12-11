@@ -1,0 +1,7 @@
+description: test_c_f21
+files:
+- name: test_c_f21.265
+  sha256: 3ace71fea907ca709fff9cbdd3d6bc5f2af9b503fafd9459ab3be73bf058ba9f
+  size: 825970
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/test_c_f21/test_c_f21.265
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

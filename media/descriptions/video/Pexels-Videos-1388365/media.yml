@@ -1,0 +1,7 @@
+description: Pexels Videos 1388365
+files:
+- name: Pexels-Videos-1388365.mp4
+  sha256: 35d862bdfeb0f0e072c75d47de021c27ec95d8f0db789a2e2644e6c1eb9da16d
+  size: 21997304
+  source: https://www.pexels.com/video/2053100/download/?w=1280&h=720
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE
