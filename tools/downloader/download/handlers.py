@@ -186,20 +186,22 @@ class Media(Handler):
             os.path.join(__file__,
                          "../../../../media/descriptions"))
 
+    def _get_media_list(self, pipeline_root):
+        media_list = []
+        for path in os.listdir(pipeline_root):
+            if path.endswith("media.list.yml"):
+                media_list.extend(load_document(os.path.join(pipeline_root,path)))
+        return media_list
+        
+
     def download(self,
                  pipeline,
                  pipeline_root,
                  item=None,
                  item_list= None):
 
-        media_list_path = os.path.join(pipeline_root,
-                                       "media.list.yml")
-
-        if not os.path.isfile(media_list_path):
-            return
-
-        media_list = load_document(media_list_path)
-
+        media_list = self._get_media_list(pipeline_root)
+        
         if media_list:
             print_action("Downloading Media")
         
@@ -409,16 +411,17 @@ class Model(Handler):
             model_proc = self._find_model_proc(model)
             if (model_proc):
                 shutil.copy(model_proc,target_model)
-            
-        
+
+    def _get_model_list(self, pipeline_root):
+        model_list = []
+        for path in os.listdir(pipeline_root):
+            if path.endswith("models.list.yml"):
+                model_list.extend(load_document(os.path.join(pipeline_root,path)))
+        return model_list
+    
     def download(self, pipeline, pipeline_root, item = None, item_list = None):
         
-        model_list_path = os.path.join(pipeline_root,"models.list.yml")
-
-        if not os.path.isfile(model_list_path):
-            return
-
-        model_list = load_document(model_list_path)
+        model_list = self._get_model_list(pipeline_root)
         
         for model in model_list:
             self._download_and_convert_model(pipeline,pipeline_root,model)
