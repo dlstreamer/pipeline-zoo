@@ -17,7 +17,7 @@ ATS_BASE_IMAGE=intel-media-analytics:latest
 
 # Model Proc Versions
 ATS_MODEL_PROC_VERSION=v1.3 
-DEFAULT_MODEL_PROC_VERSION=v1.4.1
+DEFAULT_MODEL_PROC_VERSION=
 
 DOCKERFILE_DIR=$(dirname "$(readlink -f "$0")")
 DOCKERFILE=${DOCKERFILE_DIR}/Dockerfile
@@ -186,7 +186,11 @@ fi
 
 BUILD_ARGS+=" --build-arg REGISTRY=$REGISTRY "
 BUILD_ARGS+=" --build-arg BASE=$BASE_IMAGE "
-BUILD_ARGS+=" --build-arg MODEL_PROC_VERSION=$MODEL_PROC_VERSION "
+
+if [ ! -z $MODEL_PROC_VERSION ]; then
+   BUILD_ARGS+=" --build-arg MODEL_PROC_VERSION=$MODEL_PROC_VERSION "
+fi
+
 BUILD_ARGS+=" --build-arg PIPELINE_ZOO_PLATFORM=$PLATFORM "
 
 show_image_options

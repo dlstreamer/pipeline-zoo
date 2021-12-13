@@ -21,16 +21,6 @@
 ARG BASE=openvino/ubuntu20_data_dev:2021.4.2
 ARG PIPELINE_ZOO_PLATFORM=DEFAULT
 ARG REGISTRY=
-FROM ${REGISTRY}ubuntu:20.04 as MODEL_ZOO
-ARG MODEL_PROC_VERSION=v1.4.1
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-    apt-get install -y -q --no-install-recommends \
-    ca-certificates \
-    wget
-
-RUN sh -c "wget https://github.com/opencv/gst-video-analytics/archive/${MODEL_PROC_VERSION}.tar.gz &&  tar -xzf ${MODEL_PROC_VERSION}.tar.gz -C / --strip-components 2 --wildcards "*/samples/model_proc/*""
-RUN wget --no-proxy https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/archive/main/models-main.tar.gz && mkdir -p /media-analytics-pipeline-zoo/models && tar -xzf models-main.tar.gz -C /media-analytics-pipeline-zoo/models --strip-components 1 --wildcards "*/model-descriptions/*" 
 
 FROM ${REGISTRY}${BASE} as media-analytics-pipeline-zoo
 ARG BASE=openvino/ubuntu20_data_dev:2021.3_vaapi_fix
@@ -117,18 +107,11 @@ RUN rm -f /requirements.txt
 # Patches
 COPY ./docker/patches/video_frame.py /opt/intel/openvino/data_processing/dl_streamer/python/gstgva/video_frame.py
 
-# model proc
-RUN mkdir -p /opt/intel/dl_streamer/samples/model_proc
-COPY --from=MODEL_ZOO /model_proc /opt/intel/dl_streamer/samples/model_proc
-
 # model zoo
-# RUN rm -rf /opt/intel/dldt/open_model_zoo
-# RUN mkdir -p /opt/intel/dldt
-# COPY --from=MODEL_ZOO /open_model_zoo /opt/intel/dldt/open_model_zoo
 ENV OPEN_MODEL_ZOO_ROOT=/opt/intel/openvino/deployment_tools/open_model_zoo
 
-# pipeline zoo models
-COPY --from=MODEL_ZOO /media-analytics-pipeline-zoo/models /opt/intel/openvino/deployment_tools/open_model_zoo/models/media-analytics-pipeline-zoo/models
+# model proc
+ENV DLSTREAMER_MODEL_PROC_ROOT=/opt/intel/openvino/data_processing/dl_streamer/samples/model_proc
 
 # XDG_RUNTIME_DIR
 RUN mkdir -p /home/.xdg_runtime_dir

@@ -332,12 +332,17 @@ class Model(Handler):
 
     model_optimizer = os.path.join(dldt_root,"model_optimizer/mo.py")
 
-    model_proc_root = "/opt/intel/dl_streamer/samples/model_proc"
+    model_proc_root = os.environ.get("DLSTREAMER_MODEL_PROC_ROOT",
+                                     "/opt/intel/openvino/data_processing/dl_streamer/samples/model_proc")
+
+    pipeline_zoo_models_root = os.path.join(dldt_root,"open_model_zoo/models", "pipeline-zoo-models")
     
     def __init__(self, args):
         self._args = args
-
-
+        self._model_descriptions_root = os.path.abspath(
+            os.path.join(__file__,
+                         "../../../../models/descriptions"))
+        
     def _create_download_command(self, model, output_dir):
         return shlex.split("python3 {0} --name {1} -o {2}".format(Model.model_downloader,
                                                                   model,
@@ -361,24 +366,24 @@ class Model(Handler):
                 if os.path.splitext(filepath)[0]==model:
                     return os.path.join(root,filepath)
 
-    def modify_download_url(self, model_path):
+    def modify_download_url(self, model_path, model):
         model_path = os.path.join(model_path, "model.yml")
+        target_path = os.path.join(Model.pipeline_zoo_models_root, model, "model.yml")
         model_config = load_document(model_path)
 
         for file in model_config["files"]:
             url_covnerter = GithubUrlConverter()
             url = url_covnerter.convert(file["source"])
             file["source"] = url
+        create_directory(os.path.join(Model.pipeline_zoo_models_root,model))
+        with open(target_path, 'w') as model_description_file:
+            yaml.dump(model_config, model_description_file)
 
-        with open(model_path, 'w') as model_description_file:
-                yaml.dump(model_config, model_description_file)
-
-        
-    
     def _download_and_convert_model(self, pipeline, pipeline_root, model):
-        for model_dir in os.listdir("/opt/intel/openvino/deployment_tools/open_model_zoo/models/media-analytics-pipeline-zoo/"):
+        for model_dir in os.listdir(self._model_descriptions_root):
             if model_dir == model:
-                self.modify_download_url(os.path.join("/opt/intel/openvino/deployment_tools/open_model_zoo/models/media-analytics-pipeline-zoo/", model_dir))
+                self.modify_download_url(os.path.join(self._model_descriptions_root, model_dir),
+                                         model)
 
         target_root = os.path.join(self._args.destination,
                               os.path.join(pipeline,"models"))

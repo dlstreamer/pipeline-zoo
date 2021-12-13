@@ -123,6 +123,7 @@ COPY ./tools/docker/patches/video_frame.py /opt/intel/solutions/lib/python3.8/si
 # model proc
 RUN mkdir -p /opt/intel/dl_streamer/samples/model_proc
 COPY --from=MODEL_ZOO /model_proc /opt/intel/dl_streamer/samples/model_proc
+ENV DLSTREAMER_MODEL_PROC_ROOT=/opt/intel/dl_streamer/samples/model_proc
 
 # model zoo
 COPY --from=MODEL_ZOO //media-analytics-pipeline-zoo/open_model_zoo/tools /opt/intel/openvino/deployment_tools/open_model_zoo/tools
