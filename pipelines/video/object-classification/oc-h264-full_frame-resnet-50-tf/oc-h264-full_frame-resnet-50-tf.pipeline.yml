@@ -1,0 +1,8 @@
+task: object-classification
+
+detection-model: full_frame
+
+classification-models: [resnet-50-tf]
+
+inputs.media.type.media-type: video/x-h264
+

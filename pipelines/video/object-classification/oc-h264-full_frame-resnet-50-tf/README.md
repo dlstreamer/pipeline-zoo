@@ -1,6 +1,6 @@
-# oc-h264-full_frame-resnet_v1.5_50
+# oc-h264-full_frame-resnet-50-tf
 
-Object classification pipeline taking encoded video frames in h264 format and using [resnet_v1.5_50]() for full frame classification.
+Object classification pipeline taking encoded video frames in h264 format and using [resnet-50-tf]() for full frame classification.
 
 ```mermaid
 stateDiagram
@@ -28,7 +28,7 @@ state classify {
     }
 
     state inference {
-    resnet_v1_5_5_50
+    resnet-50-tf
     }
 
     state tensors_to_attributes {

@@ -10,4 +10,4 @@ SOURCE_DIR=$(dirname "$SCRIPT_DIR")
 SOURCE_DIR=$(dirname "$SOURCE_DIR")
 
 PYTEST_PARAMS="$@"
-cd ${SOURCE_DIR}; python3 -m pytest -s -v "$PYTEST_PARAMS"
+cd ${SOURCE_DIR}; python3 -m pytest -s -v "$PYTEST_PARAMS" --ignore=workspace

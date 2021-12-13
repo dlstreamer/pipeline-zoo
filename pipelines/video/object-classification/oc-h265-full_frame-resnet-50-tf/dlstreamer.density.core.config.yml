@@ -9,4 +9,4 @@ classify-0:
   pre-process-backend: vaapi
   gpu-throughput-streams: 1
   batch-size: 16
-  model-instance-id: det
+  model-instance-id: cls
