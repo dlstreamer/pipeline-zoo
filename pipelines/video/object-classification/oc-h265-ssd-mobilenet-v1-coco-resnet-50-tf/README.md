@@ -1,6 +1,6 @@
-# oc-h265-mbnetssd-v2-coco-resnet_v1.5_50
+# oc-h265-ssd-mobilenet-v1-coco-resnet-50-tf
 
-Object detection pipeline taking encoded video frames in h265 format and using [mobilenet ssd]() for detection and resnet for classification.
+Object detection pipeline taking encoded video frames in h265 format and using [ssd-mobilenet-v1-coco]() for detection and [resnet-50-tf]() for classification.
 
 # TODO: Update Diagram
 

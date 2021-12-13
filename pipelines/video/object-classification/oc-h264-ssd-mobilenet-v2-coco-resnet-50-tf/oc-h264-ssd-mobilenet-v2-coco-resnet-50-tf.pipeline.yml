@@ -1,0 +1,9 @@
+
+task: object-classification
+
+detection-model: ssd_mobilenet_v2_coco
+
+classification-models: [resnet-50-tf]
+
+inputs.media.type.media-type: video/x-h264
+

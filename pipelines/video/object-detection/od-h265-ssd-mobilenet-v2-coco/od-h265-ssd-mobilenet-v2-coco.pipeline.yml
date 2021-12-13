@@ -1,4 +1,3 @@
-# Defines ssd_mobilenet_v2_coco Pipeline of type object-detection
 
 task: object-detection
 

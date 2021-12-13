@@ -1,6 +1,6 @@
-# od-h264-mbnetssd-v1-coco
+# od-h264-ssd-mobilenet-v2-coco
 
-Object detection pipeline taking encoded video frames in h264 format and using [ssd_mobilenet_v1_coco]() for detection.
+Object detection pipeline taking encoded video frames in h264 format and using [ssd_mobilenet_v2_coco]() for detection.
 
 ```mermaid
 stateDiagram
@@ -24,7 +24,7 @@ stateDiagram
     }
 
     state inference {
-    ssd_mobilenet_v1_coco
+    ssd_mobilenet_v2_coco
     }
 
     state tensors_to_objects {
