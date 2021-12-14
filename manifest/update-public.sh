@@ -15,8 +15,8 @@ git checkout origin/main
 git branch -D public-updates || true
 git checkout -b public-updates
 
-git filter-repo --refs public-updates --paths-from-file public.txt --force
-git filter-repo --refs public-updates --paths-from-file internal.txt --force --invert
+git filter-repo --refs public-updates --paths-from-file $SOURCE_DIR/.public.txt --force
+git filter-repo --refs public-updates --paths-from-file $SOURCE_DIR/.internal.txt --force --invert
 
 git checkout public-init
 
