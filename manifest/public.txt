@@ -1,5 +1,8 @@
 #####KEEP######
 
+# doc
+doc/examples.md
+
 # tasks
 pipelines/video/object-detection/object-detection.task.yml
 pipelines/video/object-detection/README.md
