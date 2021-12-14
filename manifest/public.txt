@@ -21,7 +21,7 @@ pipelines/video/decode-vpp/decode-vpp.task.yml
 pipelines/video/decode-vpp/README.md
 
 # pipelines
-
+pipelines/video/decode-vpp/decode-h265
 pipelines/video/decode-vpp/decode-h264-bgra
 pipelines/video/object-classification/oc-h264-full_frame-resnet-50-tf
 pipelines/video/object-classification/oc-h265-full_frame-resnet-50-tf
