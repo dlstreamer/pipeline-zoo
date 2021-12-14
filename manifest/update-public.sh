@@ -22,7 +22,12 @@ git checkout public-init
 
 git merge public-updates --squash --allow -X theirs
 
-git commit -m "updates to public"
+MESSAGE=$1
+if [ -z "$1" ]; then
+    MESSAGE="updates to public"
+fi
+
+git commit -m "$MESSAGE"
 
 git push origin public-init:public-init
 
