@@ -1,0 +1,52 @@
+#####KEEP######
+
+# tasks
+pipelines/video/object-detection/object-detection.task.yml
+pipelines/video/object-detection/README.md
+
+pipelines/video/object-classification/object-classification.task.yml
+pipelines/video/object-classification/README.md
+
+pipelines/video/object-classification/object-classification.task.yml
+pipelines/video/object-classification/README.md
+
+pipelines/video/decode-vpp/decode-vpp.task.yml
+pipelines/video/decode-vpp/README.md
+
+# pipelines
+
+pipelines/video/decode-vpp/decode-h264-bgra
+pipelines/video/object-classification/oc-h264-full_frame-resnet-50-tf
+pipelines/video/object-classification/oc-h265-full_frame-resnet-50-tf
+pipelines/video/object-classification/oc-h264-ssd-mobilenet-v1-coco-resnet-50-tf
+pipelines/video/object-classification/oc-h265-ssd-mobilenet-v1-coco-resnet-50-tf
+pipelines/video/object-detection/od-h264-ssd-mobilenet-v1-coco
+pipelines/video/object-detection/od-h265-ssd-mobilenet-v1-coco
+
+# runners
+runners/dlstreamer
+runners/mockrun
+runners/README.md
+
+# tools
+tools/docker/build.sh
+tools/docker/Dockerfile
+tools/docker/patches
+tools/docker/README.md
+tools/docker/run.sh
+tools/docker/intel-media-analytics
+tools/downloader
+tools/README.md
+tools/systeminfo
+tools/pipebench
+
+# models
+models/descriptions/ssd_mobilenet_v1_coco_INT8
+models/descriptions/resnet-50-tf_INT8
+
+# media
+media/descriptions/video/20200711_dog_bark
+media/descriptions/video/20200711_dog_bark-h265
+media/descriptions/video/Pexels-Videos-1388365
+media/descriptions/video/Pexels-Videos-1388365-h265
+
