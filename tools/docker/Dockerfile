@@ -90,7 +90,7 @@ RUN pip3 install  --no-cache-dir -r /requirements.txt
 RUN rm -f /requirements.txt
 
 # uploader
-COPY ./uploader/requirements.txt /
+COPY ./systeminfo/requirements.txt ./uploader/requirements.tx[t] /
 RUN pip3 install  --no-cache-dir -r /requirements.txt
 RUN rm -f /requirements.txt
 
@@ -100,7 +100,7 @@ RUN pip3 install  --no-cache-dir -r/requirements.txt
 RUN rm -f /requirements.txt
 
 # tests
-COPY ./tests/requirements.txt /
+COPY ./systeminfo/requirements.txt ./tests/requirements.tx[t] /
 RUN pip3 install  --no-cache-dir -r /requirements.txt
 RUN rm -f /requirements.txt
 
