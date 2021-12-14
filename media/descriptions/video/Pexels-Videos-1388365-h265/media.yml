@@ -1,7 +1,8 @@
 description: Pexels Videos 1388365
 files:
-- name: Pexels-Videos-1388365.mp4
+- name: Pexels-Videos-1388365.temp
   sha256: 81b6509687e61012cfa08f16d7dc324edc291b3b3d6952d4e5f96e2d64ebdec0
   size: 44385230
   source: https://www.pexels.com/photo/1388365/download
+  convert-command: -c:v libx265 -preset medium -x265-params crf=28 -c:a aac -strict experimental -b:a 128k Pexels-Videos-1388365.h265
 license: https://www.pexels.com/license
