@@ -27,7 +27,8 @@ if [ -z "$1" ]; then
     MESSAGE="updates to public"
 fi
 
-git commit -m "$MESSAGE"
+#git commit -m "$MESSAGE"
+git commit --no-edit
 
 git push origin public-init:public-init
 
