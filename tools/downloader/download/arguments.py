@@ -54,10 +54,9 @@ def parse_args(args=None,program_name=package_name):
 
     parser.add_argument("--force", required=False, dest="force",action="store_true", default=False)
 
-    parser.add_argument("--media-root", required=False, dest="media_root",
-                        default="https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/media")
-
     parser.add_argument("pipelines",nargs='+')
+
+    parser.add_argument("-v", required=False, dest="verbose",action="count", default=0)
     
 
     if (isinstance(args, dict)):

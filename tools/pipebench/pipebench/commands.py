@@ -253,7 +253,15 @@ def _create_download_command(pipeline, args):
 
     downloader = os.path.join(args.zoo_root,"tools/downloader/download")
     
-    return shlex.split("python3 {0} -d {1} {2}".format(downloader,args.workspace_root, pipeline))
+    cmd = shlex.split("python3 {0} -d {1} {2}".format(downloader, args.workspace_root, pipeline))
+
+    verbose_option = ""
+    if args.verbose:
+        verbose_option = "-" + "v" * args.verbose
+
+    cmd += [verbose_option]
+    
+    return cmd
 
 def _download_pipeline(pipeline, args):
 

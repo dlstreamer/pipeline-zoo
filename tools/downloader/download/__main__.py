@@ -30,7 +30,9 @@ handler_map = {handler_class.__name__.lower():handler_class for handler_class in
 if __name__ == '__main__':
 
     args = parse_args(program_name=package_name)
-    print_args(args)
+
+    if args.verbose:
+        print_args(args)
 
     pipelines = []
 
@@ -61,10 +63,10 @@ if __name__ == '__main__':
             handler = handler_map[item_type](args)
             item_list = getattr(args,"{}_list".format(item_type),None)
             item = getattr(args,"{}_item".format(item_type),None)
-            handler.download(pipeline,
-                             pipeline_root,
-                             item,
-                             item_list)
+            if not handler.download(pipeline, pipeline_root, item,item_list):
+                exit(1)
+
+        print("Pipeline Downloaded")
             
     
 

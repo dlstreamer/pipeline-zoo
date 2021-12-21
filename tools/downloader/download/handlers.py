@@ -15,7 +15,6 @@ import subprocess
 import shlex
 import tempfile
 from util import create_directory
-from util import print_action
 import gitlab
 from github import Github
 import github
@@ -24,12 +23,50 @@ import requests
 import hashlib
 import netrc
 from tqdm import tqdm
+import sys
+from util import Spinner
+import logging
 
 class Handler(object, metaclass=abc.ABCMeta):
-
+    logger = None
     @abc.abstractmethod
     def __init__(self, args):
         pass
+
+    def _init_logger(self, pipeline_root, args):
+        if Handler.logger != None:
+            return
+
+        Handler.logger = logging.getLogger("downloader")
+        Handler.logger.setLevel(logging.DEBUG)
+
+        consoleHandler = logging.StreamHandler()
+        consoleHandler.setLevel(logging.INFO)
+
+        log_dir = os.path.join(pipeline_root, ".logs")
+        os.makedirs(log_dir, exist_ok=True)
+        fileHandler = logging.FileHandler(os.path.join(log_dir, "download.log.txt"), mode='w')
+        fileHandler.setLevel(logging.DEBUG)
+
+        if args.verbose > 1:
+            consoleHandler.setLevel(logging.DEBUG)
+            Handler.logger.setLevel(logging.DEBUG)
+
+        Handler.logger.addHandler(consoleHandler)
+        Handler.logger.addHandler(fileHandler)
+
+    @staticmethod
+    def print_action(action,details=[]):
+        banner = "="*len(action) 
+        Handler.logger.info(banner)
+        Handler.logger.info(action)
+        Handler.logger.info(banner)
+        for detail in details:
+            Handler.logger.info("\t{}".format(detail))
+        Handler.logger.info("")
+
+
+
     
     @abc.abstractmethod
     def download(self,
@@ -57,29 +94,51 @@ class Runner(Handler):
                       document,
                       runner_root):
 
+        if self._args.verbose < 2:
+            spinner = Spinner(text='Building')
+            spinner.start()
+
         default_build = os.path.join(runner_root,"build.sh")
         
+        return_code = 1
+
         if (document and "build" in document):
 
             if (not isinstance (document["build"],list)):
                 build_commands = [document["build"]]
             else:
                 build_commands = document["build"]
-                
+
+            return_code = 0
+
             for build_command in build_commands:    
                 build_command = shlex.split(build_command)
 
                 result = subprocess.run(build_command,cwd=runner_root)
 
-                if (result.returncode!=0):
+                return_code = result.returncode 
+
+                if return_code != 0:
                     return False
+
         elif (os.path.isfile(default_build)):
             build_command = ["/bin/bash",default_build]
-            result = subprocess.run(build_command,cwd=runner_root)
-            if (result.returncode!=0):
-                return False
 
-        return True
+            process = subprocess.Popen(build_command,cwd=runner_root, bufsize=1, universal_newlines=True, stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
+
+            for line in process.stdout:              
+                self.logger.debug(line)
+                sys.stdout.flush()
+
+            process.stdout.close()
+
+            return_code = process.wait()
+
+        if self._args.verbose < 2:
+                spinner.stop()
+
+        return return_code == 0
         
     def download(self,
                  pipeline,
@@ -92,6 +151,8 @@ class Runner(Handler):
                    and (filepath.endswith(".config.yml") or filepath.endswith(".config.json")) ]
 
         
+        if runners:
+            Handler.print_action("Downloading Runners")
 
         for runner_config in runners:
 
@@ -102,6 +163,8 @@ class Runner(Handler):
 
             if (item) and (runner_name!=item):
                 continue
+
+            self.logger.info(msg = "Download {0}".format(runner_name))
             
             source = os.path.join(self._args.runners_root, runner_name)
             target_root = os.path.join(self._args.destination,
@@ -115,7 +178,7 @@ class Runner(Handler):
                     pass
 
             if os.path.isdir(target_runner):
-                print("Runner Directory {0} Exists - Skipping".format(runner_name))
+                self.logger.debug("Runner Directory {0} Exists - Skipping".format(runner_name))
                 continue
             
             shutil.copytree(source,target_runner)
@@ -127,6 +190,9 @@ class Runner(Handler):
 
             self._build_runner(document,
                                target_runner)
+
+        return True
+
 class GithubUrlConverter:
     def __init__(self):
         self._github = self._connect_to_repo()
@@ -179,7 +245,6 @@ class GithubUrlConverter:
 
 
 class Media(Handler):
-
     def __init__(self, args):
         self._args = args
         self._media_descriptions_root = os.path.abspath(
@@ -203,7 +268,7 @@ class Media(Handler):
         media_list = self._get_media_list(pipeline_root)
         
         if media_list:
-            print_action("Downloading Media")
+            Handler.print_action("Downloading Media")
         
         for media in media_list:
             if (item) and (item != media):
@@ -220,10 +285,14 @@ class Media(Handler):
                     pass
             
             if os.path.isdir(target_media_path):
-                print("Media Directory {0} Exists - Skipping".format(media))
+                self.logger.debug("Media Directory {0} Exists - Skipping".format(media))
                 continue
             
-            self._process_config(media, target_root_path)
+            if not self._process_config(media, target_root_path):
+                self.logger.error("Pipeline download failed. Failed downloading Media")
+                return False
+
+        return True
 
     def _get_media_config_file(self, media_config_path):
         yaml_path = os.path.join(self._media_descriptions_root, media_config_path)
@@ -238,8 +307,8 @@ class Media(Handler):
 
         for file in config_file["files"]:
             media_file = os.path.join(target, file["name"])
-            if not self._download_media(file["source"], media_file):
-                continue
+            if not self._download_media(file["source"], media_file, file["name"]):
+                return False
 
             if not self._check_size(media_file, file["size"]) or not self._check_hash(media_file, file["sha256"]):
                 os.remove(media_file)
@@ -248,8 +317,14 @@ class Media(Handler):
             if "convert-command" in file:
                 self._ffmpeg_convert(media_file, file["convert-command"])
 
-    def _download_media(self, url, target_path):
-        print("\t Downloading {}".format(url))
+        return True
+
+    def _download_media(self, url, target_path, file_name):
+        self.logger.info(msg = "Downloading: {}".format(file_name))
+
+        if self._args.verbose:
+            self.logger.info("\tURL: {}\n\tPATH: {}".format(url, target_path))
+
         url_converter = GithubUrlConverter()
         url = url_converter.convert(url)
 
@@ -257,7 +332,7 @@ class Media(Handler):
         total_size_in_bytes= int(response.headers.get('content-length', 0))
 
         if response.status_code != 200:
-            print ("Can't download: {}\nReturn code: {}".format(url, response.status_code))
+            self.logger.error("\tError: Return code: {}".format(response.status_code))
             return False
 
         block_size = 1024 #1 Kibibyte
@@ -272,7 +347,11 @@ class Media(Handler):
 
     def _check_size(self, file_path, expected_size):
         download_size = os.path.getsize(file_path)
-        return download_size == expected_size
+        if download_size != expected_size:
+            self.logger.error("\tError downloaded size {0} is not equal expected size {1}".format(download_size, expected_size))
+            return False
+
+        return True
 
     def _check_hash(self, file_path, expected_hash):
         sha256 = hashlib.sha256()
@@ -281,9 +360,14 @@ class Media(Handler):
             for block in iter(lambda: f.read(block_size), b''):
                 sha256.update(block)
         
-        return sha256.hexdigest() == expected_hash
+        if sha256.hexdigest() != expected_hash:
+            self.logger.error("\tError downloaded hash {0} is not equal expected hash {1}".format(sha256.hexdigest(), expected_hash))
+            return False
+
+        return True
 
     def _ffmpeg_convert(self, source_path, command):
+        self.logger.info(msg = "\tFFMPEG Converting")
         ffmpeg_cmd = ["ffmpeg", '-i', source_path]
         ffmpeg_args = shlex.split(command)
         
@@ -293,9 +377,25 @@ class Media(Handler):
         ffmpeg_args[-1] = output_file
         ffmpeg_cmd = ffmpeg_cmd + ffmpeg_args
 
-        print("FFMPEG CMD: " + str(ffmpeg_cmd))
+        if self._args.verbose < 2:
+                spinner = Spinner(text='Converting')
+                spinner.start()
 
-        p = subprocess.Popen(ffmpeg_cmd, shell=False)
+        process = subprocess.Popen(ffmpeg_cmd, universal_newlines=True, stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE, shell=False)
+
+        for line in iter(process.stderr):
+            self.logger.debug(line)
+            sys.stdout.flush()
+
+        process.stdout.close()
+
+        return_code = process.wait()
+
+        if self._args.verbose < 2:
+            spinner.stop()
+
+        return return_code == 0
             
 class Pipeline(Handler):
     def __init__(self,args):
@@ -316,10 +416,15 @@ class Pipeline(Handler):
                 pass
 
         if os.path.isdir(target_pipeline):
-            print("Pipeline Directory {0} Exists - Skipping".format(pipeline))
+            self._init_logger(pipeline, self._args)
+            self.logger.debug("Pipeline Directory {0} Exists - Skipping".format(pipeline))
             return 
 
         shutil.copytree(pipeline_root,target_pipeline)
+
+        self._init_logger(pipeline, self._args)
+
+        return True
         
 
 class Model(Handler):
@@ -392,19 +497,42 @@ class Model(Handler):
         target_model = os.path.join(target_root,model)
 
         if (not self._args.force) and (os.path.isdir(target_model)):
-            print("Model Directory {0} Exists - Skipping".format(model))
+            self.logger.debug("Model Directory {0} Exists - Skipping".format(model))
             return
         
         with tempfile.TemporaryDirectory() as output_dir:
             command = self._create_download_command(model,output_dir)
-            print(' '.join(command))
-            subprocess.run(command)
+            
+            self.logger.debug("Download command: {0}".format(" ".join(command)))
+
+            process = subprocess.Popen(command, bufsize=1, universal_newlines=True, stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE)
+            for line in process.stdout:
+                self.logger.debug(line)
+                sys.stdout.flush()
+
+            process.stdout.close()
+            process.wait()
+
             if model!="mobilenetv2_7":
                 command = self._create_convert_command(model,output_dir)
-            print(' '.join(command))
-            subprocess.run(command)
+                self.logger.debug("Convert command: {0}".format(" ".join(command)))
+
+            process = subprocess.Popen(command, bufsize=1, universal_newlines=True, stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE)
+
+            for line in process.stdout:
+                self.logger.debug(line)
+
+                sys.stdout.flush()
+
+            process.stdout.close()
+
+            process.wait()
+
             model_path = self._find_model_root(model,output_dir)
             
+            self.logger.debug("Creating direcory: {}".format(target_root))
             create_directory(target_root,False)
             
             shutil.move(model_path,target_root)
@@ -422,6 +550,20 @@ class Model(Handler):
     def download(self, pipeline, pipeline_root, item = None, item_list = None):
         
         model_list = self._get_model_list(pipeline_root)
+
+        if model_list:
+            Handler.print_action("Downloading Models")
         
         for model in model_list:
+            self.logger.info(msg = "Download: {0}".format(model))
+
+            if self._args.verbose < 2:
+                spinner = Spinner(text='Loading')
+                spinner.start()
+
             self._download_and_convert_model(pipeline,pipeline_root,model)
+
+            if self._args.verbose < 2:
+                spinner.stop()
+
+        return True

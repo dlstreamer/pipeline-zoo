@@ -62,7 +62,9 @@ if __name__ == '__main__':
         os.setpgrp()
         atexit.register(cleanup)
         args, parser = parse_args(program_name="pipe")
+
         print_args(args)
+
         initialize(parser, args)
         args.pipelines = list_pipelines()
         args.command(args)

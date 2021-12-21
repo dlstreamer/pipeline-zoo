@@ -3,4 +3,6 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+echo "Installing pip dependencies"
+
 pip3 install -r requirements.txt
