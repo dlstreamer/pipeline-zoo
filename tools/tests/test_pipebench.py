@@ -33,30 +33,25 @@ def check_measurement(pipeline, measurement, scenario="disk"):
     pipeline_root = os.path.join(test_workspace, pipeline)
     results_path = os.path.join(pipeline_root,
                                 "measurements",
-                                "person-bicycle-car-detection",
-                                scenario,
                                 measurement,
                                 "dlstreamer",
+                                "run-0000",
                                 "result.json")
     assert(os.path.isfile(results_path))
     with open(results_path) as results_file:
         result = json.load(results_file)
-        if ("density" in measurement):
-            measurement = "density"
         assert(measurement in result)
         
 def check_download(pipeline):
     pipeline_root = os.path.join(test_workspace, pipeline)
     subfolders = ["media", "models", "runners"]
-
     for subfolder in subfolders:
         assert(os.path.isdir(os.path.join(pipeline_root,subfolder)))        
         
 
-@pytest.mark.timeout(120)
+@pytest.mark.timeout(600)
 def test_download(pipeline):
-    print("GITHUB_TOKEN: " + str(os.getenv("GITHUB_TOKEN")))
-    test_cmd = "pipebench --workspace {} download {} --force ".format(test_workspace,pipeline)
+    test_cmd = "pipebench download {} --force --workspace {}".format(pipeline, test_workspace)
     
     exitcode, err = run_cmd(test_cmd);
     print ("command exit code = %d" % exitcode)
@@ -73,9 +68,9 @@ def test_download(pipeline):
     # if no error codes then check 
     check_download(pipeline)
 
-@pytest.mark.timeout(300)
+@pytest.mark.timeout(600)
 def test_throughput(pipeline):
-    test_cmd = "pipebench --workspace {} measure {}".format(test_workspace,pipeline)
+    test_cmd = "pipebench  run {} --workspace {}".format(pipeline, test_workspace)
     
     exitcode, err = run_cmd(test_cmd);
     print ("command exit code = %d" % exitcode)
@@ -95,7 +90,7 @@ def test_throughput(pipeline):
 
 @pytest.mark.timeout(600)
 def test_density(pipeline):
-    test_cmd = "pipebench --workspace {} measure {} --density --override measurement.density.max-streams 8".format(test_workspace,pipeline)
+    test_cmd = "pipebench run {} --measure density --workspace {} --max-streams 8".format(pipeline, test_workspace)
     
     exitcode, err = run_cmd(test_cmd);
     print ("command exit code = %d" % exitcode)
@@ -110,6 +105,6 @@ def test_density(pipeline):
     elif(exitcode != 0):
         assert False
     # if no error codes then check 
-    check_measurement(pipeline,"density.30fps")
+    check_measurement(pipeline,"density")
 
 

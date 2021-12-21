@@ -18,6 +18,9 @@ from threading import Lock
 import time
 from pipebench.util import print_action
 import sys
+import ffmpeg
+import math
+import tempfile
 
 FRAME_INFO_MODULE = os.path.abspath(tasks.frame_info.__file__)
 
@@ -130,9 +133,7 @@ def gst_launch(elements,vaapi=True):
     elements = " ! ".join([element for element in elements if element])
     command = "gst-launch-1.0 --no-fault " + elements
     commandargs = shlex.split(command)
-    print(' '.join(commandargs), flush=True)
     env = None
-    print(os.getcwd())
     if not vaapi:
         env = dict(os.environ)
         if ("GST_VAAPI_ALL_DRIVERS" in env):            
@@ -141,7 +142,11 @@ def gst_launch(elements,vaapi=True):
         if ("GST_PLUGIN_FEATURE_RANK" in env):
             feature_rank = "{},{}".format(env["GST_PLUGIN_FEATURE_RANK"], feature_rank)
         env["GST_PLUGIN_FEATURE_RANK"] = feature_rank
-    result = subprocess.run(commandargs, env=env, check=False)
+    result = subprocess.run(commandargs,
+                            env=env,
+                            check=False,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL)
     return result.returncode == 0
 
 def _create_inference_elements(models, inference_type, precision="FP32", properties={}):
@@ -271,7 +276,95 @@ def create_reference(source_dir,
 def read_caps(input_path):
     return FrameInfo.read_caps(input_path)
 
-def create_encoded_stream(target_dir, media_type, media, individual_frames=True):
+def _stream_info(input_media):
+    probe_info = ffmpeg.probe(input_media,count_packets=None)['streams'][0]
+    frame_rate = probe_info["r_frame_rate"].split('/')
+    frame_rate = float(int(frame_rate[0])/int(frame_rate[1]))
+    return int(probe_info["nb_read_packets"]), frame_rate
+
+def _convert_frame_rate(input_media,
+                        media_type,
+                        target_fps,
+                        target_dir):
+    temp_output_path = os.path.join(target_dir,
+                               "stream.fps.temp.{}".format(
+                                   media_type.elementary_stream_extensions[0]))
+
+    command_args = ["ffmpeg",
+                    "-nostdin",
+                    "-y",
+                    "-i",
+                    input_media,
+                    "-c","copy",
+                    temp_output_path]
+    
+    
+    result = subprocess.run(command_args,
+                            check=False,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL)
+
+    if result.returncode != 0:
+        return None
+
+    output_path = os.path.join(target_dir,
+                               "stream.fps.{}".format(
+                                   media_type.container_formats[0]))
+
+    command_args = ["ffmpeg",
+                    "-nostdin",
+                    "-y",
+                    "-r","{}".format(target_fps),
+                    "-i",
+                    temp_output_path,
+                    "-c", "copy",
+                    output_path]
+
+    result = subprocess.run(command_args,
+                            check=False,
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL)
+
+    if result.returncode == 0:
+        return output_path
+    else:
+        return None
+    
+def _concat_stream(input_media, frame_count, target_frame_count, target_dir):
+    number_of_copies = math.ceil(target_frame_count/frame_count)
+    extension = os.path.splitext(input_media)[1]
+    output_path = os.path.join(target_dir,
+                               "stream.concat{}".format(extension))
+    with tempfile.TemporaryDirectory() as temp_directory:
+        concat_path = "{}/concat.txt".format(temp_directory)
+        with open(concat_path,
+                  "w") as concat_file:
+            for _ in range(number_of_copies):
+                concat_file.write("file '{}'\n".format(input_media))
+        
+        command_args = ["ffmpeg",
+                        "-nostdin",
+                        "-y",
+                        "-safe","0",
+                        "-f", "concat",
+                        "-i", concat_path,
+                        "-c","copy",
+                        output_path]
+
+
+        result = subprocess.run(command_args,
+                                check=False,
+                                stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL)
+    if result.returncode==0:
+        return output_path
+    else:
+        return None
+
+def create_encoded_stream(target_dir, media_type, media,
+                          individual_frames=True,
+                          duration=60,
+                          target_fps=30):
 
     if (media_type not in MEDIA_TYPES):
         raise Exception("Unsupported Media Type: {}".format(media_type))
@@ -279,13 +372,26 @@ def create_encoded_stream(target_dir, media_type, media, individual_frames=True)
     media_type = MEDIA_TYPES[media_type]
     media_uri = None
     if (os.path.isfile(media)):
+
+        frame_count, frame_rate = _stream_info(media)
+        target_frame_count = (duration * target_fps * 2)
+        if frame_count < target_frame_count:
+            media = _concat_stream(media,
+                                   frame_count,
+                                   target_frame_count,
+                                   target_dir)
+            
+        if frame_rate != target_fps:
+            media = _convert_frame_rate(media,
+                                        media_type,
+                                        target_fps,
+                                        target_dir)
         media_uri = urllib.parse.urlunsplit(["file",None,media,None,None])
     else:
         raise Exception("Media is not a file: {}".format(media))
 
     source = media_type.source.format(media_uri)
     extension = os.path.splitext(media)[1]
-    
     if (extension[1:] in media_type.container_formats):
         demux = media_type.demux
     else:
@@ -294,7 +400,8 @@ def create_encoded_stream(target_dir, media_type, media, individual_frames=True)
     encoded_caps = media_type.encoded_caps
     frame_info = 'gvapython module={} class=FrameInfo arg=[\\\"{}\\\",\\\"{}\\\"]'.format(FRAME_INFO_MODULE,target_dir,media_uri)
     if individual_frames:
-        sink = "multifilesink location={}/frame_%06d.{}".format(target_dir,media_type.frame_extension)
+        sink = "multifilesink location={}/frame_%06d.{}".format(target_dir,
+                                                                media_type.frame_extension)
     else:
         sink = "filesink location={}/stream.{}".format(target_dir,media_type.elementary_stream_extensions[0])
 
@@ -325,6 +432,7 @@ class MediaSink(Thread):
                  save_pipeline_output = False,
                  output_dir = None,
                  semaphore = None,
+                 verbose_level = 0,
                  *args,
                  **kwargs):
         self._semaphore = semaphore
@@ -350,6 +458,7 @@ class MediaSink(Thread):
         self._output_file = None
         self._output_dir = output_dir
         self._stream_index = stream_index
+        self._verbose_level = verbose_level
         if (self._media_type.encoded_caps) and ("jsonl" in self._media_type.encoded_caps):
             self._frame_sizes = None
             self.run = self.read_lines
@@ -382,10 +491,10 @@ class MediaSink(Thread):
 
             if (self._semaphore):
                 self._semaphore.acquire()
-            
-            print_action("Starting: pipebench memory sink",
-                         ["Started: {}".format(time.time()),
-                          "URI: {}".format(self._source_uri)])
+            if self._verbose_level > 2:
+                print_action("Starting: pipebench memory sink",
+                             ["Started: {}".format(time.time()),
+                              "URI: {}".format(self._source_uri)])
 
             with open(self._source_path,"rb") as source_fifo:
                 self.connected = True
@@ -428,10 +537,11 @@ class MediaSink(Thread):
             self.connected = False
             if not self._end_time:
                 self._end_time = time.time()
-            print_action("Ended: pipebench memory sink",
-                         ["Ended: {}".format(time.time()),
-                          "URI: {}".format(self._source_uri),
-                          "Frames Read: {}".format(self._frame_count)])
+            if self._verbose_level > 2:
+                print_action("Ended: pipebench memory sink",
+                             ["Ended: {}".format(time.time()),
+                              "URI: {}".format(self._source_uri),
+                              "Frames Read: {}".format(self._frame_count)])
             if self._output_file:
                 self._output_file.close()
 

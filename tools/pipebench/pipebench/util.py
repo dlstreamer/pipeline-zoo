@@ -23,7 +23,7 @@ def print_action(action,details=[]):
         print("\n".join(message),flush=True)
 
 
-def create_directory(directory, remove=True):
+def create_directory(directory, remove=True,verbose_level=0):
 
     directory = os.path.abspath(directory)
     
@@ -35,6 +35,7 @@ def create_directory(directory, remove=True):
 
     try:
         os.makedirs(directory,exist_ok=False)
-        print_action("Creating: {}".format(directory))
+        if verbose_level > 2:
+            print_action("Creating: {}".format(directory))
     except FileExistsError as error:
         print_action("Reusing: {}".format(directory))

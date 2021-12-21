@@ -68,7 +68,7 @@ def _task_name_from_path(task_path):
 def load_schemas(args):
     schema_directory = os.path.join(args.zoo_root,"tools/pipebench/pipebench/schema")
     
-    args.schemas = load_schema_store([schema_directory])
+    args.schemas = load_schema_store([schema_directory], args)
     return args.schemas
 
 
@@ -82,14 +82,15 @@ def load_tasks(args):
                     task = TaskConfig(os.path.join(root,path),args)
                     tasks[task.name] = task
                 except Exception as error:
-                    print("Ignoring Invalid task: {}".format(os.path.join(root,path)))
+                    if args.verbose_level>1:
+                        print("Ignoring Invalid task: {}".format(os.path.join(root,path)))
                 
                     
     args.tasks = tasks
     return tasks
 
 
-def load_schema_store(directories):
+def load_schema_store(directories, args):
     store = {}
     for directory in directories:
         schema_paths = [os.path.join(directory,path) for path in os.listdir(directory)
@@ -101,7 +102,8 @@ def load_schema_store(directories):
                 Draft7Validator.check_schema(schema)
                 _add_schema_to_store(schema,store)
             except Exception as error:
-                print("Ignoring invalid schema: {} error: {}".format(schema_path,error))
+                if args.verbose_level>1:
+                    print("Ignoring invalid schema: {} error: {}".format(schema_path,error))
                 
     return store
 
@@ -170,7 +172,6 @@ def validate(document_path, schema_store, overrides = [] ):
     schema_id = schema.strip('.')
     resolver = RefResolver("","",schema_store)
     document = None
-    
     try:
         document = _load_document(document_path)
         apply_overrides(document,overrides)
@@ -265,7 +266,7 @@ class WorkloadConfig(Document):
     def __init__(self, document_path, args):
 
         
-        self._document = validate(document_path,args.schemas,args.overrides)
+        self._document = validate(document_path, args.schemas, args.overrides)
 
         if (not self._document):
             raise Exception("Invalid Workload {}".format(document_path))

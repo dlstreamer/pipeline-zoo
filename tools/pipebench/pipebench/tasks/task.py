@@ -137,25 +137,21 @@ class Task(object, metaclass=abc.ABCMeta):
         pass
 
     @classmethod
-    def create_task(cls, workload, args):
+    def create_task(cls, measurement_settings, pipeline_path, args):
         if (not cls.task_map):
             cls.task_map = {}
             tasks = [task_class for task_class in Task.__subclasses__()]
             for task in tasks:
                 for task_name in task.names:
                     cls.task_map[task_name] = task
-                    
-        pipeline_path = find_pipeline(workload.pipeline, args)
-        if (not pipeline_path):
-            raise Exception("Can't find pipeline {}, please make sure it is downloaded!".format(workload.pipeline))
-                    
+                                        
         pipeline = PipelineConfig(pipeline_path, args)
 
-        task = pipeline._task.get_task_scenario(workload._namespace.scenario)
+        task = pipeline._task.get_task_scenario(measurement_settings["scenario"])
 
         task_name = pipeline._task.name
 
-        return  cls.task_map[task_name](pipeline, task, workload, args)
+        return  cls.task_map[task_name](pipeline, task, measurement_settings, args)
         
 
     

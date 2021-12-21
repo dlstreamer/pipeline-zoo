@@ -30,8 +30,8 @@ class DecodeVPP(Task):
     names = ["decode-vpp"]
     OUTPUT_CAPS = "video/x-raw"
     
-    def __init__(self, pipeline, task, workload, args):
-        self._workload = workload
+    def __init__(self, pipeline, task, measurement_settings, args):
+        self._measurement_settings = measurement_settings
         self._task = task
         self._pipeline = pipeline
         self._args = args
@@ -42,7 +42,7 @@ class DecodeVPP(Task):
     def _create_piperun_config(self, run_root, runner_config, number_of_streams=1):
 
         piperun_config = {"pipeline":self._pipeline._document}       
-        filename = "{}.piperun.yml".format(self._args.workload_name)
+        filename = "{}.piperun.yml".format(self._args.measurement)
 
         self._output_caps = []
         self._output_paths = []
@@ -56,25 +56,36 @@ class DecodeVPP(Task):
             pipe_uuid = uuid.uuid1()
             pipe_directory = os.path.join("/tmp",str(pipe_uuid))
             create_directory(pipe_directory)
-            if (self._workload.scenario.source=="memory"):
+            if (self._measurement_settings["scenario"]["source"]=="memory"):
                 self._input_caps.append(read_caps(os.path.join(self._args.workload_root,"input"))["caps"])
                 self._input_paths.append( "{}/input".format(pipe_directory))
                 self._input_uris.append( "pipe://{}".format(self._input_paths[-1]))
-            elif (self._workload.scenario.source=="disk"):
+            elif (self._measurement_settings["scenario"]["source"]=="disk"):
                 self._input_caps.append(read_caps(os.path.join(self._args.workload_root,"input"))["caps"].split(',')[0])
                 media_type = MEDIA_TYPES[self._input_caps[-1]]
-                self._input_paths.append(os.path.join(self._args.workload_root,
-                                                "input",
-                                                "stream.{}".format(media_type.elementary_stream_extensions[0])))
+
+
+                media_file = os.path.join(self._args.workload_root,
+                                          "input",
+                                           "stream.{}".format(media_type.elementary_stream_extensions[0]))
+
+                fps_candidate = os.path.join(self._args.workload_root,
+                                         "input",
+                                         "stream.fps.{}".format(media_type.container_formats[0]))
+                if os.path.isfile(fps_candidate):
+                    media_file = fps_candidate
+                
+                self._input_paths.append(media_file)
+                
                 self._input_uris.append("file://{}".format(self._input_paths[-1]))
 
             media_type_key = read_caps(os.path.join(self._args.workload_root,"input"))["caps"].split(',')[0]
             inputs.append({"uri":self._input_uris[-1],
                            "caps":self._input_caps[-1],
                            "extended-caps":read_caps(os.path.join(self._args.workload_root,"input"))["caps"],
-                           "source":find_media(self._workload.media,self._pipeline.pipeline_root,media_type_keys=[media_type_key])})
+                           "source":find_media(self._measurement_settings["media"],self._pipeline.pipeline_root,media_type_keys=[media_type_key])})
 
-            if self._args.save_pipeline_output:
+            if self._measurement_settings["save-pipeline-output"]:
                 self._output_caps.append(DecodeVPP.OUTPUT_CAPS)
                 if "color-space" in self._pipeline._document:
                     self._output_caps[-1] += ",format={}".format(self._pipeline._document["color-space"].upper())
@@ -132,13 +143,13 @@ class DecodeVPP(Task):
         sources = []
         for stream_index in range(number_of_streams):
             try:
-                if (self._workload.scenario.source=="memory"):
+                if (self._measurement_settings["scenario"]["source"]=="memory"):
                     os.unlink(self._input_paths[stream_index])
                 os.unlink(self._output_paths[stream_index])
             except:
                 pass
 
-            if (self._workload.scenario.source=="memory"):
+            if (self._measurement_settings["scenario"]["source"]=="memory"):
                 os.mkfifo(self._input_paths[stream_index])
             os.mkfifo(self._output_paths[stream_index])
 
@@ -151,25 +162,27 @@ class DecodeVPP(Task):
                                                                 "reference"),
                              warm_up = warm_up,
                              sample_size = sample_size,
-                             save_pipeline_output = self._args.save_pipeline_output,
+                             save_pipeline_output = self._measurement_settings["save-pipeline-output"],
                              output_dir = os.path.dirname(piperun_config_path),
                              semaphore = semaphore,
-                             daemon=True)
+                             daemon=True,
+                             verbose_level=self._args.verbose_level)
             sink.start()
             sinks.append(sink)
-        
+        redirect = (self._args.verbose_level < 2)
         runner_process = start_pipeline_runner(self._args.runner,
                                                runner_config,
                                                run_root,
                                                piperun_config_path,
                                                self._pipeline.pipeline_root,
                                                os.path.join(self._args.workload_root,"systeminfo.json"),
-                                               redirect=self._args.redirect,
-                                               numa_node = numa_node)
+                                               redirect,
+                                               numa_node = numa_node,
+                                               verbose_level=self._args.verbose_level)
 
         for stream_index in range(number_of_streams):
             # start writer thread
-            if (self._workload.scenario.source=="memory"):
+            if (self._measurement_settings["scenario"]["source"]=="memory"):
                 source = MediaSource(self._input_paths[stream_index],
                                      self._input_uris[stream_index],
                                      self._input_caps[stream_index],
@@ -244,12 +257,12 @@ class DecodeVPP(Task):
 
         input_media_type = getattr(self._pipeline._namespace, "inputs.media.type.media-type")
 
-        input_media = find_media(self._workload.media, self._pipeline.pipeline_root, media_type_keys=[input_media_type])
+        input_media = find_media(self._measurement_settings["media"], self._pipeline.pipeline_root, media_type_keys=[input_media_type])
 
         input_target = os.path.join(workload_root, "input")
 
         if not input_media:
-            raise Exception("Media not found or unsupported: {}".format(self._workload.media))
+            raise Exception("Media not found or unsupported: {}".format(self._measurement_settings["media"]))
 
         if (self._args.force):
             create_directory(input_target)
@@ -259,7 +272,7 @@ class DecodeVPP(Task):
 
         individual_frames = False
         
-        if self._workload.scenario.source == "memory":
+        if self._measurement_settings["scenario"]["source"] == "memory":
             individual_frames = True
         
         if (existing_files):
@@ -274,7 +287,7 @@ class DecodeVPP(Task):
         input_paths = self._read_input_paths(input_target)
 
 
-        if self._args.generate_reference:
+        if self._measurement_settings["generate-reference"]:
             reference_target = os.path.join(workload_root, "reference")
 
             # Todo: get from task document

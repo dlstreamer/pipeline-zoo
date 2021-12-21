@@ -15,6 +15,7 @@ from pipebench.tasks.object_detection import ObjectDetection
 from pipebench.tasks.object_classification import ObjectClassification
 from pipebench.tasks.decode_vpp import DecodeVPP
 from util import print_action
+import logging
 import shlex
 import shutil
 import subprocess
@@ -23,14 +24,15 @@ import signal
 import psutil
 
 def print_args(args):
-    heading = "Arguments for {}".format("pipebench")
-    banner = "="*len(heading) 
-    print(banner)
-    print(heading)
-    print(banner)
-    for arg in vars(args):
-        print ("\t{} == {}".format(arg, getattr(args, arg)))
-    print()
+    if args.verbose_level > 0:
+        heading = "Arguments for {}".format("pipebench")
+        banner = "="*len(heading) 
+        print(banner)
+        print(heading)
+        print(banner)
+        for arg in vars(args):
+            print ("\t{} == {}".format(arg, getattr(args, arg)))
+        print()
 
 def initialize(parser, args):
     args.workspace_root = os.path.abspath(args.workspace_root)

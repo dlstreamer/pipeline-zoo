@@ -64,9 +64,10 @@ if __name__ == '__main__':
             item_list = getattr(args,"{}_list".format(item_type),None)
             item = getattr(args,"{}_item".format(item_type),None)
             if not handler.download(pipeline, pipeline_root, item,item_list):
+                handler.logger.error("Pipeline download failed. Failed downloading {}.".format(item_type))
                 exit(1)
-
-        print("Pipeline Downloaded")
+        
+        print("\nPipeline Downloaded")
             
     
 

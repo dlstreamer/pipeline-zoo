@@ -1,0 +1,95 @@
+---
+
+$id: measurement-settings
+
+type: object
+
+properties:
+  media:
+    type: string
+    format: path
+  warm-up:
+    type: integer
+    default: 2
+  duration:
+    type: integer
+    default: 60
+  numactl:
+    type: boolean
+    default: true
+  streams:
+    type: integer
+    default: 1
+  target-fps:
+    type: integer
+    default: 30
+  target-range:
+    type: array
+    items:
+      type: number
+    minItems: 1
+    maxItems: 2
+    default: [0.2]
+  target-condition:
+    type: string
+    enum: [stream, average, total]
+    default: total
+  starting-streams:
+    type: integer
+    default: 0
+  streams-per-process:
+    type: integer
+    default: 1
+  max-processes:
+    type: integer
+    default: 0
+  max-streams:
+    type: integer
+    default: 0
+  max-iterations:
+    type: integer
+    default: 0
+  min-streams:
+    type: integer
+    default: 1
+  search-method:
+    type: string
+    default: linear
+    enum: [binary, linear]
+  sample-size:
+    type: integer
+    default: 30
+  save-pipeline-output:
+    type: boolean
+    default: false
+  scenario:
+    $ref: scenario
+    default: {}
+  use-reference-detections:
+    type: boolean
+    default: false
+  generate-reference:
+    type: boolean
+    default: false
+
+required: [media,
+           warm-up,
+           duration,
+           numactl,
+           streams,
+           target-fps,
+           target-range,
+           target-condition,
+           starting-streams,
+           streams-per-process,
+           max-processes,
+           max-streams,
+           max-iterations,
+           min-streams,
+           search-method,
+           sample-size,
+           save-pipeline-output,
+           scenario,
+           use-reference-detections,
+           generate-reference]  
+      

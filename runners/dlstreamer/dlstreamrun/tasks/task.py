@@ -36,6 +36,8 @@ def input_to_src(_input):
     parser = parser_map[media_type]
     
     if (element == "filesrc"):
+        if parsed_uri.path.endswith(".mp4"):
+            media_type = "qtdemux"
         element = "filesrc location=\"{}\" ! {} ! {}".format(parsed_uri.path,media_type,parser)
     return element
 

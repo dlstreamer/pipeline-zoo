@@ -57,6 +57,7 @@ class Handler(object, metaclass=abc.ABCMeta):
 
     @staticmethod
     def print_action(action,details=[]):
+        Handler.logger.info("")
         banner = "="*len(action) 
         Handler.logger.info(banner)
         Handler.logger.info(action)
@@ -146,20 +147,18 @@ class Runner(Handler):
                  item = None,
                  item_list = None):
 
-        runners = [filepath for filepath in os.listdir(pipeline_root)
+        runners = [filepath.split('.')[0]+".runner-settings.yml" for filepath in os.listdir(pipeline_root)
                    if os.path.isfile(os.path.join(pipeline_root,filepath))
-                   and (filepath.endswith(".config.yml") or filepath.endswith(".config.json")) ]
+                   and (filepath.endswith(".runner-settings.yml"))]
 
-        
         if runners:
             Handler.print_action("Downloading Runners")
 
+        runners = set(runners)
+
         for runner_config in runners:
 
-            if (len(runner_config.split('.'))>3):
-                continue
-
-            runner_name = os.path.splitext(os.path.splitext(runner_config)[0])[0]
+            runner_name = runner_config.replace(".runner-settings.yml","")
 
             if (item) and (runner_name!=item):
                 continue
@@ -176,7 +175,7 @@ class Runner(Handler):
                     shutil.rmtree(target_runner)
                 except:
                     pass
-
+            
             if os.path.isdir(target_runner):
                 self.logger.debug("Runner Directory {0} Exists - Skipping".format(runner_name))
                 continue
@@ -289,7 +288,6 @@ class Media(Handler):
                 continue
             
             if not self._process_config(media, target_root_path):
-                self.logger.error("Pipeline download failed. Failed downloading Media")
                 return False
 
         return True
