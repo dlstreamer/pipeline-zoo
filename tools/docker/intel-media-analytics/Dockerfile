@@ -31,8 +31,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     wget 
 
 RUN sh -c "wget https://github.com/opencv/gst-video-analytics/archive/${MODEL_PROC_VERSION}.tar.gz &&  tar -xzf ${MODEL_PROC_VERSION}.tar.gz -C / --strip-components 2 --wildcards "*/samples/model_proc/*""
-RUN wget --no-proxy https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/archive/main/models-main.tar.gz && mkdir -p /media-analytics-pipeline-zoo/models && tar -xzf models-main.tar.gz -C /media-analytics-pipeline-zoo/models --strip-components 1 --wildcards "*/model-descriptions/*" 
 RUN wget https://github.com/openvinotoolkit/open_model_zoo/archive/refs/tags/${MODEL_ZOO_VERSION}.tar.gz && \
+    mkdir -p /media-analytics-pipeline-zoo && \
     tar -xzf ${MODEL_ZOO_VERSION}.tar.gz -C /media-analytics-pipeline-zoo/ && \
     mv /media-analytics-pipeline-zoo/open_model_zoo-${MODEL_ZOO_VERSION} /media-analytics-pipeline-zoo/open_model_zoo 
 
@@ -62,6 +62,7 @@ RUN DEBIAN_FRONTEND=noninteractive && no_proxy=intel.com  &&apt-get update && \
     nlohmann-json3-dev \
     numactl \
     libjemalloc-dev \
+    ffmpeg \
     python3 && \
     rm -rf /var/lib/apt/lists/*
 
@@ -118,7 +119,7 @@ RUN rm -f /requirements.txt
 
 # Patches
 #COPY ./docker/patches/video_frame.py /opt/intel/openvino/data_processing/dl_streamer/python/gstgva/video_frame.py
-COPY ./tools/docker/patches/video_frame.py /opt/intel/solutions/lib/python3.8/site-packages/gstgva/video_frame.py
+COPY ./tools/docker/patches/video_frame.py /opt/intel/samples/lib/python3.8/site-packages/gstgva/video_frame.py
 
 # model proc
 RUN mkdir -p /opt/intel/dl_streamer/samples/model_proc
@@ -131,11 +132,7 @@ COPY --from=MODEL_ZOO //media-analytics-pipeline-zoo/open_model_zoo/models /opt/
 COPY --from=MODEL_ZOO //media-analytics-pipeline-zoo/open_model_zoo/demos /opt/intel/openvino/deployment_tools/open_model_zoo/demos
 ENV OPEN_MODEL_ZOO_ROOT=/opt/intel/openvino/deployment_tools/open_model_zoo
 
-# pipeline zoo models
-COPY --from=MODEL_ZOO /media-analytics-pipeline-zoo/models /opt/intel/openvino/deployment_tools/open_model_zoo/models/media-analytics-pipeline-zoo/models
-
 COPY ./tools/downloader /home/pipeline-zoo/tools/downloader/
-COPY ./tools/uploader /home/pipeline-zoo/tools/uploader/
 COPY ./tools/pipebench /home/pipeline-zoo/tools/pipebench/
 COPY ./tools/systeminfo /home/pipeline-zoo/tools/systeminfo/
 COPY ./pipelines /home/pipeline-zoo/pipelines
