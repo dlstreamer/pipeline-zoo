@@ -11,6 +11,7 @@ import json
 import yaml
 import glob
 import distro
+import shlex
 
 def empty_string_if_failure(function):
     def new_func(*args, **kwargs):
@@ -314,14 +315,17 @@ def cmake_version():
 
 @empty_string_if_failure
 def dpkg_version(name):
-    text = subprocess.check_output("dpkg -s "+name, shell=True).strip().decode("utf-8")
+    args = ["dpkg", "-s", name]
+    text = subprocess.check_output(args).strip().decode("utf-8")
     return get_value(r"Version:\s*(.*)", text)
 
 
 @empty_string_if_failure
 def rpm_version(name):
     version = "%{VERSION}"
-    return subprocess.check_output("rpm -q --queryformat %s  $(rpm -qa | grep %s | head -n1)" % (version, name), shell=True).strip().decode("utf-8")
+    command = "rpm -q --queryformat %s  $(rpm -qa | grep %s | head -n1)" % (version, name) %(version, name)
+    args = shlex.split(command)
+    return subprocess.check_output(args).strip().decode("utf-8")
 
 
 @empty_string_if_failure
