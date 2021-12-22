@@ -372,16 +372,6 @@ def run(args):
     else:
         starting_streams = (measurement_settings["streams"] if measurement_settings["streams"]
                             else measurement_settings["starting-streams"])
-    
-    starting_streams = max(measurement_settings["min-streams"],
-                           starting_streams)
-
-    starting_streams = min(measurement_settings["max-streams"],
-                           starting_streams)
-
-    if not starting_streams:
-        starting_streams = 1
-    
     numa_nodes = []
     if measurement_settings["numactl"]:
         numa_nodes = _get_numa_nodes(args)
@@ -392,6 +382,15 @@ def run(args):
     max_iterations = measurement_settings["max-iterations"] if measurement_settings["max-streams"] else sys.maxsize
     if measurement_settings["streams"]:
         max_iterations = 1
+        
+    starting_streams = max(min_streams,
+                           starting_streams)
+    
+    starting_streams = min(max_streams,
+                           starting_streams)
+    if not starting_streams:
+        starting_streams = 1
+        
     min_failure = -1
     max_success = -1
     max_success_iteration = -1
