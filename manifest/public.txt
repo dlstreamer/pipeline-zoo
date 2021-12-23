@@ -12,6 +12,7 @@ docs/tasks-and-pipelines.md
 docs/tasks-and-pipelines.svg
 docs/xeon.md
 docs/output.md
+docs/*.svg
 
 # tasks
 pipelines/video/object-detection/object-detection.task.yml
