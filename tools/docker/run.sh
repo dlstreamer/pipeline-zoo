@@ -28,7 +28,7 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 SOURCE_DIR=$(dirname "$SCRIPT_DIR")
 SOURCE_DIR=$(dirname "$SOURCE_DIR")
 ENVIRONMENT=$(env | cut -f1 -d= | grep -E '_(proxy)$' | sed 's/^/-e / ' | tr '\n' ' ')
-# ENVIRONMENT+="-e DISPLAY "
+ENVIRONMENT+="-e DISPLAY "
 WORKDIR=
 
 get_options() {

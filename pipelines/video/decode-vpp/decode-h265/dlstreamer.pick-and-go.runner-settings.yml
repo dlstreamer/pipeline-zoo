@@ -1,0 +1,9 @@
+run: python3 dlstreamrun
+decode:
+  device: GPU
+vpp:
+  device: GPU
+sink:
+  element: fpsdisplaysink
+  video-sink: "vaapisink fullscreen=true"
+  sync: true
