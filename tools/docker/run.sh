@@ -11,7 +11,6 @@ PLATFORM=DEFAULT
 
 IMAGE=
 VOLUME_MOUNT=
-PORTS=
 CAPADD=
 DEVICES=
 DEVICEGRP=
@@ -59,7 +58,7 @@ get_options() {
                 USER="--user $2"
                 shift
             else
-                error 'ERROR: "--models" requires a non-empty option argument.'
+                error 'ERROR: "--user" requires a non-empty option argument.'
             fi
             ;;
         -e)
@@ -76,14 +75,6 @@ get_options() {
                 shift
             else
                 error 'ERROR: "--entrypoint-args" requires a non-empty option argument.'
-            fi
-            ;;
-        -p)
-            if [ "$2" ]; then
-                PORTS+="-p $2 "
-                shift
-            else
-                error 'ERROR: "-p" requires a non-empty option argument.'
             fi
             ;;
         -v)
@@ -191,7 +182,6 @@ show_options() {
     echo "Running Media Analytics Pipeline Zoo Image: '${IMAGE}'"
     echo "   Environment: '${ENVIRONMENT}'"
     echo "   Volume Mounts: '${VOLUME_MOUNT}'"
-    echo "   Ports: '${PORTS}'"
     echo "   Name: '${NAME}'"
     echo "   Network: '${NETWORK}'"
     echo "   Entrypoint: '${ENTRYPOINT}'"
@@ -199,6 +189,7 @@ show_options() {
     echo "   User: '${USER}'"
     echo "   Attach: '${ATTACH}'"
     echo "   Interactive: '${INTERACTIVE}'"
+    echo "   Platform: '${PLATFORM}'"
     echo ""
 }
 
@@ -208,12 +199,12 @@ show_help() {
   echo "  [-v additional volume mount to pass to docker run]"
   echo "  [-e additional environment to pass to docker run]"
   echo "  [--entrypoint-args additional parameters to pass to entrypoint in docker run]"
-  echo "  [-p additional ports to pass to docker run]"
   echo "  [--network name network to pass to docker run]"
   echo "  [--user name of user to pass to docker run]"
   echo "  [--name container name to pass to docker run]"
   echo "  [--attach attach to running container]"
   echo "  [--non-interactive run container without -i flag]"
+  echo "  [--platform platform specific image]"
   exit 0
 }
 
@@ -247,7 +238,7 @@ show_options
 
 if [ -z "$ATTACH" ]; then
     set -x
-    docker run $INTERACTIVE $WORKDIR --rm $ENVIRONMENT $VOLUME_MOUNT $CAPADD $DEVICES $DEVICEGRP $NETWORK $PORTS $ENTRYPOINT --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
+    docker run $INTERACTIVE $WORKDIR --rm $ENVIRONMENT $VOLUME_MOUNT $CAPADD $DEVICES $DEVICEGRP $NETWORK $ENTRYPOINT --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
      { set +x; } 2>/dev/null
 else
     RUNNING_INSTANCE=$(docker ps -q --filter "name=$IMAGE")

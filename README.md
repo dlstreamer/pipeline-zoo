@@ -1,8 +1,54 @@
+# Intel(R) Deep Learning Streamer Pipeline Zoo
+| [Getting Started](#getting-started)
+| [Tasks and Pipelines](docs/tasks-and-pipelines.md)
+| [Xeon Examples](docs/xeon.md)
+| [Core Examples](docs/core.md)
+| [Pipebench Reference](docs/pipebench-reference-guide.md)
+| [Advanced Examples](docs/examples.md)
+| [Measurement Output](docs/output.md) |
+
+The DL Streamer Pipeline Zoo is a catalog of media and media analytics
+pipelines optimized for Intel hardware. It includes tools for
+downloading pipelines and their dependencies and tools for measuring
+their performace.
+
+Pipelines are organized according to the task they perform (what types
+of input they accept and what types of output they generate). Tasks
+and pipelines are defined in a platform and framework independent way
+to allow implementations in a variety of frameworks and for multiple
+platform targets.
+
+## Features Include:
+| |                  |
+|---------------------------------------------|------------------|
+| **Simple command line interface** | A single entrypoint for downloading and running media analytics pipelines along with media and model dependencies |
+| **DL Streamer Pipeline Runner**| Pipeline implementations and optimizations using the DL Streamer Pipeline Framework |
+| **Platform specific settings**| Pipeline runner settings tuned for optimal performance on different platform types (e.g. core, xeon) |  
+| **Measurement Settings** | Settings for measuring different scenarios including single stream throughput and stream density. Settings can be customized and saved for reuse.|
+| **Containerized environment** | Dockerfiles, build and run scripts for launching a reproducable environment |
+
+> **IMPORTANT:** 
+> 
+> The DL Streamer Pipeline Zoo is provided as a set of tools for system evaluation 
+> and benchmarking and is not intended for deployment into production environments 
+> without modification.
+>
+> The project is pre-production and under active development. Please expect breaking changes and use tagged versions for stable functionality.
+
+
 # Getting Started
+
+## Prerequisites
+
+| |                  |
+|---------------------------------------------|------------------|
+| **Docker** | The Pipeline Zoo requires Docker for it's build, development, and runtime environments. Please install the latest [version](https://docs.docker.com/install) for your platform.|
+| **bash** | The Pipeline Zoo build and run scripts require bash and have been tested on systems using versions greater than or equal to: `GNU bash, version 4.3.48(1)-release (x86_64-pc-linux-gnu)`.  |
+
 ## Installation 
-1. Clone Repo
+1. Clone Repository
    ```
-   git clone https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo.git pipeline-zoo
+   git clone https://github.com/dlstreamer/pipeline-zoo.git pipeline-zoo
    ```
 2. Build Pipeline Zoo Environment
    ```
@@ -25,214 +71,214 @@
    ```
    Output:
    ```
-   =======================
-   Arguments for pipebench
-   =======================
-	   workspace_root == .
-	   command == <function list_pipelines at 0x7f7ca1ce8488>
-
-   +--------------------------+-----------------------+------------------------------------+----------------+
-   | Pipeline                 | Task                  | Models                             | Runners        |
-   +==========================+=======================+====================================+================+
-   | od-h264-yolov3           | object-detection      | yolo-v3-tf                         | dlstreamer     |
-   |                          |                       |                                    | mockrun        |
-   +--------------------------+-----------------------+------------------------------------+----------------+
-   | od-h264-people           | object-detection      | person-detection-retail-0013       | opencv-gapi    |
-   |                          |                       |                                    | dlstreamer     |
-   |                          |                       |                                    | mockrun        |
-   +--------------------------+-----------------------+------------------------------------+----------------+
-   | od-h264-mbnetssd         | object-detection      | mobilenet-ssd                      | opencv-gapi    |
-   |                          |                       |                                    | dlstreamer     |
-   |                          |                       |                                    | mockrun        |
-   +--------------------------+-----------------------+------------------------------------+----------------+
-   | oc-h264-face-age-emotion | object-classification | face-detection-adas-0001           | opencv-gapi    |
-   |                          |                       | age-gender-recognition-retail-0013 | dlstreamer     |
-   |                          |                       | emotions-recognition-retail-0003   | mockrun        |
-   +--------------------------+-----------------------+------------------------------------+----------------+
-   
++--------------------------------------------+-----------------------+----------------------------+------------+
+| Pipeline                                   | Task                  | Models                     | Runners    |
++============================================+=======================+============================+============+
+| decode-h265                                | decode-vpp            |                            | dlstreamer |
+|                                            |                       |                            | mockrun    |
++--------------------------------------------+-----------------------+----------------------------+------------+
+| decode-h264-bgra                           | decode-vpp            |                            | dlstreamer |
+|                                            |                       |                            | mockrun    |
++--------------------------------------------+-----------------------+----------------------------+------------+
+| od-h265-ssd-mobilenet-v1-coco              | object-detection      | ssd_mobilenet_v1_coco_INT8 | dlstreamer |
++--------------------------------------------+-----------------------+----------------------------+------------+
+| od-h264-ssd-mobilenet-v1-coco              | object-detection      | ssd_mobilenet_v1_coco      | dlstreamer |
+|                                            |                       |                            | mockrun    |
++--------------------------------------------+-----------------------+----------------------------+------------+
+| oc-h265-full_frame-resnet-50-tf            | object-classification | full_frame                 | dlstreamer |
+|                                            |                       | resnet-50-tf               | mockrun    |
++--------------------------------------------+-----------------------+----------------------------+------------+
+| oc-h264-full_frame-resnet-50-tf            | object-classification | full_frame                 | dlstreamer |
+|                                            |                       | resnet-50-tf               | mockrun    |
++--------------------------------------------+-----------------------+----------------------------+------------+
+| oc-h264-ssd-mobilenet-v1-coco-resnet-50-tf | object-classification | ssd_mobilenet_v1_coco      | dlstreamer |
+|                                            |                       | resnet-50-tf               | mockrun    |
++--------------------------------------------+-----------------------+----------------------------+------------+
+| oc-h265-ssd-mobilenet-v1-coco-resnet-50-tf | object-classification | ssd_mobilenet_v1_coco      | dlstreamer |
+|                                            |                       | resnet-50-tf               | mockrun    |
++--------------------------------------------+-----------------------+----------------------------+------------+
    ```
    
 ### Download Pipeline
 
    Command:
    ```
-   pipebench download od-h264-mbnetssd
+   pipebench download od-h264-ssd-mobilenet-v1-coco
    ```
-   Expected Output Tree:
+   Example Output Tree:
    ```
-    - pipeline-zoo/
-      + pipelines/
-      + runners/
-      + tools/
-      - workspace/
-        - od-h264-mbnetssd/
-          - media/
-            - video/
-              + 20200711_cat/
-              + bottle_detection/
-              + person-bicycle-car-detection/
-         - models/
-           - mobilenet-ssd/
-             + FP16/
-             + FP32/
-             mobilenet-ssd.caffemodel
-             mobilenet-ssd.json
-             mobilenet-ssd.prototxt
-         - runners/
-           + dlstreamer/
-           + mockrun/
-         README.md
-         dlstreamer.config.yml
-         media.list.yml
-         mockrun.config.yml
-         models.list.yml
-         od-h264-mbnetssd.pipeline.yml
+- pipeline-zoo/
+  + doc/
+  + media/
+  + models/
+  + pipelines/
+  + runners/
+  + tools/
+  - workspace/
+    - od-h264-ssd-mobilenet-v1-coco/
+      - media/
+        - video/
+          + Pexels-Videos-1388365/
+          + person-bicycle-car-detection/
+      - models/
+        - ssd_mobilenet_v1_coco/
+          + FP16/
+          + FP32/
+          + ssd_mobilenet_v1_coco_2018_01_28/
+        - ssd_mobilenet_v1_coco_INT8/
+          + FP16-INT8/
+      - runners/
+        + dlstreamer/
+        + mockrun/
+      README.md
+      dlstreamer.core.runner-settings.yml
+      dlstreamer.density.core.runner-settings.yml
+      dlstreamer.density.dgpu.runner-settings.yml
+      dlstreamer.density.runner-settings.yml
+      dlstreamer.density.xeon.runner-settings.yml
+      dlstreamer.dgpu.runner-settings.yml
+      dlstreamer.runner-settings.yml
+      dlstreamer.xeon.runner-settings.yml
+      media.list.yml
+      mockrun.runner-settings.yml
+      models.list.yml
+      od-h264-ssd-mobilenet-v1-coco.pipeline.yml
    ```
    
-### Measure Pipeline Throughput
+### Measure Single Stream Throughput (default settings)
      
 Command:
      
  ```
-       pipebench measure od-h264-mbnetssd
+ pipebench run od-h264-ssd-mobilenet-v1-coco
  ```
    
-Expected Output:
+Example Output:
      
 ```
-          =================
-	  Frames Per Second
-	  	  Stream: 0000 FPS:100.5469 Min: 88.5230 Max: 118.4075 Avg: 98.9552
-	  =================
+ Pipeline:
+	od-h264-ssd-mobilenet-v1-coco
 
-	  ==============================
-	  Ended: pipebench memory source
-	  	  Ended: 1602075186.5367947
-		  Frames Written: 5960
-	  ==============================
+ Runner:
+	dlstreamer
+ 	dlstreamer.runner-settings.yml
 
-	  ============================
-	  Ended: pipebench memory sink
-	  	  Ended: 1602075186.64656
-		  Frames Read: 5960
-	  ============================
+ Media:
+	video/person-bicycle-car-detection
 
-	  pipeline          runner      media                                 avg FPS (selected)
-	  ----------------  ----------  ----------------------------------  --------------------
-	  od-h264-mbnetssd  dlstreamer  video/person-bicycle-car-detection               98.9552
+ Measurement:
+	throughput
+ 	throughput.measurement-settings.yml
+
+ Output Directory:
+	/home/pipeline-zoo/workspace/od-h264-ssd-mobilenet-v1-coco/measurements/throughput/dlstreamer/run-0000
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0000      0000       0001     0.0000    0.0000    0.0000     0.0000
+======================================================================== 
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0000      0001       0001   130.3469  130.3469  130.3469   130.3469
+======================================================================== 
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0000      0001       0001   128.9403  128.9403  128.9403   128.9403
+======================================================================== 
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0000      0001       0001   129.5578  129.5578  129.5578   129.5578
+======================================================================== 
+
+...
+<SNIP>
+...
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0000      0001       0001   126.2640  126.2640  126.2640   126.2640
+======================================================================== 
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0000      0001       0001   125.8236  125.8236  125.8236   125.8236
+======================================================================== 
+
+Pipeline                       Runner      Streams: 1
+-----------------------------  ----------  ---------------------------------------------------------
+od-h264-ssd-mobilenet-v1-coco  dlstreamer  Min: 125.8236 Max: 125.8236 Avg: 125.8236 Total: 125.8236
+
 ```
      
-### Measure Pipeline Density
+### Measure Stream Density (default settings)
 
 Command:
 ```
- pipebench measure od-h264-mbnetssd --density
+ pipebench run --measure density od-h264-ssd-mobilenet-v1-coco
 ```
       
-Expected Output:
+Example Output:
       
 ```
-	     ==============
-	     Density Result
-		     Stream: 0000 avg:(27.131767701626966, False)
-		     Stream: 0001 avg:(26.64521668312581, False)
-		     Stream: 0002 avg:(25.848245068960324, False)
-		     Stream: 0003 avg:(25.947736259217095, False)
-		     Stream: 0004 avg:(25.7801414724865, False)
-		     Stream: 0005 avg:(25.808106633418532, False)
-		     Stream: 0006 avg:(26.325975123855283, False)
-	     ==============
+ Pipeline:
+	od-h264-ssd-mobilenet-v1-coco
 
-	     ==============
-	     Stream Density
-		     Iteration: 3
-		     Number of Streams: 7
-		     Passed: False
-	     ==============
+ Runner:
+	dlstreamer
+ 	dlstreamer.density.runner-settings.yml
 
-	    pipeline          runner      media                                 density
-	    ----------------  ----------  ----------------------------------  ---------
-	    od-h264-mbnetssd  dlstreamer  video/person-bicycle-car-detection          6
-```
+ Media:
+	video/person-bicycle-car-detection
 
-### Configure DL Streamer Runner
-Command:
-```
- pipebench measure od-h264-mbnetssd --runner-override detect.nireq 1 --runner-override detect.cpu-throughput-streams 5
-```
-   
-Expected Change in gst-launch
-   
-Location:
-```
- pipeline-zoo/workspace/od-h264-mbnetssd/measurements/person-bicyle-car-detection/throughput/dlstreamer/person-bicycle-car-detection.gst-launch.sh
-```
+ Measurement:
+	density
+ 	density.measurement-settings.yml
 
-gst-launch command:
+ Output Directory:
+	/home/pipeline-zoo/workspace/od-h264-ssd-mobilenet-v1-coco/measurements/density/dlstreamer/run-0000
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+      PRE      0001       0001   121.7170  121.7170  121.7170   121.7170
+======================================================================== 
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+      PRE      0001       0001   128.3342  128.3342  128.3342   128.3342
+======================================================================== 
+
+...
+<SNIP>
+...
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0001      0003       0003    30.0000   30.0038   30.0110    90.0115
+======================================================================== 
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0001      0003       0003    29.9868   29.9959   30.0115    89.9878
+======================================================================== 
+
+Pipeline                       Runner      Streams: 4                                              Streams: 3
+-----------------------------  ----------  ------------------------------------------------------  -----------------------------------------------------
+od-h264-ssd-mobilenet-v1-coco  dlstreamer  Min: 28.4167 Max: 28.5507 Avg: 28.4844 Total: 113.9374  Min: 29.9868 Max: 30.0115 Avg: 29.9959 Total: 89.9878
 
 ```
-gst-launch-1.0 urisourcebin uri=file:///home/pipeline-zoo/workspace/od-h264-mbnetssd/media/video/person-bicycle-car-detection/person-bicycle-car-detection_1920_1080_2min.mp4 ! qtdemux ! parsebin ! avdec_h264 name=decode ! gvadetect name=detect model-proc=/home/pipeline-zoo/workspace/od-h264-mbnetssd/models/mobilenet-ssd/mobilenet-ssd.json model=/home/pipeline-zoo/workspace/od-h264-mbnetssd/models/mobilenet-ssd/FP32/mobilenet-ssd.xml ! gvametaconvert add-empty-results=true ! gvametapublish method=file file-format=json-lines file-path=/tmp/result.jsonl ! gvafpscounter ! fakesink
-```
-
-### Download second pipeline
-Command:
-```
- pipebench download od-h264-yolov3
-```
- 
-Expected Output Tree:
-    
-```
-       - pipeline-zoo/
-         + pipelines/
-         + runners/
-         + tools/
-         - workspace/
-           + od-h264-mbnetssd/
-           - od-h264-yolov3/
-             - media/
-               - video/
-                 + 20200711_dog_bark/
-                 + classroom/
-                 + person-bicycle-car-detection/
-            - models/
-               + yolo-v3-tf/
-             - runners/
-               + dlstreamer/
-               + mockrun/
-             README.md
-             dlstreamer.config.yml
-             media.list.yml
-             mockrun.config.yml
-             models.list.yml
-             od-h264-yolov3.pipeline.yml
-```
-### Measure throughput for second pipeline
-
-Command:
-```
- pipebench measure od-h264-yolov3
-```
-
-Expected Output:
-```
-    pipeline        runner      media                                 avg FPS (selected)
-    --------------  ----------  ----------------------------------  --------------------
-    od-h264-yolov3  dlstreamer  video/person-bicycle-car-detection               44.8486
-```
-
-# Generated Files
-
-| path | description|
-|---------------| ---| 
-|`workspace/<pipeline_name>` | downloaded pipeline |
-|`workspace/<pipeline_name>/workloads` | generated reference data for workload | 
-|`workspace/<pipeline_name>/runners/<runner_name>`| runner applications |
-|`workspace/<pipeline_name>/measurements/<workload_name>/throughput/<runner_name>` | throughput results |
-|`workspace/<pipeline_name>/measurements/<workload_name>/density.30fps/<runner-name>` | density results |
-|`workspace/<pipeline_name>/measurements/<workload_name>/throughput/dlstreamer/<workload_name>.gst-launch.sh` | gstlaunch command line |
-
-# [Additional Examples](./doc/examples.md)
 
 
 

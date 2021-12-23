@@ -196,7 +196,8 @@ def _get_parser(program_name="pipebench"):
                                metavar="pipeline",
                                choices=list_pipelines()[0])
 
-    download_parser = subparsers.add_parser("download", parents=[common_parser])
+    download_parser = subparsers.add_parser("download", parents=[common_parser],
+                                            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     download_parser.set_defaults(command=pipebench.commands.download)
 
@@ -204,12 +205,14 @@ def _get_parser(program_name="pipebench"):
                                  required=False,
                                  dest="force",
                                  action="store_true",
+                                 help="Force download of existing pipeline",
                                  default=False)
 
     download_parser.add_argument("--silent",
                                  required=False,
                                  dest="silent",
                                  action="store_true",
+                                 help="Disable output from download",
                                  default=False)
 
     run_parser = subparsers.add_parser("run",
