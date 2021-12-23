@@ -1,7 +1,7 @@
-description: Person bicycle car detection 1920x1080 2 min
+description: person-bicycle-car-detection
 files:
-- name: person-bicycle-car-detection_1920_1080_2min.mp4
-  sha256: 71a3fb4b41940fcfa469016b8a4ba966aa8cd2a6407ff1ea2bff78aebaadde2d
-  size: 38435584
-  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media/blob/main/storage/video/person-bicycle-car-detection/person-bicycle-car-detection_1920_1080_2min.mp4
-license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE
+- name: person-bicycle-car-detection.mp4
+  sha256: 452b11b7e0efbd019f1d9570d0c790e90416ad4ad29eec6003872d08443140ef
+  size: 6031199
+  source: https://github.com/intel-iot-devkit/sample-videos/blob/master/person-bicycle-car-detection.mp4?raw=trueb
+license: https://github.com/intel-iot-devkit/sample-videos/blob/master/LICENSE

@@ -9,3 +9,5 @@ detect:
   pre-process-backend: ie
   ie-config: "CPU_THREADS_NUM=1,CPU_BIND_THREAD=NO"
   precision: FP16-INT8
+sink:
+  sync: true

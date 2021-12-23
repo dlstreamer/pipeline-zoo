@@ -6,3 +6,5 @@ detect:
   device: CPU
 classify-0:
   device: CPU
+sink:
+  sync: true

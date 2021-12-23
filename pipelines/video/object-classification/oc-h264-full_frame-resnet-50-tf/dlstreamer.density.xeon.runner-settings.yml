@@ -10,3 +10,5 @@ classify-0:
   inference-region: full-frame
   pre-process-backend: ie
   ie-config: "CPU_THREADS_NUM=1,CPU_BIND_THREAD=NO"
+sink:
+  sync: true

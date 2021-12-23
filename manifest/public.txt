@@ -57,3 +57,4 @@ media/descriptions/video/20200711_dog_bark-h265
 media/descriptions/video/Pexels-Videos-1388365
 media/descriptions/video/Pexels-Videos-1388365-h265
 media/descriptions/video/Pexels-Videos-7670836-h265
+media/descriptions/video/person-bicycle-car-detection

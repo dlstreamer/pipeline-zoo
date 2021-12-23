@@ -10,4 +10,5 @@ detect:
   nireq: 2
   ie-config: "CPU_THREADS_NUM=1,CPU_BIND_THREAD=NO"
   precision: FP32-INT8
-  
+sink:
+  sync: true

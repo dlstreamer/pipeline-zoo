@@ -10,3 +10,5 @@ detect:
   gpu-throughput-streams: 1
   batch-size: 16
   model-instance-id: det
+sink:
+  sync: true

@@ -15,3 +15,5 @@ classify-0:
   pre-process-backend: ie
   ie-config: "CPU_THREADS_NUM=10,CPU_BIND_THREAD=NO"
   precision: FP32-INT8
+sink:
+  sync: true
