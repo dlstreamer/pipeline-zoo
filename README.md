@@ -145,7 +145,7 @@ platform targets.
       od-h264-ssd-mobilenet-v1-coco.pipeline.yml
    ```
    
-### Measure Single Stream Throughput (default settings)
+### Measure Single Stream Throughput
      
 Command:
      
@@ -219,7 +219,7 @@ od-h264-ssd-mobilenet-v1-coco  dlstreamer  Min: 125.8236 Max: 125.8236 Avg: 125.
 
 ```
      
-### Measure Stream Density (default settings)
+### Measure Stream Density
 
 Command:
 ```
