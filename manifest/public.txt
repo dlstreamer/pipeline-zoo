@@ -5,7 +5,12 @@
 README.md
 
 # doc
-doc/examples.md
+docs/examples.md
+docs/core.md
+docs/pipebench-reference-guide.md
+docs/tasks-and-pipelines.md
+docs/tasks-and-pipelines.svg
+docs/xeon.md
 
 # tasks
 pipelines/video/object-detection/object-detection.task.yml
