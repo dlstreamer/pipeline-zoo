@@ -16,15 +16,18 @@ docs/output.md
 # tasks
 pipelines/video/object-detection/object-detection.task.yml
 pipelines/video/object-detection/README.md
+pipelines/video/object-detection/README-1.svg
 
 pipelines/video/object-classification/object-classification.task.yml
 pipelines/video/object-classification/README.md
+pipelines/video/object-classification/README-1.svg
 
 pipelines/video/object-classification/object-classification.task.yml
 pipelines/video/object-classification/README.md
 
 pipelines/video/decode-vpp/decode-vpp.task.yml
 pipelines/video/decode-vpp/README.md
+pipelines/video/decode-vpp/README-1.svg
 
 # pipelines
 pipelines/video/decode-vpp/decode-h265
