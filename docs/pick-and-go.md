@@ -84,7 +84,6 @@ gst-launch-1.0 -v \
  sync=true text-overlay=false
 ```
 This should launch the X window playing the 4K content.  
-change the default media file using `--override media` command line option.
  
 4. Play the inference pipeline in multiple streams  
 >Open another terminal  
