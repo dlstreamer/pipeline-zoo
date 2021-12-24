@@ -1,5 +1,14 @@
 #####KEEP######
 
+# LICENSE
+LICENSE
+
+#gitignore
+.gitignore
+
+#docker ignore
+.dockerignore
+
 # README
 
 README.md
