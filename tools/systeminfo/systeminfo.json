@@ -1,0 +1,99 @@
+{
+ "hostname": "nnshah1-NUC8i7BEH",
+ "motherboard": "Intel Corporation / NUC8BEB",
+ "cpu": {
+  "Model": "Intel(R) Core(TM) i7-8559U CPU @ 2.70GHz",
+  "Product": " <a href=https://ark.intel.com/search?q=i7-8559U>Intel(R) Core(TM) i7-8559U CPU @ 2.70GHz</a>",
+  "SpeedMin (MHz)": 400,
+  "SpeedMax (MHz)": 4500,
+  "ScalingDriver": "intel_pstate",
+  "NumberOfCPUs": 4,
+  "NumberOfSockets": 1,
+  "Thread(s) per core": 2,
+  "HT": "ON",
+  "Turbo": "ON",
+  "Stepping": "10",
+  "LLC Cache": 8192
+ },
+ "gpu": {
+  "Device name": "Intel Corporation Device 3ea5 (rev 01)",
+  "SpeedMin (MHz)": 300,
+  "SpeedMax (MHz)": 1200
+ },
+ "memory": [
+  {
+   "Slot": 0,
+   "Vendor": "Kingston",
+   "Type": "DDR4",
+   "Speed": "2400 MT/s",
+   "Size": "16384 MB",
+   "PartNumber": "9905744-005.A00G",
+   "Channel": "SODIMM1"
+  },
+  {
+   "Slot": 1,
+   "Vendor": "Kingston",
+   "Type": "DDR4",
+   "Speed": "2400 MT/s",
+   "Size": "16384 MB",
+   "PartNumber": "9905744-005.A00G",
+   "Channel": "SODIMM2"
+  }
+ ],
+ "bios": {
+  "Vendor": "Intel Corp.",
+  "Version": "BECFL357.86A.0073.2019.0618.1409",
+  "Release": "06/18/2019"
+ },
+ "os": {
+  "Name": "Ubuntu 18.04.4 LTS",
+  "Kernel": "5.3.0-18-generic"
+ },
+ "software": {
+  "gcc": "gcc (Ubuntu 7.5.0-3ubuntu1~18.04) 7.5.0",
+  "cmake": "",
+  "OpenVINO": "",
+  "OpenCV": "",
+  "MO": "",
+  "InferenceEngine": "",
+  "Open Model Zoo": "",
+  "Model Zoo": "",
+  "Tools": "",
+  "Public Models": "",
+  "Intel Models": "",
+  "MXNet": "",
+  "Intel Caffe": "",
+  "CNTK": "",
+  "TensorFlow": "",
+  "TVM": "",
+  "nGraph": "",
+  "PlaidML": "",
+  "FPGA Runtime": "",
+  "Caffe2": "",
+  "NUMPY python": "1.18.4",
+  "ONNX python": "1.6.0",
+  "ONNX Runtime": "",
+  "TF-to-ONNX": "",
+  "Caffe-to-ONNX": "",
+  "nireq": "N/A",
+  "Boost": "",
+  "Gflag": "",
+  "Glog": "",
+  "hdf5": "",
+  "lmdb": ""
+ },
+ "opencl": [
+  {
+   "Device": 0,
+   "Name": "Intel(R) Gen9 HD Graphics NEO",
+   "Vendor": "Intel(R) Corporation",
+   "VendorID": "0x8086",
+   "Version": "OpenCL 2.1 NEO ",
+   "Driver": "19.01.12103",
+   "Type": "GPU"
+  }
+ ],
+ "topologies": [],
+ "system_log": "=== HARDWARE INFORMATION ===\n\n--- CPU ---\nprocessor\t: 0\nvendor_id\t: GenuineIntel\ncpu family\t: 6\nmodel\t\t: 142\nmodel name\t: Intel(R) Core(TM) i7-8559U CPU @ 2.70GHz\nstepping\t: 10\nmicrocode\t: 0xb4\ncpu MHz\t\t: 4201.037\ncache size\t: 8192 KB\nphysical id\t: 0\nsiblings\t: 8\ncore id\t\t: 0\ncpu cores\t: 4\napicid\t\t: 0\ninitial apicid\t: 0\nfpu\t\t: yes\nfpu_exception\t: yes\ncpuid level\t: 22\nwp\t\t: yes\nflags\t\t: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb invpcid_single pti ssbd ibrs ibpb stibp tpr_shadow vnmi flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1 xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp md_clear flush_l1d\nbugs\t\t: cpu_meltdown spectre_v1 spectre_v2 spec_store_bypass l1tf mds swapgs\nbogomips\t: 5399.81\nclflush size\t: 64\ncache_alignment\t: 64\naddress sizes\t: 39 bits physical, 48 bits virtual\npower management:\n\n\n--- /sys/devices/system/cpu/cpu0/cpufreq/scaling_* ---\nCPU cur:  4201037\nCPU max:  4500000\nCPU min:  400000\n\n--- Memory ---\nMemTotal:       32753412 kB\n\n--- GPU ---\n00:02.0 VGA compatible controller [0300]: Intel Corporation Device [8086:3ea5] (rev 01) (prog-if 00 [VGA controller])\n\tSubsystem: Intel Corporation Device [8086:2074]\n\tControl: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+\n\tStatus: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-\n\tLatency: 0, Cache Line Size: 64 bytes\n\tInterrupt: pin A routed to IRQ 150\n\tRegion 0: Memory at bf000000 (64-bit, non-prefetchable) [size=16M]\n\tRegion 2: Memory at 80000000 (64-bit, prefetchable) [size=256M]\n\tRegion 4: I/O ports at 4000 [size=64]\n\t[virtual] Expansion ROM at 000c0000 [disabled] [size=128K]\n\tCapabilities: [40] Vendor Specific Information: Len=0c <?>\n\tCapabilities: [70] Express (v2) Root Complex Integrated Endpoint, MSI 00\n\t\tDevCap:\tMaxPayload 128 bytes, PhantFunc 0\n\t\t\tExtTag- RBE+\n\t\tDevCtl:\tReport errors: Correctable- Non-Fatal- Fatal- Unsupported-\n\t\t\tRlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-\n\t\t\tMaxPayload 128 bytes, MaxReadReq 128 bytes\n\t\tDevSta:\tCorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-\n\t\tDevCap2: Completion Timeout: Not Supported, TimeoutDis-, LTR-, OBFF Not Supported\n\t\tDevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis-, LTR-, OBFF Disabled\n\tCapabilities: [ac] MSI: Enable+ Count=1/1 Maskable- 64bit-\n\t\tAddress: fee00018  Data: 0000\n\tCapabilities: [d0] Power Management version 2\n\t\tFlags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)\n\t\tStatus: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-\n\tCapabilities: [100 v1] Process Address Space ID (PASID)\n\t\tPASIDCap: Exec- Priv-, Max PASID Width: 14\n\t\tPASIDCtl: Enable- Exec- Priv-\n\tCapabilities: [200 v1] Address Translation Service (ATS)\n\t\tATSCap:\tInvalidate Queue Depth: 00\n\t\tATSCtl:\tEnable-, Smallest Translation Unit: 00\n\tCapabilities: [300 v1] Page Request Interface (PRI)\n\t\tPRICtl: Enable- Reset-\n\t\tPRISta: RF- UPRGI- Stopped+\n\t\tPage Request Capacity: 00008000, Page Request Allocation: 00000000\n\tKernel driver in use: i915\n\tKernel modules: i915\n\n\n--- /sys/class/drm/card0/gt* ---\nGPU max:  300\nGPU min:  1200\n\n=== SOFTWARE INFORMATION ===\n\n--- /proc/version ---\nLinux version 5.3.0-18-generic (buildd@lcy01-amd64-027) (gcc version 9.2.1 20190909 (Ubuntu 9.2.1-8ubuntu1)) #19-Ubuntu SMP Tue Oct 8 20:14:06 UTC 2019\n\n--- /etc/os-release ---\nNAME=\"Ubuntu\"\nVERSION=\"18.04.4 LTS (Bionic Beaver)\"\nID=ubuntu\nID_LIKE=debian\nPRETTY_NAME=\"Ubuntu 18.04.4 LTS\"\nVERSION_ID=\"18.04\"\nVERSION_CODENAME=bionic\nUBUNTU_CODENAME=bionic\n\n--- OpenCL ---\n  Platform Name                                   Intel(R) OpenCL HD Graphics\n  Platform Vendor                                 Intel(R) Corporation\n  Platform Version                                OpenCL 2.1 \n  Platform Name                                   Intel(R) OpenCL HD Graphics\n\n  Device Name                                     Intel(R) Gen9 HD Graphics NEO\n  Device Vendor                                   Intel(R) Corporation\n  Device Vendor ID                                0x8086\n  Driver Version                                  19.01.12103\n  Device OpenCL C Version                         OpenCL C 2.0 \n  Device Type                                     GPU\n  Max clock frequency                             1200MHz\n    Platform Name                                 Intel(R) OpenCL HD Graphics\n\n    Device Name                                   Intel(R) Gen9 HD Graphics NEO\n    Platform Name                                 Intel(R) OpenCL HD Graphics\n\n    Device Name                                   Intel(R) Gen9 HD Graphics NEO\n    Platform Name                                 Intel(R) OpenCL HD Graphics\n\n    Device Name                                   Intel(R) Gen9 HD Graphics NEO\n\n\n=== HARDWARE ===\n\n--- Motherboard ---\n\tManufacturer: Intel(R) Client Systems\n\tProduct Name: NUC8i7BEH\n\n--- BIOS ---\n\tVendor: Intel Corp.\n\tVersion: BECFL357.86A.0073.2019.0618.1409\n\n--- RAM ---\n\tSize: 16384 MB\n\tLocator: SODIMM1\n\n\tBank Locator: Memory Channel A\n\tType: DDR4\n\tSpeed: 2400 MT/s\n\tManufacturer: Kingston\n\tPart Number: 9905744-005.A00G    \n\tConfigured Clock Speed: 2400 MT/s\n\tSize: 16384 MB\n\tLocator: SODIMM2\n\n\tBank Locator: Memory Channel B\n\tType: DDR4\n\tSpeed: 2400 MT/s\n\tManufacturer: Kingston\n\tPart Number: 9905744-005.A00G    \n\tConfigured Clock Speed: 2400 MT/s",
+ "JOB_BASE_NAME": ""
+}

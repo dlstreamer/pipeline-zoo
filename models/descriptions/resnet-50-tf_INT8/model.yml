@@ -1,0 +1,27 @@
+# Copyright (C) 2021 Intel Corporation
+#
+# SPDX-License-Identifier: MIT License
+
+description: >-
+  The "resnet-50-tf_INT8" model is a quantized version of
+  <https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public/resnet-50-tf>
+task_type: classification
+files:
+  - name: FP32-INT8/resnet-50-tf_INT8.xml
+    size: 417139
+    sha256: 0997c8e5705542bce54a8afbb9a9214804c7767632bb7fdb915b90f99cf25849 
+    source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/resnet-50-tf_INT8/resnet-50-tf_i8.xml?raw=true
+  - name: FP32-INT8/resnet-50-tf_INT8.bin
+    size: 25836144 
+    sha256: 143410ec63060e9c5d6636b60d39f21bf1b86b4339bcce149877455bf57b10dc
+    source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/resnet-50-tf_INT8/resnet-50-tf_i8.bin?raw=true
+  - name: FP32-INT8/resnet-50-tf_INT8.json
+    size: 29723
+    sha256: bbf6d802b7893e8442e2acf4b2006f119df95da82a5561c1b9096ae6771b1161 
+    source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/resnet-50-tf_INT8/resnet-50-tf_i8.json?raw=true
+  - name: FP32-INT8/resnet-50-tf_INT8.labels
+    size: 22691 
+    sha256: ccdb68f82b911d551a9f34ef424c9a1840ff91c448278a64238d410ba5a25e58 
+    source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/resnet-50-tf_INT8/resnet-50-tf_i8.labels?raw=true
+framework: dldt
+license: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/resnet-50-tf_INT8/LICENSE

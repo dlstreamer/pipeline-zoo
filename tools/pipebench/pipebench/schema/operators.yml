@@ -1,0 +1,276 @@
+---
+
+# Pipeline Operators
+  
+demux:
+  inputs:
+    media-stream:
+      type: video/*
+  outputs:
+    video-stream:
+      type: video/*
+    audio-stream:
+      type: audio/*
+
+parse:
+  inputs:
+    video-stream:
+      type: video/*
+  outputs:
+    frame:
+      type:
+        media-type: video/*
+        parsed: true
+          
+video-source:
+  inputs:
+    media:
+      type: video/*
+  outputs:
+    frame:
+      type:
+        media-type: video/*
+        parsed: true
+  operators:
+    demux:
+      inputs:
+        media-stream: inputs.media-stream
+    parse:
+      inputs:
+        video-stream: demux.video-stream          
+decode:
+  inputs:
+    frame:
+      type:
+        media-type: video/*
+        parsed: true
+  outputs:
+    frame:
+      type: video/x-raw
+
+crop:
+  inputs:
+    frame:
+      type: video/x-raw
+    regions:
+      type:
+        media-type: metadata/objects
+        format: bounding_boxes
+  outputs:
+    frame:
+      type: video/x-raw
+  properties:
+    fixed-region:
+      type: object
+      properties:
+        bottom:
+          type: number
+        top:
+          type: number
+        left:
+          type: number
+        right:
+          type: number 
+
+scale:
+  inputs:
+    frame:
+      type: video/x-raw
+  outputs:
+    frame:
+      type: video/x-raw
+  properties:
+    resolution:
+      type: object
+      properties:
+        width:
+          type: number
+        height:
+          type: number
+
+csc:
+  inputs:
+    frame:
+      type: video/x-raw
+  outputs:
+    frame:
+      type: video/x-raw
+  properties:
+    color-space:
+      type: string
+      
+inference:
+  inputs:
+    frame:
+      type:
+        media-type: video/x-raw
+        format: BGR
+  outputs:
+    tensors:
+      type:
+        media-type: tensors/x-raw
+  properties:
+    model:
+      type: string
+    model-type:
+      type: string
+  
+
+tensors-to-objects:
+  inputs:
+    tensors:
+      type:
+        media-type: tensors/x-raw
+  outputs:
+    objects:
+      type:
+        media-type: metadata/objects
+        format: jsonl
+
+tensors-to-attributes:
+  inputs:
+    tensors:
+      type:
+        media-type: tensors/x-raw
+  outputs:
+    attributes:
+      type:
+        media-type: metadata/attributes
+
+attach-attributes:
+  inputs:
+    attributes:
+      type:
+        media-type: metadata/attributes
+    objects:
+      type:
+        media-type: metadata/objects
+  outputs:
+    objects:
+      type:
+        media-type: metadata/objects
+
+vpp:
+  properties:
+    region:
+      type: object
+      properties:
+        bottom:
+          type: number
+        top:
+          type: number
+        left:
+          type: number
+        right:
+          type: number
+      operator: crop.fixed-region
+  color-space:
+    type: string
+    operator: csc.color-space
+  resolution:
+    type: object
+    properties:
+      width:
+        type: number
+      height:
+        type: number
+    operator: scale.resolution
+  inputs:
+    frame:
+      type: video/x-raw
+      operator: crop.frame
+  outputs:
+    frame:
+      type: video/x-raw
+      operator: csc.frame
+  operators:
+    crop:
+      inputs:
+        frame: inputs.frame
+    scale:
+      inputs:
+        frame: crop.frame
+    csc:
+      inputs:
+        frame: scale.frame
+          
+classify:
+  properties:
+    models:
+      type: array
+      items:
+        oneOf:
+        - type: array
+          items:
+            type: string
+        - type: string
+  inputs:
+    frame:
+      type: video/x-raw
+      operator: crop.frame
+    objects:
+      type: metadata/objects
+      format: bounding_boxes
+      operator: crop.regions
+  outputs:
+    objects:
+      type:
+        media-type: metadata/objects
+        format: jsonl
+      operator: attach-attributes.objects
+  operators:
+    crop:
+      inputs:
+        frame: inputs.frame
+        regions: inputs.objects
+    scale<models>:
+      inputs:
+        frame: crop.frame
+    csc<models>:
+      inputs:
+        frame: scale.frame
+    inference<models>:
+      inputs:
+        frame: csc.frame
+      model-type: classify
+    tensors-to-attributes<models>:
+      inputs:
+        tensor: inference.tensor
+    attach-attributes:
+      inputs:
+        attributes: tensors-to-attributes.attributes
+        objects: inputs.objects
+detect:  
+  inputs:
+    frame:
+      type: video/x-raw
+      operator: scale.frame
+  outputs:
+    objects:
+      type:
+        media-type: metadata/objects
+        format: jsonl, bounding_boxes
+      operator: tensors-to-objects.objects
+    frame:
+      type: video-x-raw
+      operator: inputs.frame
+  properties:
+    model:
+      type: string
+      operator: inference.model
+  operators:
+    scale:
+      inputs:
+        frame: inputs.frame
+    csc:
+      inputs:
+        frame: scale.frame
+    inference:
+      inputs:
+        frame: csc.frame
+      model-type: detect
+    tensors-to-objects:
+      inputs:
+        tensor: inference.tensor
+
+    

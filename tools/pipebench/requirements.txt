@@ -1,0 +1,6 @@
+ffmpeg-python
+jsonschema
+shtab==1.3.10
+tabulate
+pyyaml
+psutil

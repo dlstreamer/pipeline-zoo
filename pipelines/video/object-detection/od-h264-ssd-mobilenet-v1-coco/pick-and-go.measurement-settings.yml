@@ -1,0 +1,23 @@
+media: video/Pexels-Videos-1388365
+streams: 8
+target-condition: stream
+warm-up: 2
+duration: 180
+numactl: true
+target-fps: 24
+target-range:
+- 0.2
+starting-streams: 0
+streams-per-process: 1
+max-processes: 0
+max-streams: 0
+max-iterations: 0
+min-streams: 1
+search-method: linear
+sample-size: 30
+save-pipeline-output: false
+scenario:
+  source: disk
+  type: stream
+use-reference-detections: false
+generate-reference: false

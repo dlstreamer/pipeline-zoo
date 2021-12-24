@@ -1,0 +1,8 @@
+description: Pexels-Videos-7670836-h265
+files:
+- name: Pexels-Videos-7670836.temp
+  sha256: fb55435fef2b9ba6b84c7ac11c08ec3bb547e4ced4c07b8632218dc474c91e36
+  size: 61796446
+  source: https://pexels.com/photo/7670836/download
+  convert-command: -c:v libx265 -preset medium -x265-params crf=28 -c:a aac -strict experimental -b:a 128k Pexels-Videos-7670836.h265
+license: http://pexels.com/photo/7670836/download

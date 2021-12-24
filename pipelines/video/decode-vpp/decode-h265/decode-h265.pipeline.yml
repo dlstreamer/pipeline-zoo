@@ -1,0 +1,6 @@
+# Defines decode h265 pipeline
+
+task: decode-vpp
+
+inputs.media.type.media-type: video/x-h265
+

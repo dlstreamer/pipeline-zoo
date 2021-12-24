@@ -1,0 +1,7 @@
+description: person-bicycle-car-detection
+files:
+- name: person-bicycle-car-detection.mp4
+  sha256: 452b11b7e0efbd019f1d9570d0c790e90416ad4ad29eec6003872d08443140ef
+  size: 6031199
+  source: https://github.com/intel-iot-devkit/sample-videos/blob/master/person-bicycle-car-detection.mp4?raw=trueb
+license: https://github.com/intel-iot-devkit/sample-videos/blob/master/LICENSE

@@ -1,0 +1,9 @@
+run: "python3 dlstreamrun"
+decode:
+  device: CPU
+  post-proc-caps: video/x-raw,format=BGRx,width=224,height=224
+classify-0:
+  device: CPU
+  precision: FP32-INT8
+  inference-region: full-frame
+  pre-process-backend: ie

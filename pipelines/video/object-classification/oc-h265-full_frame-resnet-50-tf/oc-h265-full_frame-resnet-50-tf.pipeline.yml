@@ -1,0 +1,10 @@
+# Defines oc-h265-full_frame-resnet-50-tf object classification pipeline
+
+task: object-classification
+
+detection-model: full_frame
+
+classification-models: [resnet-50-tf]
+
+inputs.media.type.media-type: video/x-h265
+

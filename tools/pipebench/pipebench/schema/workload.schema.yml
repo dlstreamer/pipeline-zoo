@@ -1,0 +1,101 @@
+---
+
+$id: workload
+
+type: object
+
+properties:
+  scenario:
+    $ref: scenario
+    default: {}
+  media:
+    type: string
+    format: path
+  use-reference-detections:
+    type: boolean
+    default: false
+  measurement:
+    type: object
+    default: {}
+    properties:
+      throughput:
+        type: object
+        default: {}
+        properties:
+          warm-up:
+            type: integer
+            default: 2
+          sample-size:
+            type: integer
+            default: 30
+          duration:
+            type: integer
+            default: 60
+          select:
+            type: string
+            default: avg
+            enum: [max, min, avg]
+        required: [warm-up, sample-size, duration, select]
+#      latency:
+#        type: object
+    
+      density:
+        type: object
+        properties:
+          per-stream:
+            type: boolean
+            default: true
+          numa-aware:
+            type: boolean
+            default: true
+          multiprocess:
+            type: boolean
+            default: true
+          fps:
+            type: integer
+            default: 30
+          limit-frame-rate:
+            type: boolean
+            default: true
+          warm-up:
+            type: integer
+            default: 2
+          sample-size:
+            type: integer
+            default: 30
+          duration:
+            type: integer
+            default: 60
+          minimum-range:
+            type: array
+            items:
+              type: number
+            minItems: 1
+            maxItems: 2
+          average-range:
+            type: array
+            items:
+              type: number
+            minItems: 1
+            maxItems: 2
+            default: [0.2]
+          starting-streams:
+            type: integer
+          fixed-streams:
+            type: integer
+          max-iterations:
+            type: integer
+            default: -1
+          min-streams:
+            type: integer
+            default: 1
+          max-streams:
+            type: integer
+            default: 100
+          search-method:
+            type: string
+            default: linear
+            enum: [binary, linear]
+        required: [fps, max-streams, min-streams, warm-up, sample-size, duration, max-iterations, numa-aware, per-stream, search-method]  
+      
+required: [scenario, measurement]
