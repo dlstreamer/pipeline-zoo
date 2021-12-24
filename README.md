@@ -20,6 +20,8 @@ and pipelines are defined in a platform and framework independent way
 to allow implementations in a variety of frameworks and for multiple
 platform targets.
 
+![diagram](../pipelines/video/object-detection/README-1.svg)
+
 ## Features Include:
 | |                  |
 |---------------------------------------------|------------------|
