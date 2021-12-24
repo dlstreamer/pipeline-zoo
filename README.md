@@ -1,10 +1,10 @@
 # Intel(R) Deep Learning Streamer Pipeline Zoo
 | [Getting Started](#getting-started)
 | [Tasks and Pipelines](docs/tasks-and-pipelines.md)
-| [Measurement Definitions](docs/measurements.md) |
+| [Measurement Definitions](docs/measurements.md) 
 | [Core Examples](docs/core.md)
 | [Xeon Examples](docs/xeon.md)
-| [Pick and Go Use Case](docs/pick-and-go.md) |
+| [Pick and Go Use Case](docs/pick-and-go.md) 
 | [Advanced Examples](docs/examples.md)
 | [Pipebench Reference](docs/pipebench-reference-guide.md)
 | [Measurement Output](docs/output.md) |
