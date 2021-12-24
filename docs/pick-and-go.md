@@ -1,20 +1,49 @@
-# Use Case: Pick N Go
+# Pick and Go Use Case
 
-## Description of workload
-Pick N Go is used to emulate and benchmark a retail shopping expereince.   
-Consumers would pick an item for sale, from a self service kiosk, scan the product and checkout the item.   
+> **Note:**
+> These instructions assume that you have
+> followed the [getting started guide](../README.md#getting-started) for cloning
+> and building the Pipeline Zoo Environement.
+>These instructions have been tested on [11th Gen Intel(R) Core(TM) i5-1145G7 @ 2.60GHz TGL](https://ark.intel.com/content/www/us/en/ark/products/208660/intel-core-i51145g7-processor-8m-cache-up-to-4-40-ghz-with-ipu.html?wapkw=intel-core-i51145G7). 
+>
+> Actual results will vary based on configuation and the examples below are for illustration purposes only.
+
+
+## Description
+
+Pick and Go is used to simulate the media analytics pipelines used in a digital retail scenario.
+
+Consumers would pick an item for sale from a self service kiosk, scan the product and checkout the item. 
     
-This workload will be benchmarked on a TGL-i5 which would be explicitly   
-set to a TDP of  
+## Media Analytics Pipelines
+
+### Render x 1
+
+To simulate the 4K rendering of a kiosk the Pick and Go use case uses
+the [`decode-h265`](../pipelines/video/decode-vpp/decode-h265) pipeline. This pipeline is set to render a 4K
+video to the screen.
+
+![diagram](../pipelines/video/decode-vpp/decode-h265/README-1.svg)
+
+### Object Detection x 8
+
+To simulate detecting objects being scanned at the kiosk the Pick and
+Go use case uses 8 streams of the
+[`od-h264-ssd-mobilenet-v1-coco`](../pipelines/video/object-detection/od-h264-ssd-mobilenet-v1-coco)
+pipeline. This pipeline detects objects in the streams using an `ssd-mobilenet-v1-coco` model.
+	
+![diagram](../pipelines/video/object-detection/od-h264-ssd-mobilenet-v1-coco/README-1.svg)
+	
+## System Configuration
+
+The use case has been designed and tested to run on an 11th Gen Intel(R) Core(TM) i5-1145G7 @ 2.60GHz TGL
+NUC with TDP settings as follows:
+
 a) 15W    
 b) 28W     
 
-It would be rendering and playing 1 stream at a 4k resolution on the display screen.  
-With the rendering stream running simultaneously we would start multiple streams to run inference until   
-the system has saturated and the inference FPS per stream falls below the target FPS.   
    
-## Steps to set-up the system
-We benchmarked on 11th Gen Intel(R) Core(TM) i5-1145G7 @ 2.60GHz  TGL NUC
+### Steps to set-up the system
 
 1. Check the frequency of the system by running `lscpu` 
 
@@ -31,15 +60,7 @@ both must be set to 15 to enforce a 15W TDP.
 
 3. Connect the system to a 4K resolution monitor screen
 
-## Steps to run the workload
-
-1. Build the docker image 
-``` 
-cd pipeline-zoo/tools/docker 
-./build.sh
-docker images 
-``` 
-This will list `media-analytics-pipeline-zoo 6.95GB` image
+## Running the Use Case
  
 2. Initialize the display port on the terminal environment  
 >Set the display port as follows, for example if the display port is `:0`
@@ -52,7 +73,7 @@ If `:0` is not the display port then identify the correct 4k display port.
 3. Play the 4k video on a X display window  
 >Use pipebench to launch the rendering on the 4k display window  
 ```
-./run.sh
+./tools/docker/run.sh
 pipebench run -vv --measure pick-and-go decode-h265
 ```
 will launch the below command
@@ -72,9 +93,8 @@ change the default media file using `--override media` command line option.
   
  pipebench run --measure pick-and-go od-h264-mbnetssd-v1-coco
 ```
-change the media file using --override media command line option.
  
-This will launch DLStreamer/gvadetect for object detection task using FP16 quantized `od-h264-mbnetssd-v1-coco` model.
+This will launch the object detection task using FP16 quantized `ssd-mobilenet-v1-coco` model.
 ```
 gst-launch-1.0 filesrc location=/home/pipeline-zoo/workspace/od-h264-ssd-mobilenet-v1-coco/.workloads/Pexels-Videos-1388365/disk/input/stream.fps.mp4 ! \
   qtdemux ! h264parse ! video/x-h264 ! vaapih264dec name=decode0 ! \ 
@@ -86,10 +106,9 @@ gst-launch-1.0 filesrc location=/home/pipeline-zoo/workspace/od-h264-ssd-mobilen
 
 ```
  
+## Observe the GPU/CPU usage to confirm the setup is correct
 
-### Observe the GPU/CPU usage to confirm the setup is correct
-
-#### Setup verification
+### Setup verification
 
  on terminal 1  
 >sudo intel_gpu_top
@@ -100,3 +119,78 @@ gst-launch-1.0 filesrc location=/home/pipeline-zoo/workspace/od-h264-ssd-mobilen
 on terminal 3    
 >Observe the FPS reported by pipeline-zoo pipebench
 
+Example Output:
+```
+ Pipeline:
+	od-h264-ssd-mobilenet-v1-coco
+
+ Runner:
+	dlstreamer
+ 	dlstreamer.pick-and-go.runner-settings.yml
+
+ Media:
+	video/Pexels-Videos-1388365
+
+ Measurement:
+	pick-and-go
+ 	pick-and-go.measurement-settings.yml
+
+ Output Directory:
+	/home/pipeline-zoo/workspace/od-h264-ssd-mobilenet-v1-coco/measurements/pick-and-go/dlstreamer/run-0002
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0000      0000       0008     0.0000    0.0000    0.0000     0.0000
+======================================================================== 
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0000      0000       0008     0.0000    0.0000    0.0000     0.0000
+======================================================================== 
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0000      0000       0008     0.0000    0.0000    0.0000     0.0000
+======================================================================== 
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0000      0000       0008     0.0000    0.0000    0.0000     0.0000
+======================================================================== 
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0000      0000       0008     0.0000    0.0000    0.0000     0.0000
+======================================================================== 
+
+<SNIP>
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0000      0008       0008    23.5491   23.8731   25.3064   190.9844
+======================================================================== 
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0000      0008       0008    23.5132   23.8281   25.2209   190.6250
+======================================================================== 
+
+========================================================================
+Iteration   Streams  Processes    Minimum   Average   Maximum      Total
+========================================================================
+     0000      0008       0008    24.4750   24.7856   25.1385   192.2850
+======================================================================== 
+
+Pipeline                       Runner      Streams: 8
+-----------------------------  ----------  ------------------------------------------------------
+od-h264-ssd-mobilenet-v1-coco  dlstreamer  Min: 24.4750 Max: 25.1385 Avg: 24.7856 Total: 192.2850
+
+
+```

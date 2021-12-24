@@ -6,6 +6,8 @@
 | [Pipebench Reference](docs/pipebench-reference-guide.md)
 | [Advanced Examples](docs/examples.md)
 | [Measurement Output](docs/output.md) |
+| [Pick and Go Use Case](docs/pick-and-go.md) |
+| [Measurement Definitions](docs/measurements.md) |
 
 The DL Streamer Pipeline Zoo is a catalog of media and media analytics
 pipelines optimized for Intel hardware. It includes tools for
