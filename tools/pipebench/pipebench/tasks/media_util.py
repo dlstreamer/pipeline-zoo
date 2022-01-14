@@ -374,12 +374,19 @@ def create_encoded_stream(target_dir, media_type, media,
     if (os.path.isfile(media)):
 
         frame_count, frame_rate = _stream_info(media)
-        target_frame_count = (duration * target_fps * 2)
-        if frame_count < target_frame_count:
-            media = _concat_stream(media,
-                                   frame_count,
-                                   target_frame_count,
-                                   target_dir)
+
+        if target_fps == 0:
+            target_fps = frame_rate
+
+        if duration == 0:
+            duration = frame_count / target_fps
+        else:
+            target_frame_count = (duration * target_fps * 2)
+            if frame_count < target_frame_count:
+                media = _concat_stream(media,
+                                       frame_count,
+                                       target_frame_count,
+                                       target_dir)
             
         if frame_rate != target_fps:
             media = _convert_frame_rate(media,
@@ -405,7 +412,7 @@ def create_encoded_stream(target_dir, media_type, media,
     else:
         sink = "filesink location={}/stream.{}".format(target_dir,media_type.elementary_stream_extensions[0])
 
-    return gst_launch([source,demux,parse,encoded_caps,frame_info,sink],vaapi=False)
+    return gst_launch([source,demux,parse,encoded_caps,frame_info,sink],vaapi=False), duration, target_fps
 
 
 

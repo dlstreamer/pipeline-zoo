@@ -278,11 +278,14 @@ class DecodeVPP(Task):
         if (existing_files):
             print("Existing input, skipping generation")
         else:
-            create_encoded_stream(input_target,
-                                  input_media_type,
-                                  input_media,
-                                  individual_frames
-            )
+            success, duration, target_fps = create_encoded_stream(input_target,
+                                                                  input_media_type,
+                                                                  input_media,
+                                                                  individual_frames,
+                                                                  target_fps = self._measurement_settings["target-fps"],
+                                                                  duration = self._measurement_settings["duration"])
+            self._measurement_settings["target-fps"] = target_fps
+            self._measurement_settings["duration"] = duration
 
         input_paths = self._read_input_paths(input_target)
 
