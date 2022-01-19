@@ -376,13 +376,31 @@ def run(args):
     if measurement_settings["numactl"]:
         numa_nodes = _get_numa_nodes(args)
 
-    done = False
     min_streams = measurement_settings["min-streams"]
     max_streams = measurement_settings["max-streams"] if measurement_settings["max-streams"] else sys.maxsize
     max_iterations = measurement_settings["max-iterations"] if measurement_settings["max-streams"] else sys.maxsize
+
+    if min_streams > max_streams:
+        args.parser.error("min-streams ({0}) is greater than max-streams ({1})".format(min_streams,
+                                                                                       max_streams))
+    
     if measurement_settings["streams"]:
         max_iterations = 1
-        
+        if measurement_settings["streams"] > max_streams:
+            args.parser.error("streams ({0}) is greater than max-streams ({1})".format(
+                starting_streams,max_streams))
+        if measurement_settings["streams"] < min_streams:
+            args.parser.error("streams ({0}) is less than min-streams ({1})".format(
+                starting_streams,min_streams))
+            
+    if measurement_settings["starting-streams"]:
+        if measurement_settings["starting-streams"] > max_streams:
+            args.parser.error("starting-streams ({0}) is greater than max-streams ({1})".format(
+                starting_streams,max_streams))
+        if measurement_settings["starting-streams"] < min_streams:
+            args.parser.error("starting-streams ({0}) is less than min-streams ({1})".format(
+                starting_streams,min_streams))
+
     starting_streams = max(min_streams,
                            starting_streams)
     
@@ -404,18 +422,21 @@ def run(args):
                           streams_per_process * max_processes)
         if not max_streams:
             max_streams = sys.maxsize
-            
+    if starting_streams > max_streams:
+        args.parser.error("streams / streams_per_process ({0}/{1}) is greater than max-processes ({2})".format(
+            starting_streams,streams_per_process,max_processes))
+    
     num_streams = starting_streams
     iteration_results = []
     iteration_results_map = {}
 
-    done = False
     density = 0
     first_result = None
     current_result = None
 
     search_method = measurement_settings["search-method"]
     current_total_fps = 0
+
     
     while ( ((max_success==-1) or
              (min_failure==-1) or
