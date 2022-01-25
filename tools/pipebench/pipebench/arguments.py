@@ -75,7 +75,8 @@ def _add_measurement_settings(parser):
                                       help="Number of samples to discard before reporting fps (default: 2)")
     measurement_settings.add_argument("--duration",
                                       type=int,
-                                      help="Number of seconds for run (default: 60)")
+                                      help="Number of seconds for run (default: 60)."
+                                      " If set to 0 duration will be taken from source media.")
 
     numactl = measurement_settings.add_mutually_exclusive_group()
 
@@ -98,7 +99,8 @@ def _add_measurement_settings(parser):
 
     measurement_settings.add_argument("--target-fps",
                                       type=int,
-                                      help="Target FPS (default: 30)")
+                                      help="Target FPS (default: 30)."
+                                      " If set to 0 target-fps will be taken from source media.")
 
     measurement_settings.add_argument("--target-condition",
                                       choices=["stream", "average", "total"],

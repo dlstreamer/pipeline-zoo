@@ -1,9 +1,0 @@
-run: "python3 dlstreamrun"
-decode:
-  device: CPU
-  max_threads: 1
-vpp:
-  device: CPU
-  color-space: BGRA
-  videoconvert:
-    n-threads: 1

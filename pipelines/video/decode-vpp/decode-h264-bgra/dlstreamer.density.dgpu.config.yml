@@ -1,8 +1,0 @@
-run: "python3 dlstreamrun"
-decode:
-  device: GPU
-vpp:
-  device: GPU
-  vaapipostproc:
-    format: GST_VIDEO_FORMAT_BGRA
-    scale-method: fast

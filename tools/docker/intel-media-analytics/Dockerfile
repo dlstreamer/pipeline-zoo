@@ -74,15 +74,6 @@ RUN printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then \n\
     . /etc/bash_completion \n\
 fi\n" >> ~/.bashrc
 
-# set up GSE image for PL zoo
-RUN if [ -d /opt/intel/solutions/dldt/deployment_tools/model-optimizer ]; then \
-       mkdir -p /opt/intel/openvino/deployment_tools/ \
-       && mv /opt/intel/solutions/dldt/deployment_tools/model-optimizer /opt/intel/openvino/deployment_tools/model_optimizer \
-       && cd /opt/intel/openvino/deployment_tools/model_optimizer \
-       && python3 -m pip install --upgrade pip \
-       && python3 -m pip install -r requirements.txt; \
-    fi
-
 # pipebench
 COPY ./tools/pipebench/requirements.txt /
 RUN pip3 install  --no-cache-dir -r /requirements.txt
@@ -149,12 +140,12 @@ ENV XDG_RUNTIME_DIR=/home/.xdg_runtime_dir
 # run pipebench download
 RUN mkdir /home/pipeline-zoo/workspace \
  && cd /home/pipeline-zoo/workspace \
- && pipebench download od-h265-mbnetssd-v1-coco \
- && pipebench download od-h264-mbnetssd-v1-coco \
- && pipebench download oc-h264-full_frame-resnet_v1.5_50 \
- && pipebench download oc-h265-full_frame-resnet_v1.5_50 \
- && pipebench download oc-h264-mbnetssd-v1-coco-resnet_v1.5_50 \
- && pipebench download oc-h265-mbnetssd-v1-coco-resnet_v1.5_50;
+ && pipebench download od-h265-ssd-mobilenet-v1-coco \
+ && pipebench download od-h264-ssd-mobilenet-v1-coco \
+ && pipebench download oc-h265-full_frame-resnet-50-tf \
+ && pipebench download oc-h264-full_frame-resnet-50-tf \
+ && pipebench download oc-h264-ssd-mobilenet-v1-coco-resnet-50-tf \
+ && pipebench download oc-h265-ssd-mobilenet-v1-coco-resnet-50-tf;
 
 # Bash History
 ENV HISTFILE=/home/pipeline-zoo/workspace/.bash_history
