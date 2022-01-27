@@ -1,0 +1,8 @@
+# Defines yolo-v2-ava-0001 Pipeline of type object-detection
+
+task: object-detection
+
+model: yolo-v2-ava-0001
+
+inputs.media.type.media-type: video/x-h264
+
