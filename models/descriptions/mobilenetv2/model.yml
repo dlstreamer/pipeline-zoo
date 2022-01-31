@@ -1,15 +1,15 @@
-%YAML 1.0
----
 description: mobilenetv2
-task_type: 'classification'
 files:
-- name: FP32/mobilenetv2.xml
-  size: 135756
+- checksum: 34d4670be292cff3bf543e2476f948f10a4c468a16cf12165ec7cec6abb4e402fbf500fd82869aa5cf9659db488c1001
+  name: FP32/mobilenetv2.xml
   sha256: 66343cf1a2aa6ee7e83bca81292bbcbab281215a0afcdcc051cbffb800a4cde0
-  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/mobilenetv2/FP32/mobilenetv2.xml
-- name: FP32/mobilenetv2.bin
-  size: 13955528
+  size: 135756
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/main/storage/mobilenetv2/FP32/mobilenetv2.xml
+- checksum: 5acf0cdf4ec9f8048e022d3a535a54565a145dc9be025d4c620b69be611c10e54c070ddf28aeaa99e90c4f0ee53296fc
+  name: FP32/mobilenetv2.bin
   sha256: 5e49227226a1abd8efc8cd4f766ade7c47d073b26a622bd953bfcd3baa43ac0b
-  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/mobilenetv2/FP32/mobilenetv2.bin
+  size: 13955528
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/main/storage/mobilenetv2/FP32/mobilenetv2.bin
 framework: dldt
 license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE
+task_type: classification

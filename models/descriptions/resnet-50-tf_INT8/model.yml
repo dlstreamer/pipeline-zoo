@@ -1,27 +1,25 @@
-# Copyright (C) 2021 Intel Corporation
-#
-# SPDX-License-Identifier: MIT License
-
-description: >-
-  The "resnet-50-tf_INT8" model is a quantized version of
-  <https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public/resnet-50-tf>
-task_type: classification
+description: The "resnet-50-tf_INT8" model is a quantized version of <https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public/resnet-50-tf>
 files:
-  - name: FP32-INT8/resnet-50-tf_INT8.xml
-    size: 417139
-    sha256: 0997c8e5705542bce54a8afbb9a9214804c7767632bb7fdb915b90f99cf25849 
-    source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/resnet-50-tf_INT8/resnet-50-tf_i8.xml?raw=true
-  - name: FP32-INT8/resnet-50-tf_INT8.bin
-    size: 25836144 
-    sha256: 143410ec63060e9c5d6636b60d39f21bf1b86b4339bcce149877455bf57b10dc
-    source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/resnet-50-tf_INT8/resnet-50-tf_i8.bin?raw=true
-  - name: FP32-INT8/resnet-50-tf_INT8.json
-    size: 29723
-    sha256: bbf6d802b7893e8442e2acf4b2006f119df95da82a5561c1b9096ae6771b1161 
-    source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/resnet-50-tf_INT8/resnet-50-tf_i8.json?raw=true
-  - name: FP32-INT8/resnet-50-tf_INT8.labels
-    size: 22691 
-    sha256: ccdb68f82b911d551a9f34ef424c9a1840ff91c448278a64238d410ba5a25e58 
-    source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/resnet-50-tf_INT8/resnet-50-tf_i8.labels?raw=true
+- checksum: 0f8d9bb8ca269de42ad22beca62d4ae2f4fcdc90d592d467a128831fdcff5af58e860a993e39562cec79473786aeb868
+  name: FP32-INT8/resnet-50-tf_INT8.xml
+  sha256: 0997c8e5705542bce54a8afbb9a9214804c7767632bb7fdb915b90f99cf25849
+  size: 417139
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/resnet-50-tf_INT8/resnet-50-tf_i8.xml?raw=true
+- checksum: dbee3dc1f081bc86db6f6bdd473d65c8d24d37aea9cb0a531ec088afafa8000d77a3631a93a92581dbe479dfab2e54f9
+  name: FP32-INT8/resnet-50-tf_INT8.bin
+  sha256: 143410ec63060e9c5d6636b60d39f21bf1b86b4339bcce149877455bf57b10dc
+  size: 25836144
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/resnet-50-tf_INT8/resnet-50-tf_i8.bin?raw=true
+- checksum: 8b503b97c44b943a8fb4b7198a797ee4e6a39b5c7494a392d2a2caa122851cd0707c38786a6f069ac315a687325c0257
+  name: FP32-INT8/resnet-50-tf_INT8.json
+  sha256: bbf6d802b7893e8442e2acf4b2006f119df95da82a5561c1b9096ae6771b1161
+  size: 29723
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/resnet-50-tf_INT8/resnet-50-tf_i8.json?raw=true
+- checksum: 37a9560bd5f85ff7521a3a8c2ff4a251150366900b49b47b35e455c900efc4ca4758e88c95e4ccc2566baebe21eaaa7c
+  name: FP32-INT8/resnet-50-tf_INT8.labels
+  sha256: ccdb68f82b911d551a9f34ef424c9a1840ff91c448278a64238d410ba5a25e58
+  size: 22691
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/resnet-50-tf_INT8/resnet-50-tf_i8.labels?raw=true
 framework: dldt
 license: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/resnet-50-tf_INT8/LICENSE
+task_type: classification

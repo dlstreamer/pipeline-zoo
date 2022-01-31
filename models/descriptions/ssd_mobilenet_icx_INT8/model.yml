@@ -1,28 +1,15 @@
-# Copyright (c) 2019 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-description: >-
-  The "ssd_mobilenet" model is a Single-Shot multibox Detection 
-task_type: detection
+description: 'The "ssd_mobilenet" model is a Single-Shot multibox Detection '
 files:
-  - name: FP32-INT8/ssd_mobilenet_icx_INT8.xml
-    size: 380103
-    sha256: 827c8f84c00bb4cd2bd7fd3f215a26ad53bbed93ce658d9bc7b4a1a2a4c59aa7
-    source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/ssd_mobilenet_icx_INT8/ssd_mobilenet_i8.xml
-  - name: FP32-INT8/ssd_mobilenet_icx_INT8.bin
-    size: 5958208
-    sha256: 11ff02f72ad4a088de830baf23ca53d40318c5941c47701f18c0aeda2851cd31
-    source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/ssd_mobilenet_icx_INT8/ssd_mobilenet_i8.bin
+- checksum: d210e6184a42758082faca00c62a9ce29e976f5cf0cacb4abf14af40f218cfcf41e1af09e3d8fe780536460a868f4afc
+  name: FP32-INT8/ssd_mobilenet_icx_INT8.xml
+  sha256: 827c8f84c00bb4cd2bd7fd3f215a26ad53bbed93ce658d9bc7b4a1a2a4c59aa7
+  size: 380103
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/main/storage/ssd_mobilenet_icx_INT8/ssd_mobilenet_i8.xml
+- checksum: ace313d96f5fd7b4b17fad7a5d4d9d20b9717e17d88af74264e9e16c76e4184243532d2acdcf1bfa35ae8b403fbe9f43
+  name: FP32-INT8/ssd_mobilenet_icx_INT8.bin
+  sha256: 11ff02f72ad4a088de830baf23ca53d40318c5941c47701f18c0aeda2851cd31
+  size: 5958208
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/main/storage/ssd_mobilenet_icx_INT8/ssd_mobilenet_i8.bin
 framework: dldt
 license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE
+task_type: detection

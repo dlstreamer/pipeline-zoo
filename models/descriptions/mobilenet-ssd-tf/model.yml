@@ -1,31 +1,35 @@
-%YAML 1.0
----
 description: mobilenet-ssd-tf
-task_type: detection
 files:
-- name: FP32-INT8/mobilenet-ssd-tf.xml
-  size: 409296
+- checksum: ea159f7734b10802f1a4cb7d3a74adf17279223f1ad2b85f2b2e12bee31c46e4305ed397ed2d3cf343760c79f9845b71
+  name: FP32-INT8/mobilenet-ssd-tf.xml
   sha256: b9e43240afc0f93ef9174e7667d7a216dc91e0d31e121ec44054d704722d7b1f
-  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/mobilenet-ssd-tf/INT8/mobilenet-ssd-tf.xml
-- name: FP32-INT8/mobilenet-ssd-tf.bin
-  size: 7007368
+  size: 409296
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/main/storage/mobilenet-ssd-tf/INT8/mobilenet-ssd-tf.xml
+- checksum: 45042e6d9b7a2755d97334ff4d49e23454ed8e9c07f730d24d2c3c3c1b122c97f3e70f23deec90822f99c5c13c172c96
+  name: FP32-INT8/mobilenet-ssd-tf.bin
   sha256: 5100256bbbf6bce6cb960a1d26f4939b11f3ee39fb5c00da49f70b7055683aeb
-  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/mobilenet-ssd-tf/INT8/mobilenet-ssd-tf.bin
-- name: FP32/mobilenet-ssd-tf.xml
-  size: 188327
+  size: 7007368
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/main/storage/mobilenet-ssd-tf/INT8/mobilenet-ssd-tf.bin
+- checksum: 7156d6100c91a6d887a59f6b9b75b846da262fcea97e82febe59590e35f8c5a1f3cd514b1f63b556bcf92317f5b8a432
+  name: FP32/mobilenet-ssd-tf.xml
   sha256: 976b1283bb6bb1562342a4f9058abac7487dbb2df268f43f39cff921215f7787
-  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/mobilenet-ssd-tf/FP32/mobilenet-ssd-tf.xml
-- name: FP32/mobilenet-ssd-tf.bin
-  size: 27228836
+  size: 188327
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/main/storage/mobilenet-ssd-tf/FP32/mobilenet-ssd-tf.xml
+- checksum: 1e8ab3daf77d5c2d6076ec200f6a61cd021a8648d710929ead737ef502711786ef6af2f349b865ecc215fd736631bc08
+  name: FP32/mobilenet-ssd-tf.bin
   sha256: c2ced59a736ce38a9477d0c4fa9182165615a2fd70ef25992b3fb88b5c5b1617
-  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/mobilenet-ssd-tf/FP32/mobilenet-ssd-tf.bin
-- name: FP16/mobilenet-ssd-tf.xml
-  size: 195833
+  size: 27228836
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/main/storage/mobilenet-ssd-tf/FP32/mobilenet-ssd-tf.bin
+- checksum: a9e0ee0e5fd15eee8bf11483079591a07575a1e550fcb3ade3d9bc62cc95d9344e2e69bff0447fa6173c3a351b69c362
+  name: FP16/mobilenet-ssd-tf.xml
   sha256: 9a669cfba0a25d67a47ab3c601c49e4b6d7237ea27a85ff4deb740c1b9253999
-  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/mobilenet-ssd-tf/FP16/mobilenet-ssd-tf.xml
-- name: FP16/mobilenet-ssd-tf.bin
-  size: 13614498
+  size: 195833
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/main/storage/mobilenet-ssd-tf/FP16/mobilenet-ssd-tf.xml
+- checksum: 6d069ee6dcc51f1b8701e78fc0a21dedcdeaa3ff0163d0f417a5ea369a789b818a52939a42861b7819b16143a45b45b2
+  name: FP16/mobilenet-ssd-tf.bin
   sha256: 6d647b06ffdc04d192b47e83fe1f9cfc5b836e44eb4d5f9aec514af48827199d
-  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/mobilenet-ssd-tf/FP16/mobilenet-ssd-tf.bin
+  size: 13614498
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/main/storage/mobilenet-ssd-tf/FP16/mobilenet-ssd-tf.bin
 framework: dldt
 license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE
+task_type: detection

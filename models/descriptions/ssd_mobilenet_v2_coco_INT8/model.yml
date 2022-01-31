@@ -1,41 +1,29 @@
-# Copyright (c) 2019 Intel Corporation
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-description: >-
-  The "ssd_mobilenet_v2_coco" model is a Single-Shot multibox Detection <SSD> <https://arxiv.org/abs/1801.04381>
-  network intended to perform object detection. The model has been trained from the
-  Common Objects in Context (COCO) image dataset.
+description: 'The "ssd_mobilenet_v2_coco" model is a Single-Shot multibox Detection
+  <SSD> <https://arxiv.org/abs/1801.04381> network intended to perform object detection.
+  The model has been trained from the Common Objects in Context (COCO) image dataset.
 
   The model input is a blob that consists of a single image of 1x3x300x300 in RGB
   order.
 
   The model output is a typical vector containing the tracked object data, as previously
   described. Note that the "class_id" data is now significant and should be used to
-  determine the classification for any detected object.
-task_type: detection
+  determine the classification for any detected object.'
 files:
-  - name: FP32-INT8/ssd_mobilenet_v2_coco_INT8.xml
-    size: 602824
-    sha256: fe471d8fff12fdcf42d863c0208c8c176f86163562708814d15643eb2f2cbc0d
-    source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/ssd_mobilenet_v2_coco_INT8/ssd_mobilenet_v2_coco_INT8.xml
-  - name: FP32-INT8/ssd_mobilenet_v2_coco_INT8.bin
-    size: 67493800
-    sha256: ee8baa32d901bfc7aca52d135571e70c0c9baec5bc41173e94a5f73692c42140
-    source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/ssd_mobilenet_v2_coco_INT8/ssd_mobilenet_v2_coco_INT8.bin
-  - name: FP32-INT8/ssd_mobilenet_v2_coco_INT8.json
-    size: 2706
-    sha256: 32b1b6b0ed636112b692c8a78dba23abbdcb2d0a56fadc2e2f368192f747acc2
-    source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/ssd_mobilenet_v2_coco_INT8/ssd_mobilenet_v2_coco_INT8.json
+- checksum: cab0c662dbfb029436434983013ff32e1d1b03b77280cf32f14793b4494ae9d5d9849aff264dc98371f5d3bc906428f6
+  name: FP32-INT8/ssd_mobilenet_v2_coco_INT8.xml
+  sha256: fe471d8fff12fdcf42d863c0208c8c176f86163562708814d15643eb2f2cbc0d
+  size: 602824
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/main/storage/ssd_mobilenet_v2_coco_INT8/ssd_mobilenet_v2_coco_INT8.xml
+- checksum: e12a1025bcc6991d568bd5fe10368f8f3383768eb25079c2e7ae32f732507f98608fcfa80cc3995cfeeccdede5573736
+  name: FP32-INT8/ssd_mobilenet_v2_coco_INT8.bin
+  sha256: ee8baa32d901bfc7aca52d135571e70c0c9baec5bc41173e94a5f73692c42140
+  size: 67493800
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/main/storage/ssd_mobilenet_v2_coco_INT8/ssd_mobilenet_v2_coco_INT8.bin
+- checksum: ceed288e06751d827f242fc679cf29a3236ab14ae058eb69cf55c13b0b92d088021a6996db6e901421712b4ed0b827ec
+  name: FP32-INT8/ssd_mobilenet_v2_coco_INT8.json
+  sha256: 32b1b6b0ed636112b692c8a78dba23abbdcb2d0a56fadc2e2f368192f747acc2
+  size: 2706
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/main/storage/ssd_mobilenet_v2_coco_INT8/ssd_mobilenet_v2_coco_INT8.json
 framework: dldt
 license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE
+task_type: detection

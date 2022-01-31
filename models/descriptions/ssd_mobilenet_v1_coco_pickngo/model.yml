@@ -1,15 +1,15 @@
-%YAML 1.0
----
 description: mobilenet-ssd-tf
-task_type: detection
 files:
-- name: FP16/ssd_mobilenet_v1_coco_pickngo.bin
-  size: 13614498 
-  sha256: 6d647b06ffdc04d192b47e83fe1f9cfc5b836e44eb4d5f9aec514af48827199d 
+- checksum: 6d069ee6dcc51f1b8701e78fc0a21dedcdeaa3ff0163d0f417a5ea369a789b818a52939a42861b7819b16143a45b45b2
+  name: FP16/ssd_mobilenet_v1_coco_pickngo.bin
+  sha256: 6d647b06ffdc04d192b47e83fe1f9cfc5b836e44eb4d5f9aec514af48827199d
+  size: 13614498
   source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/ssd_mobilenet_v1_coco_pickngo/FP16/ssd_mobilenet_v1_coco_pickngo.bin
-- name: FP16/ssd_mobilenet_v1_coco_pickngo.xml
-  size: 195833 
+- checksum: a9e0ee0e5fd15eee8bf11483079591a07575a1e550fcb3ade3d9bc62cc95d9344e2e69bff0447fa6173c3a351b69c362
+  name: FP16/ssd_mobilenet_v1_coco_pickngo.xml
   sha256: 9a669cfba0a25d67a47ab3c601c49e4b6d7237ea27a85ff4deb740c1b9253999
+  size: 195833
   source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/models/-/raw/main/model-storage/ssd_mobilenet_v1_coco_pickngo/FP16/ssd_mobilenet_v1_coco_pickngo.xml
 framework: dldt
 license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE
+task_type: detection

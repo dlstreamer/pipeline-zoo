@@ -1,23 +1,21 @@
-# Copyright (C) 2021 Intel Corporation
-#
-# SPDX-License-Identifier: MIT License
-
-description: >-
-  The "ssd_mobilenet_v1_coco_INT8" model is a quantized version of
-    <https://github.com/openvinotoolkit/open_model_zoo/blob/master/models/public/ssd_mobilenet_v1_coco>
-task_type: detection
+description: "The \"ssd_mobilenet_v1_coco_INT8\" model is a quantized version of\n\
+  \  <https://github.com/openvinotoolkit/open_model_zoo/blob/master/models/public/ssd_mobilenet_v1_coco>"
 files:
-  - name: FP16-INT8/ssd_mobilenet_v1_coco_INT8.xml
-    size: 418525 
-    sha256: 1b4ab456f8eb526e288e5350168679e7459f55ceed5ba3b2279825420331f063 
-    source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/ssd_mobilenet_v1_coco_INT8/ssd_mobilenet_v1_coco.xml?raw=true
-  - name: FP16-INT8/ssd_mobilenet_v1_coco_INT8.bin
-    size:  6899562
-    sha256: 80a6c1012bb5934951f70f06901215ffc5c8749c95bde08958c0dca56666ef47
-    source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/ssd_mobilenet_v1_coco_INT8/ssd_mobilenet_v1_coco.bin?raw=true
-  - name: FP16-INT8/ssd_mobilenet_v1_coco_INT8.json
-    size: 2706
-    sha256: 32b1b6b0ed636112b692c8a78dba23abbdcb2d0a56fadc2e2f368192f747acc2
-    source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/ssd_mobilenet_v1_coco_INT8/ssd_mobilenet_v1_coco.json?raw=true
+- checksum: 57a5657443014b30d5e8af94a12782d3e45898e541fe6379867bad4859f49ab45d4964c33798ddcec2d844353fa163f3
+  name: FP16-INT8/ssd_mobilenet_v1_coco_INT8.xml
+  sha256: 1b4ab456f8eb526e288e5350168679e7459f55ceed5ba3b2279825420331f063
+  size: 418525
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/ssd_mobilenet_v1_coco_INT8/ssd_mobilenet_v1_coco.xml?raw=true
+- checksum: f9afa9f1c6ceee2ed4c0d33244eea2fef423231bf5780dfee9e12972d929f5494435749882d79f9f29111647e97a2bf9
+  name: FP16-INT8/ssd_mobilenet_v1_coco_INT8.bin
+  sha256: 80a6c1012bb5934951f70f06901215ffc5c8749c95bde08958c0dca56666ef47
+  size: 6899562
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/ssd_mobilenet_v1_coco_INT8/ssd_mobilenet_v1_coco.bin?raw=true
+- checksum: ceed288e06751d827f242fc679cf29a3236ab14ae058eb69cf55c13b0b92d088021a6996db6e901421712b4ed0b827ec
+  name: FP16-INT8/ssd_mobilenet_v1_coco_INT8.json
+  sha256: 32b1b6b0ed636112b692c8a78dba23abbdcb2d0a56fadc2e2f368192f747acc2
+  size: 2706
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/ssd_mobilenet_v1_coco_INT8/ssd_mobilenet_v1_coco.json?raw=true
 framework: dldt
 license: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/ssd_mobilenet_v1_coco_INT8/LICENSE
+task_type: detection
