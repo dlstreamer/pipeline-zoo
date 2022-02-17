@@ -12,7 +12,7 @@
 The DL Streamer Pipeline Zoo is a catalog of media and media analytics
 pipelines optimized for Intel hardware. It includes tools for
 downloading pipelines and their dependencies and tools for measuring
-their performace.
+their performance.
 
 Pipelines are organized according to the task they perform (what types
 of input they accept and what types of output they generate). Tasks
