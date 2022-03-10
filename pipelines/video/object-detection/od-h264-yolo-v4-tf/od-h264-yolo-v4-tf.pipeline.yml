@@ -1,0 +1,8 @@
+# Defines ob-h264-yolo-v4-tf Pipeline of type object-detection
+
+task: object-detection
+
+model: yolo-v4-tf
+
+inputs.media.type.media-type: video/x-h264
+
