@@ -19,12 +19,11 @@
 # SOFTWARE.
 
 ARG BASE=openvino/ubuntu20_data_dev:2021.4.2
-ARG PIPELINE_ZOO_PLATFORM=DEFAULT
-ARG REGISTRY=
-
+ARG REGISTRY
 FROM ${REGISTRY}${BASE} as media-analytics-pipeline-zoo
-ARG BASE=openvino/ubuntu20_data_dev:2021.3_vaapi_fix
 ARG PIPELINE_ZOO_PLATFORM=DEFAULT
+ARG GITHUB_TOKEN
+ARG PIPELINE_LIST
 
 ENV PIPELINE_ZOO_PLATFORM=$PIPELINE_ZOO_PLATFORM
 ENV PIPELINE_ZOO_BASE_IMAGE=${REGISTRY}$BASE
@@ -32,7 +31,7 @@ ENV INTEL_OPENVINO_DIR=/opt/intel/openvino
 
 USER root
 
-# Dependencies for OpenVINO
+# Install these below dependencies for OpenVINO base image based pipeline-zoo docker images
 RUN if [ -f /opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh ]; then \
        /opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh -y ;\
     fi
@@ -45,7 +44,6 @@ RUN if [ -f /opt/intel/openvino/install_dependencies/install_NCS_udev_rules.sh ]
        apt-get install -y -q --no-install-recommends sudo; \ 
        /opt/intel/openvino/install_dependencies/install_NCS_udev_rules.sh -y ;\
     fi    
-
 
 # Dependencies installed via apt-get
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -69,43 +67,15 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
 ENV nlohmann_json_DIR=/usr/lib/cmake
 ENV LD_PRELOAD=libjemalloc.so
 
-# bash completion
-RUN printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then \n\
-    . /etc/bash_completion \n\
-fi\n" >> ~/.bashrc
+COPY . /home/pipeline-zoo
+RUN if [ ! -z "$PIPELINE_LIST" ]; then \
+        /bin/bash /home/pipeline-zoo/tools/docker/assets/install.sh -l "$PIPELINE_LIST" -t "$GITHUB_TOKEN"; \
+    else \
+        /bin/bash /home/pipeline-zoo/tools/docker/assets/install.sh; \
+    fi
 
-# pipebench
-COPY ./pipebench/requirements.txt /
-RUN pip3 install  --no-cache-dir -r /requirements.txt
-RUN rm -f /requirements.txt
-RUN ln -s /home/pipeline-zoo/tools/pipebench/pipebench/__main__.py /usr/local/bin/pipebench
+# pipebench tools path
 ENV PYTHONPATH=$PYTHONPATH:/home/pipeline-zoo/tools/pipebench
-# Install bash-completion
-RUN printf 'eval "$(shtab --shell=bash pipebench.arguments._get_parser_shtab)"' \
-  | tee "$(pkg-config --variable=completionsdir bash-completion)"/pipebench
-
-# systeminfo
-COPY ./systeminfo/requirements.txt /
-RUN pip3 install  --no-cache-dir -r /requirements.txt
-RUN rm -f /requirements.txt
-
-# uploader
-COPY ./systeminfo/requirements.txt ./uploader/requirements.tx[t] /
-RUN pip3 install  --no-cache-dir -r /requirements.txt
-RUN rm -f /requirements.txt
-
-# downloader
-COPY ./downloader/requirements.txt /
-RUN pip3 install  --no-cache-dir -r/requirements.txt
-RUN rm -f /requirements.txt
-
-# tests
-COPY ./systeminfo/requirements.txt ./tests/requirements.tx[t] /
-RUN pip3 install  --no-cache-dir -r /requirements.txt
-RUN rm -f /requirements.txt
-
-# Patches
-COPY ./docker/patches/video_frame.py /opt/intel/openvino/data_processing/dl_streamer/python/gstgva/video_frame.py
 
 # model zoo
 ENV OPEN_MODEL_ZOO_ROOT=/opt/intel/openvino/deployment_tools/open_model_zoo
@@ -114,15 +84,12 @@ ENV OPEN_MODEL_ZOO_ROOT=/opt/intel/openvino/deployment_tools/open_model_zoo
 ENV DLSTREAMER_MODEL_PROC_ROOT=/opt/intel/openvino/data_processing/dl_streamer/samples/model_proc
 
 # XDG_RUNTIME_DIR
-RUN mkdir -p /home/.xdg_runtime_dir
 ENV XDG_RUNTIME_DIR=/home/.xdg_runtime_dir
 
 #Open CL Cache
-RUN mkdir -p $SOURCE_DIR/workspace/.cl-cache
 ENV cl_cache_dir=/home/pipeline-zoo/workspace/.cl-cache
 
 # Bash History
-
 ENV HISTFILE=/home/pipeline-zoo/workspace/.bash_history
 
 # work dir

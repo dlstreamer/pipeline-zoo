@@ -1,0 +1,8 @@
+- od-h264-ssd-mobilenet-v1-coco
+- od-h265-ssd-mobilenet-v1-coco
+- od-h264-yolo-v4-tf
+- od-h265-yolo-v4-tf
+- oc-h264-full_frame-resnet-50-tf
+- oc-h265-full_frame-resnet-50-tf
+- oc-h264-ssd-mobilenet-v1-coco-resnet-50-tf
+- oc-h265-ssd-mobilenet-v1-coco-resnet-50-tf

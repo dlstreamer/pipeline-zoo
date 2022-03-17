@@ -21,9 +21,10 @@ DEFAULT_MODEL_PROC_VERSION=
 
 DOCKERFILE_DIR=$(dirname "$(readlink -f "$0")")
 DOCKERFILE=${DOCKERFILE_DIR}/Dockerfile
-SOURCE_DIR=$(dirname $DOCKERFILE_DIR)
+SOURCE_DIR=$(builtin cd $DOCKERFILE_DIR; cd ../../; pwd)
 BUILD_ARGS=$(env | cut -f1 -d= | grep -E '_(proxy|REPO|VER)$' | sed 's/^/--build-arg / ' | tr '\n' ' ')
 BUILD_OPTIONS="--network=host"
+PIPELINE_LIST=""
 
 NO_CACHE=
 REGISTRY=
@@ -75,14 +76,22 @@ get_options() {
                 error 'ERROR: "--tag" requires an argument.'
             fi
             ;;
-	--registry)
-	    if [ "$2" ]; then
-		REGISTRY=$2
-		shift
-	    else
-		error 'ERROR: "--docker-image-cache" requires an argument.'
-	    fi
-	    ;;
+        --pipeline-list)
+            if [ "$2" ]; then
+                PIPELINE_LIST=$2
+                shift
+            else
+                error 'ERROR: "--pipeline-list" requires a .yml file'
+            fi
+            ;;            
+        --registry)
+	        if [ "$2" ]; then
+		        REGISTRY=$2
+		        shift
+	        else
+		        error 'ERROR: "--docker-image-cache" requires an argument.'
+	        fi
+	        ;;
         --dockerfile-dir)
             if [ "$2" ]; then
                 DOCKERFILE_DIR=$2
@@ -165,6 +174,7 @@ show_help() {
     echo "  [--platform platform one of ${!PLATFORMS[@]}]"
     echo "  [--build-arg additional build args to pass to docker build]"
     echo "  [--tag tag for image]"
+    echo "  [--pipeline-list .yml file containing list of pipelines to download]"
     echo "  [--dockerfile-dir specify a different dockerfile directory]"
     echo "  [--dry-run print docker commands without running]"
     exit 0
@@ -177,15 +187,18 @@ error() {
 
 get_options "$@"
 
-if [ $PLATFORM = "ATS" ]; then
-    DOCKERFILE="$DOCKERFILE_DIR/intel-media-analytics/Dockerfile"
-    SOURCE_DIR=$(builtin cd $DOCKERFILE_DIR; cd ../../; pwd)
-fi
-
 # BUILD IMAGE
 
 BUILD_ARGS+=" --build-arg REGISTRY=$REGISTRY "
 BUILD_ARGS+=" --build-arg BASE=$BASE_IMAGE "
+
+if [ ! -z ${PIPELINE_LIST} ]; then
+    BUILD_ARGS+=" --build-arg PIPELINE_LIST=$PIPELINE_LIST "
+fi
+
+if [ ! -z ${GITHUB_TOKEN} ]; then
+   BUILD_ARGS+=" --build-arg GITHUB_TOKEN=${GITHUB_TOKEN} "
+fi
 
 if [ ! -z $MODEL_PROC_VERSION ]; then
    BUILD_ARGS+=" --build-arg MODEL_PROC_VERSION=$MODEL_PROC_VERSION "
