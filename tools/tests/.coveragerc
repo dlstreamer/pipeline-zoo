@@ -1,0 +1,9 @@
+[run]
+   omit =
+      /usr/*
+      /opt/*
+      /etc/*
+[paths]
+   source =
+    runners/
+    */runners/

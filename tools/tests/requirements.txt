@@ -1,3 +1,4 @@
 pytest
 pytest-timeout
 PyGithub
+pytest-cov
