@@ -90,7 +90,7 @@ This should launch the X window playing the 4K content.
 ```
  docker exec -it media-analytics-pipeline-zoo bash
   
- pipebench run --measure pick-and-go od-h264-mbnetssd-v1-coco
+ pipebench run --measure pick-and-go od-h264-ssd-mobilenet-v1-coco
 ```
  
 This will launch the object detection task using FP16 quantized `ssd-mobilenet-v1-coco` model.
