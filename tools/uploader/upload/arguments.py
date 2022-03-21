@@ -18,18 +18,17 @@ def parse_args(args=None,program_name=package_name):
 
     parser = argparse.ArgumentParser(description="Prepare media and pipelines for upload to Pipeline Zoo.")
     parser.add_argument("-t", "--type", choices=handler_choices,required=True,dest="handler_type")
-    parser.add_argument("-d", "--destination", required=False,dest="destination",default=".")
+    parser.add_argument("-d", "--destination", required=False,dest="destination",default=None)
     parser.add_argument("source")
-    
+
 
     if (isinstance(args, dict)):
         args = ["--{}={}".format(key, value)
                 for key, value in args.items() if value]
-        
+
     args = parser.parse_args(args)
     args.source = os.path.abspath(args.source)
-    args.destination = os.path.abspath(args.destination)
-    
+
     return args
 
-    
+
