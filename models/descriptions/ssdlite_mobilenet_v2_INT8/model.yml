@@ -1,0 +1,25 @@
+description: ssdlite_mobilenet_v2_INT8
+files:
+- checksum: 3b27ccf104575ec154fdd478d5a527ec5f1d9c8a946b4fe53248d285fe9810e1f4fb5be5de70f931dd2534c48b036724
+  name: FP32-INT8/ssdlite_mobilenet_v2.bin
+  sha256: a2194fccb7021a3cccb354d6e93734b960198099019fae6d193897549396650e
+  size: 4832472
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/tree/main/storage/ssdlite_mobilenet_v2_INT8/FP32-INT8/ssdlite_mobilenet_v2.bin
+- checksum: 4bd2d004f8095ed5c88e374d0475c2d36d6f00900e42a2c09874549d658fb4c07f5086cc5775ab06bc4bc72161c58ebb
+  name: FP32-INT8/ssdlite_mobilenet_v2.xml
+  sha256: 8a0f05d89122b8b39572561abdb3efce476c6ffd6bc22bb6f5dbbfe877895a20
+  size: 765390
+  source: htps://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/tree/main/storage/ssdlite_mobilenet_v2_INT8/FP32-INT8/ssdlite_mobilenet_v2.xml
+- checksum: 46288a04da470453e6313427691afdc1c89f5b71c3956ec1cdc1f016f0b2c440b3d1ac7f6b8789b31a5fd75e521826b0
+  name: FP16-INT8/ssdlite_mobilenet_v2.bin
+  sha256: 813695fb87fed5759376594f7d52f9daa31055b39810d2112d6dbc5429df52e9
+  size: 4639876
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/tree/main/storage/ssdlite_mobilenet_v2_INT8/FP16-INT8/ssdlite_mobilenet_v2.bin
+- checksum: 4996bd8355576a7dc48932c363658c31c925d4cf1855903b13b582835f3c1d693b829314cefcfd23460804f34bac1898
+  name: FP16-INT8/ssdlite_mobilenet_v2.xml
+  sha256: 33c156c5d41f54b00452a029289d190fa48026496dc66b22e828df099badc5f1
+  size: 765124
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/tree/main/storage/ssdlite_mobilenet_v2_INT8/FP16-INT8/ssdlite_mobilenet_v2.xml
+framework: dldt
+license: 'https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE'
+task_type: detection
