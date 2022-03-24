@@ -17,7 +17,7 @@ stateDiagram
 
     state detect {
     state scale {
-      w608xh608
+      w416xh416
     }
     state csc {
     RGB
