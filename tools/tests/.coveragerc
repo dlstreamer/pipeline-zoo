@@ -3,6 +3,7 @@
       /usr/*
       /opt/*
       /etc/*
+      */tools/tests/*
 [paths]
    source =
     runners/
