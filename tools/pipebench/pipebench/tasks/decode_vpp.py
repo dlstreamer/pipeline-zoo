@@ -264,8 +264,8 @@ class DecodeVPP(Task):
         if not input_media:
             raise Exception("Media not found or unsupported: {}".format(self._measurement_settings["media"]))
 
-        if (self._args.force):
-            create_directory(input_target)
+        #if (self._args.force):
+        create_directory(input_target)
         
         existing_files = [ file_path for file_path in os.listdir(input_target)
                            if os.path.isfile(os.path.join(input_target,file_path)) ]

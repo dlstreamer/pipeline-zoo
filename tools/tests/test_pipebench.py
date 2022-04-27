@@ -44,10 +44,20 @@ def check_measurement(pipeline, measurement, scenario="disk"):
         
 def check_download(pipeline):
     pipeline_root = os.path.join(test_workspace, pipeline)
-    subfolders = ["media", "models", "runners"]
+    subfolders = []
+    list_files = [fname for fname in os.listdir(pipeline_root) if fname.endswith("list.yml")]
+    media_list = [fname for fname in list_files if fname.endswith("media.list.yml")]
+    model_list = [fname for fname in list_files if fname.endswith("models.list.yml")]
+    runners = [fname for fname in os.listdir(pipeline_root)
+               if fname.endswith("runner-settings.yml")]
+    if media_list:
+        subfolders.append("media")
+    if model_list:
+        subfolders.append("models")
+    if runners:
+        subfolders.append("runners")
     for subfolder in subfolders:
-        assert(os.path.isdir(os.path.join(pipeline_root,subfolder)))        
-        
+        assert(os.path.isdir(os.path.join(pipeline_root, subfolder)))           
 
 @pytest.mark.timeout(600)
 def test_download(pipeline):
