@@ -379,14 +379,11 @@ class Media(Handler):
                 spinner = Spinner(text='Converting')
                 spinner.start()
 
-        process = subprocess.Popen(ffmpeg_cmd, universal_newlines=True, stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE, shell=False)
+        process = subprocess.Popen(ffmpeg_cmd, universal_newlines=True, stdout=subprocess.DEVNULL,
+                                    stderr=subprocess.PIPE, shell=False, stdin=subprocess.DEVNULL)
 
         for line in iter(process.stderr):
             self.logger.debug(line)
-            sys.stdout.flush()
-
-        process.stdout.close()
 
         return_code = process.wait()
 
