@@ -53,6 +53,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     graphviz-dev \
     pciutils \
     dmidecode \
+    ffmpeg \
     cmake \
     bash-completion \
     libyaml-cpp-dev \
