@@ -3,9 +3,6 @@ decode:
   device: GPU
   post-proc-caps: video/x-raw(memory:VASurface)
 classify-0:
-  device: MULTI:CPU,GPU
-  precision: FP32-INT8
-  pre-process-backend: vaapi
+  device: "MULTI:CPU,GPU"
+  precision: FP16-INT8
   model-instance-id: cls
-sink:
-  sync: true

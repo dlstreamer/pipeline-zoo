@@ -1,0 +1,9 @@
+
+task: object-classification
+
+detection-model: ssdlite_mobilenet_v2
+
+classification-models: [efficientnet-b0]
+
+inputs.media.type.media-type: video/x-h264
+

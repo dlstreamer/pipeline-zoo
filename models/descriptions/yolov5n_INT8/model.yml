@@ -1,0 +1,15 @@
+description: yolov5n_INT8
+files:
+- checksum: 0083a84bf19176410db5b6fe8434228197174d55b65723cb7ff57174eda5e2f5168f0878b0c6684769ef74cb703fcb8a
+  name: FP16-INT8/yolov5n_INT8.xml
+  sha256: eb98525de5744cf5534539dfbe46b2a23e761d62cc6da8e9097829fbb4b09314
+  size: 521868
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/yolov5n_INT8/yolov5n.xml?raw=true
+- checksum: def415f3b8d498d71b46226ce7ff828630a6e15a96de2e61a11d8818ab0842e8bdfd1f53f93dc75b949a4f832a3c20fc
+  name: FP16-INT8/yolov5n_INT8.bin
+  sha256: 8898de4ade2d6c808ab015d278f26398080c4e6f3d77f750097d1e4b37fbdc18
+  size: 2046803
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/main/storage/yolov5n_INT8/yolov5n.bin
+framework: dldt
+license: 'unknown'
+task_type: detection

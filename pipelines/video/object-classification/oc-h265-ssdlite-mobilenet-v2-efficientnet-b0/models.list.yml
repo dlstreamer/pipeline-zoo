@@ -1,0 +1,4 @@
+- efficientnet-b0_INT8
+- efficientnet-b0
+- ssdlite_mobilenet_v2_INT8
+- ssdlite_mobilenet_v2

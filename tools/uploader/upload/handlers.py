@@ -142,8 +142,8 @@ class Model(Handler):
         files_descriptions = []
 
         for file in model_files:
-            file_desctiption = {"name" : os.path.basename(file), "sha256" : self._calulate_sha256(file), "checksum" : self.calculate_sha384(file), "size" : self._calculate_file_size(file), "source" : "PUT URL HERE"}
-            files_descriptions.append(file_desctiption)
+            file_description = {"name" : os.path.basename(file), "sha256" : self._calulate_sha256(file), "checksum" : self.calculate_sha384(file), "size" : self._calculate_file_size(file), "source" : "PUT URL HERE"}
+            files_descriptions.append(file_description)
         description = {"description" : model_name, "files" : files_descriptions, "framework": "dldt", "task_type": "model task type", "license" : ""}
 
         with open(description_path, 'w') as file:
