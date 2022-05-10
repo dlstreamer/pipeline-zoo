@@ -324,6 +324,7 @@ def _run_iteration(num_streams,
                                      run_directory_suffix)
         create_directory(run_directory)
 
+        numa_node = None
         if (numa_nodes):
             numa_node = stream_index % numa_nodes
 
