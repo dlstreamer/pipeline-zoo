@@ -1,6 +1,6 @@
-# oc-h265-ssdlite-mobilenet-v2-efficentnet-b0
+# oc-h265-ssd-mobilenet-v1-coco-resnet-50-tf
 
-Object detection pipeline taking encoded video frames in h265 format and using [ssdlite-mobilenet-v2](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public/ssdlite_mobilenet_v2) for detection and [efficientnet-b0](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public/efficientnet-b0) for classification.
+Object detection pipeline taking encoded video frames in h265 format and using [ssd-mobilenet-v1-coco](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public/ssd_mobilenet_v1_coco) for detection and [resnet-50-tf](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public/resnet-50-tf) for classification.
 
 ```mermaid
 stateDiagram
@@ -32,7 +32,7 @@ objects
 
     state inference {
 	direction LR
-    ssdlite-mobilenet-v2
+    ssd_mobilenet_v1_coco
     }
 
     state tensors_to_objects {
@@ -59,7 +59,7 @@ direction LR
 
     state inference_2 {
 	direction LR
-    efficientnet-b0
+    resnet_50_tf
     }
 
     state tensors_to_attributes {
