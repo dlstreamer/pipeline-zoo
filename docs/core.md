@@ -4,7 +4,7 @@
 > These instructions assume that you have
 > followed the [getting started guide](../README.md#getting-started) for cloning
 > and building the Pipeline Zoo Environement.
->These instructions have been tested on [11th Gen Intel(R) Core(TM) i7-1185G7 @ 3.00GHz](https://ark.intel.com/content/www/us/en/ark/products/208664/intel-core-i71185g7-processor-12m-cache-up-to-4-80-ghz-with-ipu.html). 
+>These instructions have been tested on [11th Gen Intel(R) Core(TM) i7-1185G7 Processor @ 3.00GHz](https://ark.intel.com/content/www/us/en/ark/products/208664/intel-core-i71185g7-processor-12m-cache-up-to-4-80-ghz-with-ipu.html). 
 >
 > Actual results will vary based on configuation and the examples below are for illustration purposes only.
 

@@ -1,15 +1,15 @@
-# Intel(R) Deep Learning Streamer Pipeline Zoo
+# Intel® Deep Learning Streamer (Intel® DL Streamer) Pipeline Zoo
 | [Getting Started](#getting-started)
 | [Tasks and Pipelines](docs/tasks-and-pipelines.md)
 | [Measurement Definitions](docs/measurements.md) 
-| [Core Examples](docs/core.md)
-| [Xeon Examples](docs/xeon.md)
+| [Intel® Core™ processor Examples](docs/core.md)
+| [Intel® Xeon® Processor Examples](docs/xeon.md)
 | [Pick and Go Use Case](docs/pick-and-go.md) 
 | [Advanced Examples](docs/examples.md)
 | [Pipebench Reference](docs/pipebench-reference-guide.md)
 | [Measurement Output](docs/output.md) |
 
-The DL Streamer Pipeline Zoo is a catalog of media and media analytics
+The Intel® DL Streamer Pipeline Zoo is a catalog of media and media analytics
 pipelines optimized for Intel hardware. It includes tools for
 downloading pipelines and their dependencies and tools for measuring
 their performance.
@@ -26,14 +26,14 @@ platform targets.
 | |                  |
 |---------------------------------------------|------------------|
 | **Simple command line interface** | A single entrypoint for downloading and running media analytics pipelines along with media and model dependencies |
-| **DL Streamer Pipeline Runner**| Pipeline implementations and optimizations using the DL Streamer Pipeline Framework |
-| **Platform specific settings**| Pipeline runner settings tuned for optimal performance on different platform types (e.g. core, xeon) |  
+| **Intel® DL Streamer Pipeline Runner**| Pipeline implementations and optimizations using the Intel® DL Streamer Pipeline Framework |
+| **Platform specific settings**| Pipeline runner settings tuned for optimal performance on different platform types (e.g. Intel® Core™ processorcore, Intel® Xeon® Processor) |  
 | **Measurement Settings** | Settings for measuring different scenarios including single stream throughput and stream density. Settings can be customized and saved for reuse.|
 | **Containerized environment** | Dockerfiles, build and run scripts for launching a reproducable environment |
 
 > **IMPORTANT:** 
 > 
-> The DL Streamer Pipeline Zoo is provided as a set of tools for system evaluation 
+> The Pipeline Zoo is provided as a set of tools for system evaluation 
 > and benchmarking and is not intended for deployment into production environments 
 > without modification.
 >

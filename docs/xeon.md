@@ -1,10 +1,10 @@
-# Example Commands for Intel(R) Xeon(R) Scalable Platforms
+# Example Commands for Intel(R) Xeon(R) Scalable processor
 
 > **Note:**
 > These instructions assume that you have
 > followed the [getting started guide](../README.md#getting-started) for cloning
 > and building the Pipeline Zoo Environement.
->These instructions have been tested on [Intel(R) Xeon(R) Gold 6336Y CPU @ 2.40GHz](https://ark.intel.com/content/www/us/en/ark/products/215280/intel-xeon-gold-6336y-processor-36m-cache-2-40-ghz.html). 
+>These instructions have been tested on [Intel(R) Xeon(R) Gold 6336Y Procesor CPU @ 2.40GHz](https://ark.intel.com/content/www/us/en/ark/products/215280/intel-xeon-gold-6336y-processor-36m-cache-2-40-ghz.html). 
 >
 > Actual results will vary based on configuation and the examples below are for illustration purposes only.
 

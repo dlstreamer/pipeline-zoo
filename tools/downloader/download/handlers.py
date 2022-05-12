@@ -461,7 +461,7 @@ class Model(Handler):
             try:
                 self._openvino_version.append(int(version_part))
             except:
-                self.logger.error("OpenVino version is not number: " + str(version_part))
+                self.logger.error("OpenVino(TM) toolkit version is not number: " + str(version_part))
                 self._openvino_version.append(0)
 
 

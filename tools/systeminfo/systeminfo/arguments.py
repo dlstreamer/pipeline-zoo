@@ -18,10 +18,10 @@ def parse_args(args=None,program_name=package_name):
     parser.add_argument("-b",  "--bitstreams", default="",    help="Path to bitstreams")
     parser.add_argument("-j",  "--job",        default="",    help="Job name")
     parser.add_argument("-m",  "--modelzoo",   default="",    help="Path to model-zoo code")
-    parser.add_argument("--open-model-zoo-repo",   default="",    help="Path to open model zoo code repository")
+    parser.add_argument("--open-model-zoo-repo",   default="",    help="Path to Open Model Zoo code repository")
     parser.add_argument("-js", "--json",                      help="JSON output file with system configuration", default="systeminfo.json")
     parser.add_argument("-f",  "--fp11",       default=False, help="Use fp11", required=False)
-    parser.add_argument("--openvino",                         help="OpenVINO path")
+    parser.add_argument("--openvino",                         help="OpenVINO(TM) toolkit path")
 
     if (isinstance(args, dict)):
         args = ["--{}={}".format(key, value)

@@ -1,17 +1,17 @@
 # Media Files
 
 Media files for the pipeline zoo are stored in a git lfs repository
-[media](https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/media)
+[media](https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media)
 and downloaded by pipebench on demand. 
 
-## Adding Media
+## Adding Media to pipeline-zoo media repositroy 
 
 New media can be added to the repository following these steps.
 
 1. Mount the new media files into a pipeline zoo container
 
    ```
-   ./pipeline-zoo/tools/docker/run.sh -v /home/nnshah1/new_media:/home/new_media
+   ./pipeline-zoo/tools/docker/run.sh -v /home/<user>/new_media:/home/new_media
 
    ```
    
@@ -33,13 +33,13 @@ New media can be added to the repository following these steps.
 
    ```
    git lfs install
-   git clone ssh://git@gitlab.devtools.intel.com:29418/media-analytics-pipeline-zoo/media.git
+   git clone https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-media.git
    ```
 
 1. Copy the new files into the repository
 
    ```
-   cp -rf /home/nnshah1/new_media/video/* media/video
+   cp -rf /home/<user>/new_media/video/* media/video
    ```
 
 1. Create a branch, add the files, and push 

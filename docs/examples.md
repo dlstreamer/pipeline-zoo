@@ -56,7 +56,7 @@ gst-launch-1.0 filesrc location=/home/pipeline-zoo/workspace/od-h264-ssd-mobilen
 
 The corresponding standalone Pipeline Runner command is stored in the measurements folder. 
 
-For DL Streamer this is a shell script with a `gst-launch` string:
+For Intel® Deep Learning Streamer (Intel® DL Streamer) Pipeline Framework this is a shell script with a `gst-launch` string:
 
 ```./od-h264-ssd-mobilenet-v1-coco/measurements/throughput/dlstreamer/run-0000/iteration-0000/process-0000-stream-0000/throughput.gst-launch.sh```
 
@@ -136,7 +136,7 @@ Freeing pipeline ...
 Pipeline runner settings an be overriden on the command line by using the `runner-override` argument.
 `runner-override` takes a key and value pair.
 
-### Changing inference interval for DL Streamer Pipeline Runner
+### Changing inference interval for Intel® DL Streamer Pipeline Runner
 
 Command:
 
@@ -200,7 +200,7 @@ No FP32-INT8 Model found, trying: FP32
 gst-launch-1.0 filesrc location=/home/pipeline-zoo/workspace/od-h264-ssd-mobilenet-v1-coco/.workloads/person-bicycle-car-detection/disk/input/stream.fps.mp4 ! qtdemux ! h264parse ! video/x-h264 ! avdec_h264 name=decode0 ! gvadetect device=CPU inference-interval=3 name=detect0 model-proc=/home/pipeline-zoo/workspace/od-h264-ssd-mobilenet-v1-coco/models/ssd_mobilenet_v1_coco_INT8/FP16-INT8/ssd_mobilenet_v1_coco_INT8.json model=/home/pipeline-zoo/workspace/od-h264-ssd-mobilenet-v1-coco/models/ssd_mobilenet_v1_coco/FP32/ssd_mobilenet_v1_coco.xml ! gvametaconvert add-empty-results=true ! gvametapublish method=file file-format=json-lines file-path=/tmp/731dd27e-64b7-11ec-a730-1c697a06fd65/output ! gvafpscounter ! fakesink async=false name=sink0
 ```
 
-### Changing device for DL Streamer Pipeline Runner
+### Changing device for Intel® DL Streamer Pipeline Runner
 
 Command:
 
