@@ -46,10 +46,20 @@ pipelines/video/decode-vpp/decode-h265
 pipelines/video/decode-vpp/decode-h264-bgra
 pipelines/video/object-classification/oc-h264-full_frame-resnet-50-tf
 pipelines/video/object-classification/oc-h265-full_frame-resnet-50-tf
+pipelines/video/object-classification/oc-h264-full_frame-efficientnet-b0
+pipelines/video/object-classification/oc-h265-full_frame-efficientnet-b0
 pipelines/video/object-classification/oc-h264-ssd-mobilenet-v1-coco-resnet-50-tf
 pipelines/video/object-classification/oc-h265-ssd-mobilenet-v1-coco-resnet-50-tf
+pipelines/video/object-classification/oc-h264-ssdlite-mobilenet-v2-efficientnet-b0
+pipelines/video/object-classification/oc-h265-ssdlite-mobilenet-v2-efficientnet-b0
+pipelines/video/object-classification/oc-h264-yolo-v4-tf-resnet-50-tf
+pipelines/video/object-classification/oc-h265-yolo-v4-tf-resnet-50-tf
 pipelines/video/object-detection/od-h264-ssd-mobilenet-v1-coco
 pipelines/video/object-detection/od-h265-ssd-mobilenet-v1-coco
+pipelines/video/object-detection/od-h264-ssdlite-mobilenet-v2
+pipelines/video/object-detection/od-h265-ssdlite-mobilenet-v2
+pipelines/video/object-detection/od-h264-yolo-v4-tf
+pipelines/video/object-detection/od-h265-yolo-v4-tf
 
 # runners
 runners/dlstreamer
@@ -71,6 +81,9 @@ tools/pipebench
 # models
 models/descriptions/ssd_mobilenet_v1_coco_INT8
 models/descriptions/resnet-50-tf_INT8
+models/descriptions/yolo-v4-tf_INT8
+models/descriptions/ssdlite_mobilenet_v2_INT8
+models/descriptions/efficientnet-b0_INT8
 
 # media
 media/descriptions/video/20200711_dog_bark
