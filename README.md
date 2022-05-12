@@ -26,7 +26,7 @@ platform targets.
 | |                  |
 |---------------------------------------------|------------------|
 | **Simple command line interface** | A single entrypoint for downloading and running media analytics pipelines along with media and model dependencies |
-| **Intel® DL Streamer Pipeline Runner**| Pipeline implementations and optimizations using the Intel® DL Streamer Pipeline Framework |
+| **Intel® DL Streamer Pipeline Runner**| Pipeline implementations and optimizations using the Intel® Deep Learning Streamer Pipeline Framework |
 | **Platform specific settings**| Pipeline runner settings tuned for optimal performance on different platform types (e.g. Intel® Core™ processorcore, Intel® Xeon® Processor) |  
 | **Measurement Settings** | Settings for measuring different scenarios including single stream throughput and stream density. Settings can be customized and saved for reuse.|
 | **Containerized environment** | Dockerfiles, build and run scripts for launching a reproducable environment |

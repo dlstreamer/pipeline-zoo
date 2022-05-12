@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# Copyright (C) 2019-2020 Intel Corporation.
+# Copyright (C) 2019 Intel Corporation.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -41,7 +41,7 @@ if [ -d /opt/intel/openvino/deployment_tools/open_model_zoo/models/media-analyti
 fi
 
 if [ -d /opt/intel/openvino/data_processing/dl_streamer/python/gstgva ]; then 
-  # OpenVino(TM) toolkit Image 
+  # OpenVINO(TM) toolkit Image 
   GVA_PYTHON_PATH=/opt/intel/openvino/data_processing/dl_streamer/python/gstgva  
 elif [ -d /opt/intel/samples/lib/python3.8/site-packages/gstgva ]; then
   # GSE docker image
