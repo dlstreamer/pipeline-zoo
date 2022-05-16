@@ -18,7 +18,7 @@ docs/examples.md
 docs/core.md
 docs/pipebench-reference-guide.md
 docs/tasks-and-pipelines.md
-docs/tasks-and-pipelines.svg
+docs/tasks-and-pipelines-1.svg
 docs/xeon.md
 docs/output.md
 docs/*.svg
