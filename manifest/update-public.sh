@@ -23,13 +23,17 @@ git checkout -b public-updates
 git filter-repo --refs public-updates --paths-from-file $SOURCE_DIR/.public.txt --force
 git filter-repo --refs public-updates --paths-from-file $SOURCE_DIR/.internal.txt --force --invert
 
-git checkout public-main
-git reset --hard origin/public-main
+git add --all
 
-git merge public-updates --squash --allow -X theirs
-git rm -rf .
-git checkout public-updates -- .
-git commit --no-edit
+git commit -m "adding new files"
+
+#git checkout public-main
+#git reset --hard origin/public-main
+
+#git merge public-updates --squash --allow -X theirs
+#git rm -rf .
+#git checkout public-updates -- .
+#git commit --no-edit
 
 
 MESSAGE=$1
@@ -40,7 +44,7 @@ fi
 #git commit -m "$MESSAGE"
 #git commit --no-edit
 
-git push origin public-main:public-staging --force
+#git push origin public-main:public-staging --force
 #git branch -D public-updates
 
 # git checkout main
