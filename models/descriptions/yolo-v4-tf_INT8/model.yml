@@ -6,17 +6,17 @@ files:
   name: FP16-INT8/yolo-v4-tf_INT8.json
   sha256: 03dc4d027b794f92dff3cc2caaee91ab03d708e6ac375168a9c0a8b0d887d241
   size: 2516
-  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/add_yolo-v4-tf_INT8/storage/yolo-v4-tf_INT8/yolo-v4-tf_INT8.json
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolo-v4-tf_INT8/yolo-v4-tf_INT8.json?raw=true
 - checksum: 98220d54fa42c7dea398ab6799176073fffbceadc949fe899ac7712ff34d05c4003cfb4aa6fa4f762b7d834c8ba1da4f
   name: FP16-INT8/yolo-v4-tf_INT8.bin
   sha256: 7ff15669f69baa5573549be5e9f0e1b0c1ead7faeb9341d3a713328a5862ed55
   size: 64500046
-  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/add_yolo-v4-tf_INT8/storage/yolo-v4-tf_INT8/yolo-v4-tf_INT8.bin
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolo-v4-tf_INT8/yolo-v4-tf_INT8.bin?raw=true
 - checksum: 88d3333eeed524cbd296c6e65f71d5ab54c1cb0b6cf63c4e20da65d04a957b4839629d6d06dd85da6eaa2b7702ce086f
   name: FP16-INT8/yolo-v4-tf_INT8.xml
   sha256: 1fdbc34471002e34d5ed648c677b8edfc0243863d54c1a0d80c5bab8fee583c1
   size: 955516
-  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/raw/add_yolo-v4-tf_INT8/storage/yolo-v4-tf_INT8/yolo-v4-tf_INT8.xml
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolo-v4-tf_INT8/yolo-v4-tf_INT8.xml?raw=true
 framework: dldt
 task_type: detection
-license: https://raw.githubusercontent.com/david8862/keras-YOLOv3-model-set/master/LICENSE
+license: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolo-v4-tf_INT8/LICENSE
