@@ -77,8 +77,8 @@ tools/downloader
 tools/README.md
 tools/systeminfo
 tools/pipebench
-tools/assets/install.sh
-tools/assets/video_frame.py
+tools/docker/assets/install.sh
+tools/docker/assets/video_frame.py
 
 
 # models
