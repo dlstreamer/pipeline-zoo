@@ -1,10 +1,6 @@
 - video/Netflix_Narrator_1
 - video/cars_1920x1080_hevc
 - video/BikeraceSDR_014_1
-- video/crowd_run_1
-- video/test_out_4k_40mbps_IPB
-- video/test_d_f20
-- video/test_d_f80
 - video/cars
-- video/test_c_f9000
-- video/crowd_run_m6_5k.265
+- video/crowd_run_1
+- video/test_c_f21

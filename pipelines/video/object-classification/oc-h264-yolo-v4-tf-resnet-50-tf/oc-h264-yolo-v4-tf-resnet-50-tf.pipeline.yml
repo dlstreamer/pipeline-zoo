@@ -1,7 +1,7 @@
 
 task: object-classification
 
-detection-model: [yolo-v4-tf]
+detection-model: yolo-v4-tf
 
 classification-models: [resnet-50-tf]
 
