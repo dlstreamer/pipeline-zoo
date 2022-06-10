@@ -33,7 +33,7 @@ class Handler(object, metaclass=abc.ABCMeta):
     def __init__(self, args):
         pass
 
-    def _init_logger(self, pipeline_root, args):
+    def _init_logger(self, target_dir, args):
         if Handler.logger != None:
             return
 
@@ -43,7 +43,7 @@ class Handler(object, metaclass=abc.ABCMeta):
         consoleHandler = logging.StreamHandler()
         consoleHandler.setLevel(logging.INFO)
 
-        log_dir = os.path.join(pipeline_root, ".logs")
+        log_dir = os.path.join(target_dir, ".logs")
         os.makedirs(log_dir, exist_ok=True)
         fileHandler = logging.FileHandler(os.path.join(log_dir, "download.log.txt"), mode='w')
         fileHandler.setLevel(logging.DEBUG)
@@ -411,13 +411,13 @@ class Pipeline(Handler):
                 pass
 
         if os.path.isdir(target_pipeline):
-            self._init_logger(pipeline, self._args)
+            self._init_logger(target_pipeline, self._args)
             self.logger.debug("Pipeline Directory {0} Exists - Skipping".format(pipeline))
             return 
 
         shutil.copytree(pipeline_root,target_pipeline)
 
-        self._init_logger(pipeline, self._args)
+        self._init_logger(target_pipeline, self._args)
 
         return True
         

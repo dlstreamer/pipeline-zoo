@@ -2,3 +2,6 @@ pytest
 pytest-timeout
 PyGithub
 pytest-cov
+teamcity-messages
+pytest-html
+bandit

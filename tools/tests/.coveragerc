@@ -4,7 +4,10 @@
       /opt/*
       /etc/*
       */tools/tests/*
+   data_file = /home/.coverage	
 [paths]
    source =
     runners/
     */runners/
+[html]
+   directory = /home/coverage_reports
