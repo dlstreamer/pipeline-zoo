@@ -28,18 +28,15 @@ docs/measurements.md
 # tasks
 pipelines/video/object-detection/object-detection.task.yml
 pipelines/video/object-detection/README.md
-pipelines/video/object-detection/README-1.svg
 
 pipelines/video/object-classification/object-classification.task.yml
 pipelines/video/object-classification/README.md
-pipelines/video/object-classification/README-1.svg
 
 pipelines/video/object-classification/object-classification.task.yml
 pipelines/video/object-classification/README.md
 
 pipelines/video/decode-vpp/decode-vpp.task.yml
 pipelines/video/decode-vpp/README.md
-pipelines/video/decode-vpp/README-1.svg
 
 # pipelines
 pipelines/video/decode-vpp/decode-h265
@@ -69,16 +66,13 @@ runners/README.md
 # tools
 tools/docker/build.sh
 tools/docker/Dockerfile
-tools/docker/patches
-tools/docker/README.md
 tools/docker/run.sh
-tools/docker/intel-media-analytics
+tools/docker/assets/install.sh
+tools/docker/assets/video_frame.py
 tools/downloader
 tools/README.md
 tools/systeminfo
 tools/pipebench
-tools/docker/assets/install.sh
-tools/docker/assets/video_frame.py
 
 
 # models

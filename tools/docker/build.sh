@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# Copyright (C) 2019-2020 Intel Corporation.
+# Copyright (C) 2019 Intel Corporation.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -12,7 +12,8 @@ declare -A PLATFORMS=(["DEFAULT"]=1 ["ATS"]=3)
 PLATFORM=DEFAULT
 
 # Base Images
-DEFAULT_BASE_IMAGE=openvino/ubuntu20_data_dev:2021.4.2
+# For latest agama UMD drivers use ./build.sh --base intel/dlstreamer:2022.1.1-ubuntu20-devel
+DEFAULT_BASE_IMAGE=intel/dlstreamer:2022.1.0-ubuntu20-devel
 ATS_BASE_IMAGE=intel-media-analytics:latest
 
 # Model Proc Versions
@@ -187,6 +188,10 @@ error() {
 
 get_options "$@"
 
+if [ ! -z ${REGISTRY} ]; then
+    REGISTRY="${REGISTRY%/}/"
+fi
+
 # BUILD IMAGE
 
 BUILD_ARGS+=" --build-arg REGISTRY=$REGISTRY "
@@ -197,14 +202,19 @@ if [ ! -z ${PIPELINE_LIST} ]; then
 fi
 
 if [ ! -z ${GITHUB_TOKEN} ]; then
-   BUILD_ARGS+=" --build-arg GITHUB_TOKEN=${GITHUB_TOKEN} "
+    BUILD_ARGS+=" --build-arg GITHUB_TOKEN=${GITHUB_TOKEN} "
 fi
 
 if [ ! -z $MODEL_PROC_VERSION ]; then
-   BUILD_ARGS+=" --build-arg MODEL_PROC_VERSION=$MODEL_PROC_VERSION "
+    BUILD_ARGS+=" --build-arg MODEL_PROC_VERSION=$MODEL_PROC_VERSION "
 fi
 
 BUILD_ARGS+=" --build-arg PIPELINE_ZOO_PLATFORM=$PLATFORM "
+
+if [[ "$BASE_IMAGE" == *"intel-visual-analytics/custom/plzoo"* ]]; then
+    BUILD_ARGS+=" --build-arg ENTRYPOINT=\"/usr/bin/demo-bash\""
+    BUILD_ARGS+=" --build-arg CMD=\"/usr/bin/demo-bash\""
+fi
 
 show_image_options
 

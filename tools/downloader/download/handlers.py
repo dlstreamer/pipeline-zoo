@@ -81,7 +81,7 @@ class Handler(object, metaclass=abc.ABCMeta):
 def load_document(document_path):
     document = None
     with open(document_path) as document_file:
-        if (document_path.endswith('.yml')):
+        if (document_path.endswith('.yml') or document_path.endswith('.yaml')):
             document = yaml.full_load(document_file)
         elif (document_path.endswith('.json')):
             document = json.load(document_file)
@@ -424,14 +424,18 @@ class Pipeline(Handler):
 
 class Model(Handler):
 
-    openvino_root = os.environ.get("INTEL_OPENVINO_DIR", "/opt/intel/openvino")
-    
-    dldt_root =  os.path.join(openvino_root, "deployment_tools")
+    DEFAULT_OPEN_VINO_DEPLOYMENT_TOOLS = "/opt/intel/openvino/deployment_tools"
+    DEFAULT_OPEN_MODEL_ZOO_ROOT = os.path.join(DEFAULT_OPEN_VINO_DEPLOYMENT_TOOLS,
+                                               "open_model_zoo")
+    DEFAULT_MODEL_DOWNLOADER = os.path.join(DEFAULT_OPEN_MODEL_ZOO_ROOT,
+                                            "tools/downloader/downloader.py")
+    DEFAULT_MODEL_CONVERTER = os.path.join(DEFAULT_OPEN_MODEL_ZOO_ROOT,
+                                           "tools/downloader/converter.py")
+    DEFAULT_MODEL_OPTIMIZER = os.path.join(DEFAULT_OPEN_VINO_DEPLOYMENT_TOOLS,
+                                           "model_optimizer/mo")
+    DEFAULT_MODEL_PROC_ROOT = "/opt/intel/openvino/data_processing/dl_streamer/samples"
 
-    model_proc_root = os.environ.get("DLSTREAMER_MODEL_PROC_ROOT",
-                                     "/opt/intel/openvino/data_processing/dl_streamer/samples/model_proc")
-
-    pipeline_zoo_models_root = os.path.join(dldt_root,"open_model_zoo/models", "pipeline-zoo-models")
+    CHECKSUM_KEYS = ['checksum', 'sha256']
     
     def __init__(self, args):
         self._args = args
@@ -439,38 +443,70 @@ class Model(Handler):
             os.path.join(__file__,
                          "../../../../models/descriptions"))
 
-        self._model_downloader = os.path.join(self.dldt_root,"open_model_zoo/tools/downloader/downloader.py")
-        self._model_converter = os.path.join(self.dldt_root,"open_model_zoo/tools/downloader/converter.py")
-        self._model_optimizer = os.path.join(self.dldt_root,"model_optimizer/mo.py")
+        self._find_open_model_zoo()
+        self._determine_checksum_key()
+        self._find_model_proc_root()
+        self._model_index = self._get_model_index()
 
-        self._openvino_version = []
+    def _get_example_model_config(self):
+        try:
+            for root, _, files in os.walk(os.path.join(self._model_zoo_root,
+                                                       "models/intel")):
+                for filename in files:
+                    if filename.endswith("model.yml"):
+                        return load_document(os.path.join(root, filename))
+        except:
+            pass
 
-        self._get_openvino_version()
-        self._get_open_model_zoo_tools()
+        return None
+    
+    def _determine_checksum_key(self):
+        self._checksum_key = Model.CHECKSUM_KEYS[0]
+        model_config = self._get_example_model_config()
+        if model_config:
+            model_files = model_config.get("files", [])
+            for model_file in  model_files:
+                for key in Model.CHECKSUM_KEYS:
+                    if key in model_file:
+                        self._checksum_key = key
+                        return
 
-    def _get_openvino_version(self):
-        openvino_dir = self.openvino_root
+    def _get_model_index(self):
+        try:
+            index_path = os.path.join(self._model_proc_root,
+                                      "model_index.yaml")
+            return load_document(index_path)
+        except:
+            pass
 
-        if os.path.islink(self.openvino_root):
-            openvino_dir = os.path.realpath(self.openvino_root)
+        return None
 
-        openvino_name = os.path.basename(openvino_dir)
-        version_parts = str(openvino_name).replace("openvino_", "").split(".")
+    def _find_model_proc_root(self):
+        self._model_proc_root = Model.DEFAULT_MODEL_PROC_ROOT
+        if os.path.isdir("/opt/intel/dlstreamer/samples/model_proc"):
+            self._model_proc_root = "/opt/intel/dlstreamer/samples"
+            
+     
+    def _find_open_model_zoo(self):
 
-        for version_part in version_parts:
-            try:
-                self._openvino_version.append(int(version_part))
-            except:
-                self.logger.error("OpenVINO(TM) toolkit version is not number: " + str(version_part))
-                self._openvino_version.append(0)
+        self._model_zoo_root = Model.DEFAULT_OPEN_MODEL_ZOO_ROOT
+        self._model_downloader = Model.DEFAULT_MODEL_DOWNLOADER
+        self._model_converter = Model.DEFAULT_MODEL_CONVERTER
+        self._model_optimizer = Model.DEFAULT_MODEL_OPTIMIZER
+        
+        try:
+            import openvino.model_zoo.omz_downloader
+            import openvino.model_zoo.omz_converter
+            import openvino.tools.mo
+            self._model_downloader = openvino.model_zoo.omz_downloader.__file__
+            self._model_converter = openvino.model_zoo.omz_converter.__file__
+            self._model_optimizer = os.path.split(openvino.tools.mo.__file__)[0]
+            self._model_zoo_root = os.path.split(self._model_downloader)[0]
+        except Exception as error:
+            pass
 
-
-        return self._openvino_version
-
-    def _get_open_model_zoo_tools(self):
-        if self._openvino_version[0] > 2021:
-            self._model_downloader = os.path.join(self.dldt_root,"open_model_zoo/tools/model_tools/downloader.py")
-            self._model_converter = os.path.join(self.dldt_root,"open_model_zoo/tools/model_tools/converter.py")
+        self._pipeline_zoo_models_root = os.path.join(self._model_zoo_root,
+                                                      "models/pipeline-zoo-models")
 
         
     def _create_download_command(self, model, output_dir):
@@ -480,7 +516,9 @@ class Model(Handler):
 
     def _create_convert_command(self, model, output_dir):
         return shlex.split("python3 {0} -d {2} --name {1} -o {2} --mo {3}".format(self._model_converter,
-                                                                           model,output_dir, self._model_optimizer))
+                                                                                  model,
+                                                                                  output_dir,
+                                                                                  self._model_optimizer))
 
 
     def _find_model_root(self,model,output_dir):
@@ -491,23 +529,37 @@ class Model(Handler):
         return None
 
     def _find_model_proc(self, model):
-        for root, directories, files in os.walk(Model.model_proc_root):
+        paths = []
+        if self._model_index:
+            if model in self._model_index:
+                for _, value in self._model_index[model].items():
+                    paths.append(os.path.join(
+                        self._model_proc_root,
+                        value))
+                return paths
+            
+        for root, _, files in os.walk(self._model_proc_root):
             for filepath in files:
-                if os.path.splitext(filepath)[0]==model:
-                    return os.path.join(root,filepath)
-
+                if os.path.splitext(filepath)[0] == model:
+                    paths.append(os.path.join(root, filepath))
+                    return paths
+        return paths
+    
+        
     def _update_model_config(self, model_path, model):
         model_path = os.path.join(model_path, "model.yml")
-        target_path = os.path.join(Model.pipeline_zoo_models_root, model, "model.yml")
+        target_path = os.path.join(self._pipeline_zoo_models_root, model, "model.yml")
         model_config = load_document(model_path)
 
         for file in model_config["files"]:
-            url_covnerter = GithubUrlConverter()
-            url = url_covnerter.convert(file["source"])
+            url_converter = GithubUrlConverter()
+            url = url_converter.convert(file["source"])
             file["source"] = url
-            if self._openvino_version[0] > 2021:
-                del file["sha256"]
-        create_directory(os.path.join(Model.pipeline_zoo_models_root,model))
+            for key in Model.CHECKSUM_KEYS:
+                if key in file and key != self._checksum_key:
+                    del file[key]
+        create_directory(os.path.split(target_path)[0])
+        
         with open(target_path, 'w') as model_description_file:
             yaml.dump(model_config, model_description_file)
 
@@ -540,7 +592,7 @@ class Model(Handler):
             process.wait()
 
             if model!="mobilenetv2_7":
-                command = self._create_convert_command(model,output_dir)
+                command = self._create_convert_command(model, output_dir)
                 self.logger.debug("Convert command: {0}".format(" ".join(command)))
 
             process = subprocess.Popen(command, bufsize=1, universal_newlines=True, stdout=subprocess.PIPE,
@@ -555,15 +607,15 @@ class Model(Handler):
 
             process.wait()
 
-            model_path = self._find_model_root(model,output_dir)
+            model_path = self._find_model_root(model, output_dir)
             
             self.logger.debug("Creating direcory: {}".format(target_root))
             create_directory(target_root,False)
             
             shutil.move(model_path,target_root)
-            model_proc = self._find_model_proc(model)
-            if (model_proc):
-                shutil.copy(model_proc,target_model)
+            model_proc_paths = self._find_model_proc(model)
+            for model_proc in model_proc_paths:
+                shutil.copy(model_proc, target_model)
 
     def _get_model_list(self, pipeline_root):
         model_list = []

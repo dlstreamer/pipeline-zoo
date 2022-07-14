@@ -1,7 +1,0 @@
-# Runner specific configuration
-
-run: "gapirun/build/gapirun"
-
-detect:
-  device: CPU
-  

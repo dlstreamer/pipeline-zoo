@@ -1,0 +1,4 @@
+- efficientnet-b0_INT8
+- efficientnet-b0
+- yolov5s-416_INT8
+- yolov5s-416

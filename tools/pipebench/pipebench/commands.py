@@ -500,11 +500,6 @@ def run(args):
                     num_streams *= 2
                 else:
                     num_streams = int(((min_failure - max_success) / 2) + max_success)
-                if ((calculated_num_streams < num_streams) and
-                    (calculated_num_streams > max_success) and
-                    (calculated_num_streams not in iteration_results_map)
-                ):
-                    num_streams = calculated_num_streams
         else:
             if (min_failure==-1) or (num_streams < min_failure):
                 min_failure = num_streams
@@ -517,12 +512,6 @@ def run(args):
                     num_streams = int(num_streams / 2)
                 else:
                     num_streams = int(((min_failure - max_success) / 2) + max_success)
-                if ((calculated_num_streams > num_streams) and
-                    (calculated_num_streams < min_failure) and
-                    (calculated_num_streams not in iteration_results_map)):
-                    num_streams = calculated_num_streams
-  #              elif (calculated_num_streams-1 > num_streams) and (calculated_num_streams-1 not in iteration_results_map):
-   #                 num_streams = calculated_num_streams-1
         
         if (num_streams>max_streams):
             num_streams = max_streams
@@ -673,10 +662,10 @@ def _prepare(task, measurement_settings, args):
     if (not os.path.isdir(args.workload_root)):
         create_directory(args.workload_root)
 
-        command = _create_systeminfo_command(args.workload_root,
-                                             args)
+    command = _create_systeminfo_command(args.workload_root,
+                                         args)
     
-        subprocess.run(command,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+    subprocess.run(command,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         
 
     directories = [os.path.join(args.workload_root,suffix) for suffix in ["input", "reference"]]

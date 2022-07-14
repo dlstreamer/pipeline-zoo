@@ -22,6 +22,8 @@ NETWORK=
 USER=
 ATTACH=
 INTERACTIVE="-it"
+CPUSET_CPUS=
+CPUSET_MEMS=
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 SOURCE_DIR=$(dirname "$SCRIPT_DIR")
@@ -44,6 +46,22 @@ get_options() {
                 shift
             else
                 error 'ERROR: "--platform" requires an argument.'
+            fi
+            ;;
+	--cpuset-mems)
+            if [ "$2" ]; then
+                CPUSET_MEMS=$2
+                shift
+            else
+                error 'ERROR: "--cpuset-mems" requires an argument.'
+            fi
+            ;;
+	--cpuset-cpus)
+            if [ "$2" ]; then
+                CPUSET_CPUS=$2
+                shift
+            else
+                error 'ERROR: "--cpuset-cpus" requires an argument.'
             fi
             ;;
         --image) # Takes an option argument; ensure it has been specified.
@@ -240,11 +258,19 @@ mkdir -p $SOURCE_DIR/workspace
 mkdir -p $SOURCE_DIR/workspace/.cl-cache
 
 if [ -z "$NETWORK" ]; then
-    NETWORK="--network=host"
+    NETWORK="--network=host";
+fi
+
+if [ ! -z "$CPUSET_MEMS" ]; then
+    CPUSET_MEMS="--cpuset-mems=$CPUSET_MEMS";
+fi
+
+if [ ! -z "$CPUSET_CPUS" ]; then
+    CPUSET_CPUS="--cpuset-cpus=$CPUSET_CPUS";
 fi
 
 if [ -z "$ENTRYPOINT" ]; then
-    ENTRYPOINT="--entrypoint /bin/bash"
+    ENTRYPOINT="--entrypoint /bin/bash";
 fi
 
 PRIVILEGED="--privileged "
@@ -253,7 +279,7 @@ show_options
 
 if [ -z "$ATTACH" ]; then
     set -x
-    docker run $INTERACTIVE $WORKDIR --rm $ENVIRONMENT $VOLUME_MOUNT $CAPADD $DEVICES $DEVICEGRP $NETWORK $ENTRYPOINT --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
+    docker run $INTERACTIVE $WORKDIR --rm $ENVIRONMENT $VOLUME_MOUNT $CAPADD $DEVICES $DEVICEGRP $NETWORK $ENTRYPOINT $CPUSET_CPUS $CPUSET_MEMS --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
      { set +x; } 2>/dev/null
 else
     RUNNING_INSTANCE=$(docker ps -q --filter "name=$IMAGE")

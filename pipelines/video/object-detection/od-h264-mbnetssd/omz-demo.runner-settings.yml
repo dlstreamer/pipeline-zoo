@@ -1,6 +1,0 @@
-# Runner specific configuration
-
-run: "omzrun/build/omzrun"
-
-detect:
-  device: CPU

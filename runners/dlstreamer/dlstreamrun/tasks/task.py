@@ -17,6 +17,7 @@ from urllib import parse
 from collections import defaultdict
 import shlex
 import subprocess
+import functools
 
 def input_to_src(_input):
 
@@ -205,6 +206,8 @@ def find_model(model, models_root, result=None):
 
         set_model_file(model, model_root, file_paths, root, result, ".bin", "bin")
 
+        set_model_file(model, model_root, file_paths, root, result, ".txt", "labels")
+
     int8_model = model + "_INT8"
     int8_model_root = os.path.join(models_root,int8_model)
     if (os.path.isdir(int8_model_root)):
@@ -217,6 +220,11 @@ def number_of_physical_threads(systeminfo):
 
 def intel_gpu(systeminfo):
     return ("gpu" in systeminfo and "Intel" in systeminfo["gpu"]["Device name"])
+
+@functools.lru_cache
+def labels_supported():
+    inspect_output = subprocess.check_output(["gst-inspect-1.0", "gvadetect"]).decode("utf-8").strip()
+    return "labels" in inspect_output
 
 def queue_properties(config, model, systeminfo):
     result = ""
@@ -389,6 +397,8 @@ def inference_properties(config, model, model_name, systeminfo):
     threads = number_of_physical_threads(systeminfo)
     if (getattr(model,"proc",None)):
         result.setdefault("model-proc",model.proc)
+    if (getattr(model,"labels",None) and labels_supported()):
+        result.setdefault("labels",model.labels)
     
     if (result["device"]=="CPU"):
         precision = result.setdefault("precision","FP32")

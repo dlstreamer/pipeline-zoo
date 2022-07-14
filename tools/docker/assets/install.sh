@@ -40,16 +40,30 @@ if [ -d /opt/intel/openvino/deployment_tools/open_model_zoo/models/media-analyti
     rm -rf /opt/intel/openvino/deployment_tools/open_model_zoo/models/media-analytics-pipeline-zoo
 fi
 
-if [ -d /opt/intel/openvino/data_processing/dl_streamer/python/gstgva ]; then 
-  # OpenVINO(TM) toolkit Image 
-  GVA_PYTHON_PATH=/opt/intel/openvino/data_processing/dl_streamer/python/gstgva  
-elif [ -d /opt/intel/samples/lib/python3.8/site-packages/gstgva ]; then
-  # GSE docker image
-  GVA_PYTHON_PATH=/opt/intel/samples/lib/python3.8/site-packages/gstgva
+# Intel(R) Media Analytics Containers
+
+if [ -d "/opt/intel/samples" ]; then
+    PYTHONUSERBASE="/opt/intel/samples"
 fi
 
-if [ -f $GVA_PYTHON_PATH/video_frame.py ]; then
-  cp $PIPELINE_ZOO_HOME_DIR/tools/docker/assets/video_frame.py $GVA_PYTHON_PATH/video_frame.py;
+# Intel(R) Deep Learning Streamer Base Image
+
+GVA_PYTHON_PATH=`PYTHONUSERBASE=$PYTHONUSERBASE python3 -c "import gstgva.video_frame; print(gstgva.video_frame.__file__)"`
+if ( [ ! -z $GVA_PYTHON_PATH ] && [ -f $GVA_PYTHON_PATH ] ); then
+  cp $PIPELINE_ZOO_HOME_DIR/tools/docker/assets/video_frame.py $GVA_PYTHON_PATH
+fi
+
+# OpenVINO(TM) toolkit Base Image 
+
+GVA_PYTHON_PATH=/opt/intel/openvino/data_processing/dl_streamer/python/gstgva/video_frame.py
+if [ -f $GVA_PYTHON_PATH ]; then 
+    cp $PIPELINE_ZOO_HOME_DIR/tools/docker/assets/video_frame.py $GVA_PYTHON_PATH
+fi
+
+# Opt out for telemetry model downloading and converting
+TELEMETRY_OPT_IN_OUT=`PYTHONUSERBASE=$PYTHONUSERBASE python3 -c "import openvino_telemetry,os;print(os.path.split(openvino_telemetry.__file__)[0])"`
+if ( [ ! -z $TELEMETRY_OPT_IN_OUT ] && [ -d $TELEMETRY_OPT_IN_OUT ] ); then
+    PYTHONUSERBASE=$PYTHONUSERBASE python3 $TELEMETRY_OPT_IN_OUT/opt_in_out.py --opt_out
 fi
 
 # pip install pipebench tools 
@@ -103,6 +117,7 @@ if [ ! -z $PIPELINE_LIST ]; then \
   && cd $PIPELINE_ZOO_HOME_DIR/workspace \
   && while read pipeline_name; \
      do pipeline_name=$(echo $pipeline_name | cut -f2 -d' '); \
-        GITHUB_TOKEN=$GITHUB_TOKEN pipebench download $pipeline_name; \
+        GITHUB_TOKEN=$GITHUB_TOKEN PYTHONUSERBASE=$PYTHONUSERBASE pipebench download $pipeline_name; \
         done < $PIPELINE_ZOO_HOME_DIR/$PIPELINE_LIST
 fi
+
