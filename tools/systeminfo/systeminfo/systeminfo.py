@@ -166,6 +166,11 @@ def opencv_version(openvino):
     text = read_or_fail(os.path.join(opencv_path, "OpenCVConfig-version.cmake"))
     return get_value(r".*set\(OpenCV_VERSION\s*(.*)\)", text)
 
+@empty_string_if_failure
+def dlstreamer_version():
+    text = output_or_empty("gst-inspect-1.0 gvadetect")
+    result = get_value(r".*Version\s*(.*)",text)
+    return result
 
 @empty_string_if_failure
 def openvino_version(openvino):
@@ -380,6 +385,7 @@ def software(model_zoo_path, job_name, openvino_path, omz_path):
         "TF-to-ONNX":      tf2onnx_version(),
         "Caffe-to-ONNX":   caffe2onnx_version(),
         "nireq":           "N/A",
+        "Intel(R) Deep Learning Streamer": dlstreamer_version()
     }
     if "Ubuntu" == distro.linux_distribution()[0]:
         result.update({
@@ -646,10 +652,10 @@ def main():
     parser.add_argument("-b",  "--bitstreams", default="",    help="Path to bitstreams")
     parser.add_argument("-j",  "--job",        default="",    help="Job name")
     parser.add_argument("-m",  "--modelzoo",   default="",    help="Path to model-zoo code")
-    parser.add_argument("--open-model-zoo-repo",   default="",    help="Path to open model zoo code repository")
+    parser.add_argument("--open-model-zoo-repo",   default="",    help="Path to Open Model Zoo code repository")
     parser.add_argument("-js", "--json",                      help="JSON output file with system configuration")
     parser.add_argument("-f",  "--fp11",       default=False, help="Use fp11", required=False)
-    parser.add_argument("--openvino",                         help="OpenVINO path")
+    parser.add_argument("--openvino",                         help="OpenVINO(TM) toolkit path")
     args = parser.parse_args()
 
     if not args.openvino:

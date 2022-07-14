@@ -18,21 +18,25 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-ARG BASE=openvino/ubuntu20_data_dev:2021.4.2
-ARG PIPELINE_ZOO_PLATFORM=DEFAULT
-ARG REGISTRY=
-
+# For latest agama UMD drivers use ./build.sh --base intel/dlstreamer:2022.1.1-ubuntu20-devel
+ARG BASE=intel/dlstreamer:2022.1.0-ubuntu20-devel
+ARG REGISTRY
 FROM ${REGISTRY}${BASE} as media-analytics-pipeline-zoo
-ARG BASE=openvino/ubuntu20_data_dev:2021.3_vaapi_fix
 ARG PIPELINE_ZOO_PLATFORM=DEFAULT
+ARG GITHUB_TOKEN
+ARG PIPELINE_LIST
+ARG ENTRYPOINT="/usr/bin/bash"
+ARG CMD="/usr/bin/bash"
 
 ENV PIPELINE_ZOO_PLATFORM=$PIPELINE_ZOO_PLATFORM
 ENV PIPELINE_ZOO_BASE_IMAGE=${REGISTRY}$BASE
 ENV INTEL_OPENVINO_DIR=/opt/intel/openvino
+ENV ENTRYPOINT=$ENTRYPOINT
+ENV CMD=$CMD
 
 USER root
 
-# Dependencies for OpenVINO
+# Install these below dependencies for OpenVINO base image based pipeline-zoo docker images
 RUN if [ -f /opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh ]; then \
        /opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh -y ;\
     fi
@@ -46,7 +50,6 @@ RUN if [ -f /opt/intel/openvino/install_dependencies/install_NCS_udev_rules.sh ]
        /opt/intel/openvino/install_dependencies/install_NCS_udev_rules.sh -y ;\
     fi    
 
-
 # Dependencies installed via apt-get
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y -q --no-install-recommends \
@@ -55,6 +58,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     graphviz-dev \
     pciutils \
     dmidecode \
+    ffmpeg \
     cmake \
     bash-completion \
     libyaml-cpp-dev \
@@ -69,43 +73,52 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
 ENV nlohmann_json_DIR=/usr/lib/cmake
 ENV LD_PRELOAD=libjemalloc.so
 
-# bash completion
-RUN printf "if [ -f /etc/bash_completion ] && ! shopt -oq posix; then \n\
-    . /etc/bash_completion \n\
-fi\n" >> ~/.bashrc
+# Install Intel(R) Deep Learning Streamer from SRC
+ARG DLSTREAMER_SRC_REPO
+ARG DLSTREAMER_SRC_VERSION
+ARG GRAPHICS_APT_REPO=https://repositories.intel.com/graphics/
+RUN if [ ! -z "$DLSTREAMER_SRC_REPO" ]; then \
+    curl ${GRAPHICS_APT_REPO}intel-graphics.key | \
+    apt-key add - && \
+    apt-add-repository "deb [arch=amd64] ${GRAPHICS_APT_REPO}ubuntu/ focal main" && \
+       DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y -q --no-install-recommends git libva-dev python-gi-dev && \
+       git clone https://$GITHUB_TOKEN@github.com/$DLSTREAMER_SRC_REPO /home/dlstreamer_src; \
+    fi
 
-# pipebench
-COPY ./pipebench/requirements.txt /
-RUN pip3 install  --no-cache-dir -r /requirements.txt
-RUN rm -f /requirements.txt
-RUN ln -s /home/pipeline-zoo/tools/pipebench/pipebench/__main__.py /usr/local/bin/pipebench
+RUN if [ ! -z "$DLSTREAMER_SRC_VERSION" ]; then \
+          cd /home/dlstreamer_src && \
+          git checkout $DLSTREAMER_SRC_VERSION; \
+    fi
+
+RUN if [ ! -z "$DLSTREAMER_SRC_REPO" ]; then \
+       cd /home/dlstreamer_src && \
+       git submodule init && \
+       git submodule update && \
+       python3 -m pip install --no-cache-dir -r requirements.txt && \
+#       ./scripts/install_metapublish_dependencies.sh && \
+       mkdir build && cd build  \
+       && cmake \
+	     -DCMAKE_BUILD_TYPE=Release \	
+    	     -DCMAKE_INSTALL_PREFIX=/opt/intel/dlstreamer \
+    	     -DENABLE_PAHO_INSTALLATION=OFF \
+    	     -DENABLE_RDKAFKA_INSTALLATION=OFF \
+    	     -DENABLE_VAAPI=ON \
+	         .. \
+       && make -j $(nproc) \
+       && make install; \ 
+    fi
+ENV GST_PLUGIN_PATH=/home/dlstreamer_src/build/intel64:${GST_PLUGIN_PATH}
+
+
+COPY . /home/pipeline-zoo
+RUN if [ ! -z "$PIPELINE_LIST" ]; then \
+        /bin/bash /home/pipeline-zoo/tools/docker/assets/install.sh -l "$PIPELINE_LIST" -t "$GITHUB_TOKEN"; \
+    else \
+        /bin/bash /home/pipeline-zoo/tools/docker/assets/install.sh; \
+    fi
+
+# pipebench tools path
 ENV PYTHONPATH=$PYTHONPATH:/home/pipeline-zoo/tools/pipebench
-# Install bash-completion
-RUN printf 'eval "$(shtab --shell=bash pipebench.arguments._get_parser_shtab)"' \
-  | tee "$(pkg-config --variable=completionsdir bash-completion)"/pipebench
-
-# systeminfo
-COPY ./systeminfo/requirements.txt /
-RUN pip3 install  --no-cache-dir -r /requirements.txt
-RUN rm -f /requirements.txt
-
-# uploader
-COPY ./systeminfo/requirements.txt ./uploader/requirements.tx[t] /
-RUN pip3 install  --no-cache-dir -r /requirements.txt
-RUN rm -f /requirements.txt
-
-# downloader
-COPY ./downloader/requirements.txt /
-RUN pip3 install  --no-cache-dir -r/requirements.txt
-RUN rm -f /requirements.txt
-
-# tests
-COPY ./systeminfo/requirements.txt ./tests/requirements.tx[t] /
-RUN pip3 install  --no-cache-dir -r /requirements.txt
-RUN rm -f /requirements.txt
-
-# Patches
-COPY ./docker/patches/video_frame.py /opt/intel/openvino/data_processing/dl_streamer/python/gstgva/video_frame.py
 
 # model zoo
 ENV OPEN_MODEL_ZOO_ROOT=/opt/intel/openvino/deployment_tools/open_model_zoo
@@ -114,16 +127,17 @@ ENV OPEN_MODEL_ZOO_ROOT=/opt/intel/openvino/deployment_tools/open_model_zoo
 ENV DLSTREAMER_MODEL_PROC_ROOT=/opt/intel/openvino/data_processing/dl_streamer/samples/model_proc
 
 # XDG_RUNTIME_DIR
-RUN mkdir -p /home/.xdg_runtime_dir
 ENV XDG_RUNTIME_DIR=/home/.xdg_runtime_dir
 
 #Open CL Cache
-RUN mkdir -p $SOURCE_DIR/workspace/.cl-cache
 ENV cl_cache_dir=/home/pipeline-zoo/workspace/.cl-cache
 
 # Bash History
-
 ENV HISTFILE=/home/pipeline-zoo/workspace/.bash_history
 
 # work dir
-WORKDIR /home/pipeline-zoo/workspace
+WORKDIR /home/pipeline-zoo/workspace 
+
+ENTRYPOINT echo $ENTRYPOINT
+
+CMD echo $CMD

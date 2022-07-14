@@ -22,6 +22,8 @@ NETWORK=
 USER=
 ATTACH=
 INTERACTIVE="-it"
+CPUSET_CPUS=
+CPUSET_MEMS=
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 SOURCE_DIR=$(dirname "$SCRIPT_DIR")
@@ -29,6 +31,7 @@ SOURCE_DIR=$(dirname "$SOURCE_DIR")
 ENVIRONMENT=$(env | cut -f1 -d= | grep -E '_(proxy)$' | sed 's/^/-e / ' | tr '\n' ' ')
 ENVIRONMENT+="-e DISPLAY "
 WORKDIR=
+MOUNTSRC=true
 
 get_options() {
     while :; do
@@ -43,6 +46,22 @@ get_options() {
                 shift
             else
                 error 'ERROR: "--platform" requires an argument.'
+            fi
+            ;;
+	--cpuset-mems)
+            if [ "$2" ]; then
+                CPUSET_MEMS=$2
+                shift
+            else
+                error 'ERROR: "--cpuset-mems" requires an argument.'
+            fi
+            ;;
+	--cpuset-cpus)
+            if [ "$2" ]; then
+                CPUSET_CPUS=$2
+                shift
+            else
+                error 'ERROR: "--cpuset-cpus" requires an argument.'
             fi
             ;;
         --image) # Takes an option argument; ensure it has been specified.
@@ -109,7 +128,7 @@ get_options() {
                 error 'ERROR: "--entrypoint" requires a non-empty option argument.'
             fi
             ;;
-	--workdir)
+        --workdir)
             if [ "$2" ]; then
                 WORKDIR="--workdir $2"
                 shift
@@ -117,21 +136,29 @@ get_options() {
                 error 'ERROR: "--workdir" requires a non-empty option argument.'
             fi
             ;;
-	--attach)
-	    ATTACH=TRUE
+        --mount-src)
+            if [ "$2" ]; then
+                MOUNTSRC="$2"
+                shift
+            else
+                error 'ERROR: "--mount-src" requires a true/false argument'
+            fi
             ;;
-	--non-interactive)
+        --attach)
+            ATTACH=TRUE
+            ;;
+        --non-interactive)
             INTERACTIVE="-t"
             ;;
         --) # End of all options.
             shift
             break
             ;;
-	-?*)
-	    error 'ERROR: Unknown option: ' $1
+        -?*)
+        error 'ERROR: Unknown option: ' $1
             ;;
         ?*)
-	    error 'ERROR: Unknown option: ' $1
+        error 'ERROR: Unknown option: ' $1
             ;;
         *) # Default case: No more options, so break out of the loop.
             break ;;
@@ -141,10 +168,10 @@ get_options() {
     done
 
     if [ ! -z "$PLATFORM" ]; then
-	PLATFORM=${PLATFORM^^}
-	if [[ ! -n "${PLATFORMS[$PLATFORM]}" ]]; then
-	    error 'ERROR: Unknown platform: ' $PLATFORM
-	fi
+        PLATFORM=${PLATFORM^^}
+        if [[ ! -n "${PLATFORMS[$PLATFORM]}" ]]; then
+            error 'ERROR: Unknown platform: ' $PLATFORM
+        fi
     fi
 
     if [[ $PLATFORM =~ "ATS" ]] || [[ $IMAGE =~ "ats" ]]; then
@@ -162,9 +189,9 @@ get_options() {
 
     if [ -z "$IMAGE" ]; then
         IMAGE=$DEFAULT_IMAGE
-	if [ ! -z "$PLATFORM" ] && [ $PLATFORM != 'DEFAULT' ]; then
-	    IMAGE+="-${PLATFORM,,}"
-	fi
+        if [ ! -z "$PLATFORM" ] && [ $PLATFORM != 'DEFAULT' ]; then
+            IMAGE+="-${PLATFORM,,}"
+        fi
     fi
 
     if [ -z "$NAME" ]; then
@@ -187,6 +214,8 @@ show_options() {
     echo "   Entrypoint: '${ENTRYPOINT}'"
     echo "   EntrypointArgs: '${ENTRYPOINT_ARGS}'"
     echo "   User: '${USER}'"
+    echo "   workdir: '${WORKDIR}'"
+    echo "   mount src: '${MOUNTSRC}'"
     echo "   Attach: '${ATTACH}'"
     echo "   Interactive: '${INTERACTIVE}'"
     echo "   Platform: '${PLATFORM}'"
@@ -203,6 +232,8 @@ show_help() {
   echo "  [--user name of user to pass to docker run]"
   echo "  [--name container name to pass to docker run]"
   echo "  [--attach attach to running container]"
+  echo "  [--mount-src [true/false] mount pipeline-zoo source directory]"
+  echo "  [--workdir working directory to start with inside the container to docker run]"
   echo "  [--non-interactive run container without -i flag]"
   echo "  [--platform platform specific image]"
   exit 0
@@ -215,7 +246,9 @@ error() {
 
 get_options "$@"
 
-VOLUME_MOUNT+="-v $SOURCE_DIR:/home/pipeline-zoo/ "
+if [ "${MOUNTSRC,,}" == "true"  ]; then
+  VOLUME_MOUNT+="-v $SOURCE_DIR:/home/pipeline-zoo/ "
+fi
 VOLUME_MOUNT+="-v /tmp:/tmp "
 VOLUME_MOUNT+="-v /var/tmp:/var/tmp "
 VOLUME_MOUNT+="-v /dev:/dev "
@@ -225,11 +258,19 @@ mkdir -p $SOURCE_DIR/workspace
 mkdir -p $SOURCE_DIR/workspace/.cl-cache
 
 if [ -z "$NETWORK" ]; then
-    NETWORK="--network=host"
+    NETWORK="--network=host";
+fi
+
+if [ ! -z "$CPUSET_MEMS" ]; then
+    CPUSET_MEMS="--cpuset-mems=$CPUSET_MEMS";
+fi
+
+if [ ! -z "$CPUSET_CPUS" ]; then
+    CPUSET_CPUS="--cpuset-cpus=$CPUSET_CPUS";
 fi
 
 if [ -z "$ENTRYPOINT" ]; then
-    ENTRYPOINT="--entrypoint /bin/bash"
+    ENTRYPOINT="--entrypoint /bin/bash";
 fi
 
 PRIVILEGED="--privileged "
@@ -238,15 +279,15 @@ show_options
 
 if [ -z "$ATTACH" ]; then
     set -x
-    docker run $INTERACTIVE $WORKDIR --rm $ENVIRONMENT $VOLUME_MOUNT $CAPADD $DEVICES $DEVICEGRP $NETWORK $ENTRYPOINT --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
+    docker run $INTERACTIVE $WORKDIR --rm $ENVIRONMENT $VOLUME_MOUNT $CAPADD $DEVICES $DEVICEGRP $NETWORK $ENTRYPOINT $CPUSET_CPUS $CPUSET_MEMS --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
      { set +x; } 2>/dev/null
 else
     RUNNING_INSTANCE=$(docker ps -q --filter "name=$IMAGE")
     if [ ! -z "$RUNNING_INSTANCE" ]; then
-	set -x
-	docker attach $RUNNING_INSTANCE
-	{ set +x; } 2>/dev/null
+        set -x
+        docker attach $RUNNING_INSTANCE
+        { set +x; } 2>/dev/null
     else
-	error 'No Running Instance found'
+        error 'No Running Instance found'
     fi
 fi

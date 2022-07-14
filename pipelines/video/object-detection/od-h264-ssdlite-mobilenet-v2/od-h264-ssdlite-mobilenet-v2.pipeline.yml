@@ -1,0 +1,6 @@
+task: object-detection
+
+model: ssdlite_mobilenet_v2
+
+inputs.media.type.media-type: video/x-h264
+

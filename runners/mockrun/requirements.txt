@@ -1,3 +1,2 @@
-pygraphviz
 ffmpeg-python
 jsonschema

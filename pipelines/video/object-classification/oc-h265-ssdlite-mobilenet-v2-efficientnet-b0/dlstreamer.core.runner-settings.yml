@@ -1,0 +1,13 @@
+run: "python3 dlstreamrun"
+decode:
+  device: GPU
+  post-proc-caps: video/x-raw(memory:VASurface)
+detect:
+  device: MULTI:CPU,GPU
+  precision: FP16-INT8
+
+classify-0:
+  device: MULTI:CPU,GPU
+  precision: FP16-INT8
+  pre-process-backend: opencv
+

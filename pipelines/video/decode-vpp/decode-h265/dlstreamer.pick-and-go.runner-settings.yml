@@ -5,5 +5,5 @@ vpp:
   device: GPU
 sink:
   element: fpsdisplaysink
-  video-sink: "vaapisink fullscreen=true"
+  video-sink: '"vaapisink fullscreen=true"'
   sync: true
