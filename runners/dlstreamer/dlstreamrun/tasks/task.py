@@ -417,12 +417,14 @@ def inference_properties(config, model, model_name, systeminfo):
 
     if hasattr(model,precision):
         result.setdefault("model",getattr(model,precision).xml)
-    elif list(model.__dict__.keys()):
-        default_precision = list(model.__dict__.keys())[0]
-        print("\nNo {} Model found, trying: {}\n".format(precision, default_precision))
-        result.setdefault("model",getattr(model,default_precision).xml)
     else:
-        raise Exception("Can't find precision: {} for model: {}".format(precision,model_name))
+        model_precisions = list(filter(lambda x: (x != 'labels' and x != 'proc'), model.__dict__.keys()))
+        if model_precisions:
+            default_precision = model_precisions[0]
+            print("\nNo {} Model found, trying: {}\n".format(precision, default_precision))
+            result.setdefault("model",getattr(model,default_precision).xml)
+        else:
+            raise Exception("Can't find precision: {} for model: {}".format(precision,model_name))
 
     non_properties = ["element","enabled","precision"]
     
