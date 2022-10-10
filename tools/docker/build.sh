@@ -13,7 +13,7 @@ PLATFORM=DEFAULT
 
 # Base Images
 # For latest agama UMD drivers use ./build.sh --base intel/dlstreamer:2022.1.1-ubuntu20-devel
-DEFAULT_BASE_IMAGE=intel/dlstreamer:2022.1.0-ubuntu20-devel
+DEFAULT_BASE_IMAGE=intel/dlstreamer:2022.2.0-ubuntu20-gpu815-devel
 ATS_BASE_IMAGE=intel-media-analytics:latest
 
 # Model Proc Versions
