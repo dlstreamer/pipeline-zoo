@@ -3,5 +3,5 @@ files:
 - name: Uniform_video_FHD_AVC.mp4
   sha256: 1c7b414eadb3256ef085fb658448fa922237e4615a9e31f575b2fde058c9b9b9
   size: 42068527
-  source: https://gitlab.devtools.intel.com/media-analytics-pipeline-zoo/media/-/raw/main/video/Uniform_video_FHD_AVC/Uniform_video_FHD_AVC.mp4?inline=false
+  source: https://github.com/intel-innersource/frameworks.ai.dlstreamer.pipeline-zoo-media/blob/main/storage/video/Uniform_video_FHD_AVC/Uniform_video_FHD_AVC.mp4?raw=true
 license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE
