@@ -1,0 +1,4 @@
+- efficientnet-b0
+- efficientnet-b0_INT8
+- ssd_mobilenet_v1_coco_INT8
+- ssd_mobilenet_v1_coco

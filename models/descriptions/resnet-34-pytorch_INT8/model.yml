@@ -1,0 +1,20 @@
+description:  The "resnet-34-pytorch_INT8" model is a quantized version of <https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public/resnet-34-pytorch>
+files:
+- checksum: 66f1d2061a4d20b008fbb713b2e399cd5a3280c72a951c34f87f323e53d1151da42237a92919e35f460d06a6fbdf684b
+  name: FP16-INT8/resnet-34-pytorch_INT8.xml
+  sha256: e0d05135574e811595624ed8d1ca7bf5cf43a699e6df5f1cfd15773ec56dcb08
+  size: 331580
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/resnet-34-pytorch_INT8/resnet-34-pytorch.xml?raw=true
+- checksum: 51c4eeefd216e90f40a7ec1d5099f70486886451d7fbb07c8dd351c403924c14afecf61e4226e196c8756eedbc0f2a44
+  name: FP16-INT8/resnet-34-pytorch_INT8.json
+  sha256: c46ae41f8db073785748deb67ed1b540fbc3d1c64c3f795a611d983a89119d30
+  size: 29820
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/resnet-34-pytorch_INT8/resnet-34.json?raw=true
+- checksum: b7d15035b05e4330d4c5461a7915080fb36d2b980c5e36b21dbe5531ca379fa3a97b97846f47bd9ad7e604451b7bab97
+  name: FP16-INT8/resnet-34-pytorch_INT8.bin
+  sha256: 8f7f9e4f8f4d2e9575e9e6ebd35eea0a33d81753c08c911ceeb2796cfbb32ccb
+  size: 21875106
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/resnet-34-pytorch_INT8/resnet-34-pytorch.bin?raw=true
+framework: dldt
+license: ''
+task_type: classification

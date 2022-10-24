@@ -1,0 +1,25 @@
+description:  The "retinanet-tf_INT8" model is a quantized version of <https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public/retinanet-tf>
+files:
+- checksum: 376c408f46b24382eb3e71e264fea6835bb5183a459b2b2368141c681a25c85e36952513a0d4ff95a60ef60f086bdae2
+  name: FP16-INT8/retinanet-tf_INT8.xml
+  sha256: 4ba891588630e131e7f2b1f5beb4f530db12d6adbbe8e47730743d2932aa5fc7
+  size: 1126578
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/retinanet-tf_INT8/retinanet.xml?raw=true
+- checksum: c63ee6859134357647aa0099f50699151cde0d1b523a5add644afe6f3c33fe0d5074814b8f0f6be40ebae8570490c37b
+  name: FP16-INT8/retinanet-tf_INT8.bin
+  sha256: 54e59d6cab359150edda242693c7e8758094b8745ff5765ac65d5af52c6425de
+  size: 38107414
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/retinanet-tf_INT8/retinanet.bin?raw=true
+- checksum: 4cdf95a0092e454be53dc08cb731472a28da79e74d02d04bf93e6ac60149c8071451b75682f8d0805409615a750d55ce
+  name: FP16-INT8/retinanet-tf_description_INT8.txt
+  sha256: 601804288cdf4e329e374fe749657d6026e66ffbc2f5af77cefca27f26932edd
+  size: 516
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/retinanet-tf_INT8/description.txt?raw=true
+- checksum: 66aa1e452956885a07c5bc174870cebb5e3a68cbf9d6cce4808423d4c6d4f56795cbcb5f45a78c0d699fd0053b2bc15f
+  name:  FP16-INT8/retinanet-tf_INT8.json
+  sha256: e8ce259de9aaf72adb33e530229738e6d1272edadb7b62a40204be4df5c2932a
+  size: 2707
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/retinanet-tf_INT8/retinanet.json?raw=true
+framework: dldt
+license: ''
+task_type: detection

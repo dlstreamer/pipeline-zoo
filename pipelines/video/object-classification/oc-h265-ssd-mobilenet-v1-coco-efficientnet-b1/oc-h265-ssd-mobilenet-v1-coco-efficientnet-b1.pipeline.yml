@@ -1,0 +1,9 @@
+
+task: object-classification
+
+detection-model: ssd_mobilenet_v1_coco
+
+classification-models: [efficientnet-b1]
+
+inputs.media.type.media-type: video/x-h265
+

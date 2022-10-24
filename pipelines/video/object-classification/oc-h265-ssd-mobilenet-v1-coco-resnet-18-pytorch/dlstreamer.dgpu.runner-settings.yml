@@ -1,0 +1,26 @@
+run: "python3 dlstreamrun"
+decode:
+  device: GPU
+  caps: video/x-raw(memory:VASurface)
+detect:
+  device: GPU
+  nireq: 4
+  batch-size: 64
+  pre-process-backend: vaapi-surface-sharing
+  pre-process-config: "VAAPI_FAST_SCALE_LOAD_FACTOR=1"
+  precision: FP16-INT8
+  model-instance-id: det
+classify-0:
+  device: GPU
+  nireq: 4
+  batch-size: 64
+  pre-process-backend: vaapi-surface-sharing
+  pre-process-config: "VAAPI_FAST_SCALE_LOAD_FACTOR=1"
+  precision: FP16-INT8
+  model-instance-id: cls
+decode-queue:
+  enabled: false
+detect-queue:
+  enabled: false
+classify-0-queue:
+  enabled: false

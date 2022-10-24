@@ -1,0 +1,4 @@
+- resnet-34-pytorch_INT8
+- resnet-34-pytorch
+- ssd_mobilenet_v1_coco_INT8
+- ssd_mobilenet_v1_coco

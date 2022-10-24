@@ -1,0 +1,9 @@
+
+task: object-classification
+
+detection-model: ssdlite_mobilenet_v2
+
+classification-models: [resnet-50-tf]
+
+inputs.media.type.media-type: video/x-h265
+

@@ -1,0 +1,45 @@
+description: efficientnet-b1
+files:
+- checksum: 9b5890a6058692b09bada3dc7b7142e9318a97ac9c6e96d9f85e0a2b1983f901b671cf9606f1c9e9a88eaca5b89f1cfa
+  name: FP32/description.txt
+  sha256: 755a99fb7ad2212b6f35fb67b02ac35a092faf5d2ba20a39263a19bf15a848d4
+  size: 719
+  source: https://github.com/intel-innersource/frameworks.ai.dlstreamer.pipeline-zoo-models/blob/main/storage/efficientnet-b1/FP32/description.txt?raw=true
+- checksum: 7d58a0f1d52087edfc5be3d63724a94bbda9602265fcc418940fcef9bd1acab875759a7904954ac08c7ab8383dfd32ef
+  name: FP32/efficientnet-b1.bin
+  sha256: 733e10a3a2dacc30f5c81839f32889c9db21c378821d044a6ca31d24d93f0dd0
+  size: 31052684
+  source: https://github.com/intel-innersource/frameworks.ai.dlstreamer.pipeline-zoo-models/blob/main/storage/efficientnet-b1/FP32/efficientnet-b1.bin?raw=true 
+- checksum: 3374df56e614c1d27f1f55ba9e010af8fb5dfb65b9d12cebb418b8e5e543cbdcda6cb40c5ad5042189071de29dd8dc85
+  name: FP32/efficientnet-b1.xml
+  sha256: 3a580cf4eef88c11c648a4d17543243eca39c8929b50efa41f29df04b351c968
+  size: 384251
+  source: https://github.com/intel-innersource/frameworks.ai.dlstreamer.pipeline-zoo-models/blob/main/storage/efficientnet-b1/FP32/efficientnet-b1.xml?raw=true
+- checksum: 642c22dcd5b3a59d0ae3d64aeef9695df4384a5bb3de1cc0af7a3208e9babc6c2a729bf3efc2878e959d4f1e731775b0
+  name: FP32/efficientnet-b1.json
+  sha256: edc75383ee33fb19731168bbeae522c88c8806d05f29535bdc4231cf2ad10cf0
+  size: 41108
+  source: https://github.com/intel-innersource/frameworks.ai.dlstreamer.pipeline-zoo-models/blob/main/storage/efficientnet-b1/efficientnet-b1.json?raw=true
+- checksum: 53d035c5c05b487204bd68c540732ffc8f3dfe841c2bde5c6ec2244c2a342031df0d57bb358b7cf47c4d0720f0e390af
+  name: FP16/description.txt
+  sha256: 09a627ef511697fca23774f1084d9cefa1d9dcea39650c6707915205a8f2f546
+  size: 719
+  source: https://github.com/intel-innersource/frameworks.ai.dlstreamer.pipeline-zoo-models/blob/main/storage/efficientnet-b1/FP16/description.txt?raw=true 
+- checksum: 25850f074124f3c644e9e1e98581a95d04ce023d4f608763eafdddc76cd0dc9d95c0b4e809bce4d39714ace69493bd1a
+  name: FP16/efficientnet-b1.bin
+  sha256: 0e17bdb8cb4cc0c0d99f76279ec7136ee0ade2745a7db06d8548169c3d844ec0
+  size: 15526358
+  source: https://github.com/intel-innersource/frameworks.ai.dlstreamer.pipeline-zoo-models/blob/main/storage/efficientnet-b1/FP16/efficientnet-b1.bin?raw=true
+- checksum: 8c2b36c84d489f61b1579262797d2922ab64b4171a2164d2e70d1535769f57a5f72bd90276303ca0dc47f46e8a1867be
+  name: FP16/efficientnet-b1.xml
+  sha256: 98ca028f9aaee032ee38e1962cfc6163c86d583bf373b0edf2a74a2c1ed04b9a
+  size: 514052
+  source: https://github.com/intel-innersource/frameworks.ai.dlstreamer.pipeline-zoo-models/blob/main/storage/efficientnet-b1/FP16/efficientnet-b1.xml?raw=true
+- checksum: 642c22dcd5b3a59d0ae3d64aeef9695df4384a5bb3de1cc0af7a3208e9babc6c2a729bf3efc2878e959d4f1e731775b0
+  name: FP16/efficientnet-b1.json
+  sha256: edc75383ee33fb19731168bbeae522c88c8806d05f29535bdc4231cf2ad10cf0
+  size: 41108
+  source: https://github.com/intel-innersource/frameworks.ai.dlstreamer.pipeline-zoo-models/blob/main/storage/efficientnet-b1/efficientnet-b1.json?raw=true
+framework: dldt
+license: ''
+task_type: classification

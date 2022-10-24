@@ -1,0 +1,20 @@
+description: resnet-18-pytorch_INT8
+files:
+- checksum: 29ee22f2915b5e24ba9fc6ba876cb47202b24a9a3ac5199ac0c91783b218201d142855fcfd4c5cca33e8e979b4b9da7e
+  name: FP16-INT8/resnet-18-pytorch_INT8.bin
+  sha256: c78ec01a456bbd0f76b7e5d6fb49bcf09e3ba2c5a17787a55bdf76b1c2bd7499
+  size: 11737122
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/resnet-18-pytorch_INT8/resnet-18-pytorch.bin?raw=true
+- checksum: 51c4eeefd216e90f40a7ec1d5099f70486886451d7fbb07c8dd351c403924c14afecf61e4226e196c8756eedbc0f2a44
+  name: FP16-INT8/resnet-18-pytorch_INT8.json
+  sha256: c46ae41f8db073785748deb67ed1b540fbc3d1c64c3f795a611d983a89119d30 
+  size: 29820
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/resnet-18-pytorch_INT8/resnet-18-pytorch.json?raw=true
+- checksum: a9341be7e69ddab4e75968070756440798c78ee1445e3987fea072e5a5019d7b38b6152989af3f78642e07bd7707c01e
+  name: FP16-INT8/resnet-18-pytorch_INT8.xml
+  sha256: b97e2153d3c50df7a7362b7ed91fc635d979a11d8bb92c9c13d8c603fc516b80
+  size: 188858
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/resnet-18-pytorch_INT8/resnet-18-pytorch.xml?raw=true
+framework: dldt
+license: ''
+task_type: classification
