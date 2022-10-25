@@ -9,7 +9,7 @@ files:
   name: FP16-INT8/resnet-34-pytorch_INT8.json
   sha256: c46ae41f8db073785748deb67ed1b540fbc3d1c64c3f795a611d983a89119d30
   size: 29820
-  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/resnet-34-pytorch_INT8/resnet-34.json?raw=true
+  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/resnet-34-pytorch_INT8/resnet-34-pytorch.json?raw=true
 - checksum: b7d15035b05e4330d4c5461a7915080fb36d2b980c5e36b21dbe5531ca379fa3a97b97846f47bd9ad7e604451b7bab97
   name: FP16-INT8/resnet-34-pytorch_INT8.bin
   sha256: 8f7f9e4f8f4d2e9575e9e6ebd35eea0a33d81753c08c911ceeb2796cfbb32ccb
