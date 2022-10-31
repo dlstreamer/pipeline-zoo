@@ -197,6 +197,7 @@ get_options() {
     if [ -z "$NAME" ]; then
         # Convert tag separator if exists
         NAME=${IMAGE//[\:]/_}
+	NAME=${NAME//[\/]/_}
     fi
 
     if [[ "$GITHUB_TOKEN" ]]; then
