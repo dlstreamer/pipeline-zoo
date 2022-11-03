@@ -6,7 +6,7 @@
 #
 
 # Platforms
-declare -A PLATFORMS=(["DEFAULT"]=1 ["VCAC-A"]=2 ["ATS"]=3)
+declare -A PLATFORMS=(["DEFAULT"]=1 ["DGPU"]=3)
 PLATFORM=DEFAULT
 
 IMAGE=
@@ -14,7 +14,7 @@ VOLUME_MOUNT=
 CAPADD=
 DEVICES=
 DEVICEGRP=
-DEFAULT_IMAGE="media-analytics-pipeline-zoo"
+DEFAULT_IMAGE="dlstreamer-pipeline-zoo"
 ENTRYPOINT=
 ENTRYPOINT_ARGS=
 PRIVILEGED=
@@ -174,11 +174,8 @@ get_options() {
         fi
     fi
 
-    if [[ $PLATFORM =~ "ATS" ]] || [[ $IMAGE =~ "ats" ]]; then
+    if [[ $PLATFORM =~ "DGPU" ]] ; then
         CAPADD="--cap-add SYS_ADMIN"
-        if [ -z "$ENTRYPOINT" ]; then  # else means that user override it using --entrypoint argument
-            ENTRYPOINT="--entrypoint /bin/hello-bash"
-        fi
         DEVICE=${DEVICE:-/dev/dri/renderD128}
         DEVICE_GRP=$(ls -g $DEVICE | awk '{print $3}' | xargs getent group | awk -F: '{print $3}')
         ENVIRONMENT+=" -e DEVICE=$DEVICE"

@@ -8,16 +8,15 @@ TAG=
 RUN_PREFIX=
 
 # Platforms
-declare -A PLATFORMS=(["DEFAULT"]=1 ["ATS"]=3)
+declare -A PLATFORMS=(["DEFAULT"]=1 ["DGPU"]=3)
 PLATFORM=DEFAULT
 
 # Base Images
 # For latest agama UMD drivers use ./build.sh --base intel/dlstreamer:2022.1.1-ubuntu20-devel
 DEFAULT_BASE_IMAGE=intel/dlstreamer:2022.2.0-ubuntu20-gpu815-devel
-ATS_BASE_IMAGE=intel-media-analytics:latest
+DGPU_BASE_IMAGE=intel/dlstreamer:2022.2.0-ubuntu20-gpu490.40-dpcpp-devel
 
 # Model Proc Versions
-ATS_MODEL_PROC_VERSION=v1.3 
 DEFAULT_MODEL_PROC_VERSION=
 
 DOCKERFILE_DIR=$(dirname "$(readlink -f "$0")")
@@ -147,7 +146,7 @@ get_options() {
     fi
 
     if [ -z "$TAG" ]; then
-        TAG="media-analytics-pipeline-zoo"
+        TAG="dlstreamer-pipeline-zoo"
 	if [ ! -z "$PLATFORM" ] && [ $PLATFORM != 'DEFAULT' ]; then
 	    TAG+="-${PLATFORM,,}"
 	fi
@@ -210,11 +209,6 @@ if [ ! -z $MODEL_PROC_VERSION ]; then
 fi
 
 BUILD_ARGS+=" --build-arg PIPELINE_ZOO_PLATFORM=$PLATFORM "
-
-if [[ "$BASE_IMAGE" == *"intel-visual-analytics/custom/plzoo"* ]]; then
-    BUILD_ARGS+=" --build-arg ENTRYPOINT=\"/usr/bin/demo-bash\""
-    BUILD_ARGS+=" --build-arg CMD=\"/usr/bin/demo-bash\""
-fi
 
 show_image_options
 
