@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from mako.template import Template
 import re
 import os
 import socket
@@ -624,19 +623,6 @@ def list_of_topologies(path_to_config, path_to_bitstreams, job_name, use_fp11):
             result.append((name, framework))
     return result
 
-
-def generate_html(context, dst_path):
-    script_location = os.path.dirname(os.path.realpath(__file__))
-
-    template_path = os.path.join(script_location, "systeminfo.tmpl")
-    template = open(template_path, "r").read()
-    html_text = Template(template).render(**context)
-
-    f = open(dst_path, "w")
-    f.write(html_text)
-    f.close()
-
-
 def generate_json(context, dst_path):
     json_text = json.dumps(context, indent=1)
     f = open(dst_path, "w")
@@ -646,26 +632,24 @@ def generate_json(context, dst_path):
 
 def main():
     parser = argparse.ArgumentParser(description="Display system info of linux machine.")
-    parser.add_argument("-d",  "--dst",                       help="Output file with system configuration", required=True)
-    parser.add_argument("-p",  "--prefix",     default="",    help="Prefix for specific commands (clinfo)")
-    parser.add_argument("-c",  "--config",     default="",    help="Path to config")
-    parser.add_argument("-b",  "--bitstreams", default="",    help="Path to bitstreams")
-    parser.add_argument("-j",  "--job",        default="",    help="Job name")
-    parser.add_argument("-m",  "--modelzoo",   default="",    help="Path to model-zoo code")
-    parser.add_argument("--open-model-zoo-repo",   default="",    help="Path to Open Model Zoo code repository")
-    parser.add_argument("-js", "--json",                      help="JSON output file with system configuration")
-    parser.add_argument("-f",  "--fp11",       default=False, help="Use fp11", required=False)
-    parser.add_argument("--openvino",                         help="OpenVINO(TM) toolkit path")
+    parser.add_argument("-d",  "--dst",                        help="Output file with system configuration", required=True)
+    parser.add_argument("-p",  "--prefix",     default="",     help="Prefix for specific commands (clinfo)")
+    parser.add_argument("-c",  "--config",     default="",     help="Path to config")
+    parser.add_argument("-b",  "--bitstreams", default="",     help="Path to bitstreams")
+    parser.add_argument("-j",  "--job",        default="",     help="Job name")
+    parser.add_argument("-m",  "--modelzoo",   default="",     help="Path to model-zoo code")
+    parser.add_argument("--open-model-zoo-repo",   default="", help="Path to Open Model Zoo code repository")
+    parser.add_argument("-js", "--json",       required=True,  help="JSON output file with system configuration")
+    parser.add_argument("-f",  "--fp11",       default=False,  help="Use fp11", required=False)
+    parser.add_argument("--openvino",                          help="OpenVINO(TM) toolkit path")
     args = parser.parse_args()
 
     if not args.openvino:
         args.openvino = os.environ.get("INTEL_OPENVINO_DIR", "/opt/intel/openvino")
 
     info = collect_configuration(args)
-    generate_html(info, args.dst)
 
-    if args.json:
-        generate_json(info, args.json)
+    generate_json(info, args.json)
 
 
 if __name__ == "__main__":
