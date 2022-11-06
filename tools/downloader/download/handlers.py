@@ -509,10 +509,13 @@ class Model(Handler):
                                                       "models/pipeline-zoo-models")
 
         
-    def _create_download_command(self, model, output_dir):
-        return shlex.split("python3 {0} --name {1} -o {2}".format(self._model_downloader,
-                                                                  model,
-                                                                  output_dir))
+    def _create_download_command(self, model, output_dir, cache_dir=None):
+        if cache_dir:
+            cache_dir = "--cache_dir {}".format(cache_dir)
+        return shlex.split("python3 {0} --name {1} -o {2} {3}".format(self._model_downloader,
+                                                                      model,
+                                                                      output_dir,
+                                                                      cache_dir))
 
     def _create_convert_command(self, model, output_dir):
         return shlex.split("python3 {0} -d {2} --name {1} -o {2} --mo {3}".format(self._model_converter,
@@ -576,9 +579,15 @@ class Model(Handler):
         if (not self._args.force) and (os.path.isdir(target_model)):
             self.logger.debug("Model Directory {0} Exists - Skipping".format(model))
             return
+
+        cache_directory = os.path.join(self._args.destination,
+                                      ".model-downloader-cache")
+        
+        create_directory(cache_directory,
+                         False)
         
         with tempfile.TemporaryDirectory() as output_dir:
-            command = self._create_download_command(model,output_dir)
+            command = self._create_download_command(model,output_dir, cache_directory)
             
             self.logger.debug("Download command: {0}".format(" ".join(command)))
 
