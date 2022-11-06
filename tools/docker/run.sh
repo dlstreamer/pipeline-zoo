@@ -200,6 +200,10 @@ get_options() {
     if [[ "$GITHUB_TOKEN" ]]; then
         ENVIRONMENT+=" -e GITHUB_TOKEN=$GITHUB_TOKEN"
     fi
+
+    if [ -f "$HOME/.netrc" ]; then
+	VOLUME_MOUNT+="-v $HOME/.netrc:/root/.netrc "
+    fi
 }
 
 show_options() {

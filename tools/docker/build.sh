@@ -14,7 +14,8 @@ PLATFORM=DEFAULT
 # Base Images
 # For latest agama UMD drivers use ./build.sh --base intel/dlstreamer:2022.1.1-ubuntu20-devel
 DEFAULT_BASE_IMAGE=intel/dlstreamer:2022.2.0-ubuntu20-gpu815-devel
-DGPU_BASE_IMAGE=intel/dlstreamer:2022.2.0-ubuntu20-gpu490.40-dpcpp-devel
+DGPU_BASE_IMAGE=intel/dlstreamer:2022.2.0-ubuntu20-gpu419.40-devel
+
 
 # Model Proc Versions
 DEFAULT_MODEL_PROC_VERSION=
