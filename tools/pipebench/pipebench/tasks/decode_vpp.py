@@ -136,7 +136,8 @@ class DecodeVPP(Task):
             number_of_streams=1,
             starting_stream_index=0,
             semaphore = None,
-            numa_node = None):
+            numa_node = None,
+            gpu_render_device = None):
         
         # create piperun config
         
@@ -180,6 +181,7 @@ class DecodeVPP(Task):
                                                os.path.join(self._args.workload_root,"systeminfo.json"),
                                                redirect,
                                                numa_node = numa_node,
+                                               gpu_render_device = gpu_render_device,
                                                verbose_level=self._args.verbose_level)
 
         for stream_index in range(number_of_streams):
