@@ -96,6 +96,7 @@ get_options() {
         --dockerfile-dir)
             if [ "$2" ]; then
                 DOCKERFILE_DIR=$2
+                DOCKERFILE=${DOCKERFILE_DIR}/Dockerfile
                 shift
             else
                 error 'ERROR: "--dockerfile-dir" requires an argument.'

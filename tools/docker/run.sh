@@ -153,6 +153,14 @@ get_options() {
                 error 'ERROR: "--privileged" requires a true/false argument'
             fi
             ;;
+        --gpus)
+            if [ "$2" = "all" ]; then
+                GPUS_ALL+="--gpus all "
+                shift
+            else
+                error 'ERROR: unknown option: ' $1 $2
+            fi
+            ;;
         --attach)
             ATTACH=TRUE
             ;;
@@ -255,6 +263,7 @@ show_help() {
   echo "  [--workdir working directory to start with inside the container to docker run]"
   echo "  [--non-interactive run container without -i flag]"
   echo "  [--platform platform specific image]"
+  echo "  [--gpus all]"
   exit 0
 }
 
@@ -297,7 +306,7 @@ show_options
 
 if [ -z "$ATTACH" ]; then
     set -x
-    docker run $INTERACTIVE $WORKDIR --rm $ENVIRONMENT $VOLUME_MOUNT $CAPADD $DEVICES $DEVICEGRP $NETWORK $ENTRYPOINT $CPUSET_CPUS $CPUSET_MEMS --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
+    docker run $INTERACTIVE $WORKDIR --rm $GPUS_ALL $ENVIRONMENT $VOLUME_MOUNT $CAPADD $DEVICES $DEVICEGRP $NETWORK $ENTRYPOINT $CPUSET_CPUS $CPUSET_MEMS --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
      { set +x; } 2>/dev/null
 else
     RUNNING_INSTANCE=$(docker ps -q --filter "name=$IMAGE")
