@@ -2,3 +2,5 @@
 glob:*omz-demo*
 glob:*opencv-gapi*
 glob:*internal*
+glob:*nvidia*
+glob:*deepstream*
