@@ -26,6 +26,7 @@ from tqdm import tqdm
 import sys
 from util import Spinner
 import logging
+import glob
 
 class Handler(object, metaclass=abc.ABCMeta):
     logger = None
@@ -433,7 +434,7 @@ class Model(Handler):
                                            "tools/downloader/converter.py")
     DEFAULT_MODEL_OPTIMIZER = os.path.join(DEFAULT_OPEN_VINO_DEPLOYMENT_TOOLS,
                                            "model_optimizer/mo")
-    DEFAULT_MODEL_PROC_ROOT = "/opt/intel/openvino/data_processing/dl_streamer/samples"
+    DEFAULT_MODEL_PROC_ROOT = "/opt/intel/dlstreamer/samples/gstreamer"
 
     CHECKSUM_KEYS = ['checksum', 'sha256']
     
@@ -446,7 +447,7 @@ class Model(Handler):
         self._find_open_model_zoo()
         self._determine_checksum_key()
         self._find_model_proc_root()
-        self._model_index = self._get_model_index()
+        self._find_model_index()
 
     def _get_example_model_config(self):
         try:
@@ -471,20 +472,22 @@ class Model(Handler):
                         self._checksum_key = key
                         return
 
-    def _get_model_index(self):
+    def _find_model_index(self):
         try:
-            index_path = os.path.join(self._model_proc_root,
-                                      "model_index.yaml")
-            return load_document(index_path)
+            candidates = glob.glob("/opt/intel/**/model_index.yaml",recursive=True)
+            if candidates:
+                self._model_index_path = candidates[0]
+            self._model_index = load_document(self._model_index_path)
         except:
-            pass
-
-        return None
+            self._model_index = None
+            self._model_index_path = None
 
     def _find_model_proc_root(self):
         self._model_proc_root = Model.DEFAULT_MODEL_PROC_ROOT
-        if os.path.isdir("/opt/intel/dlstreamer/samples/model_proc"):
-            self._model_proc_root = "/opt/intel/dlstreamer/samples"
+        candidates = glob.glob("/opt/intel/**/model_proc",recursive=True)
+        candidates.sort(key=len)
+        if candidates:
+            self._model_proc_root = candidates[0]
             
      
     def _find_open_model_zoo(self):
@@ -537,7 +540,7 @@ class Model(Handler):
             if model in self._model_index:
                 for _, value in self._model_index[model].items():
                     paths.append(os.path.join(
-                        self._model_proc_root,
+                        os.path.dirname(self._model_index_path),
                         value))
                 return paths
             
