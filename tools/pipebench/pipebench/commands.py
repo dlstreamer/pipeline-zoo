@@ -71,8 +71,14 @@ def _get_runner_settings_path(measurement, args, add_default_platform):
         
     args.parser.error("Runner settings not found in workspace, candidates: {}".format(candidates,))
 
-def _get_gpu_render_devices(args):
-    return glob.glob("/dev/dri/render*")
+def _get_gpu_render_devices(measurement_settings):
+    for value in measurement_settings["gpu-devices"]:
+        value = value.upper()
+        if value == 'ALL':
+            measurement_settings['gpu-devices'] = glob.glob("/dev/dri/render*")
+        if value == 'NONE': 
+            measurement_settings['gpu-devices'] = ['NONE']
+    return measurement_settings["gpu-devices"]
     
 def _get_numa_nodes(args):
     numa_nodes = None
@@ -386,7 +392,7 @@ def run(args):
     numa_nodes = []
     if measurement_settings["numactl"]:
         numa_nodes = _get_numa_nodes(args)
-    gpu_render_devices = _get_gpu_render_devices(args)
+    gpu_render_devices = _get_gpu_render_devices(measurement_settings)
     min_streams = measurement_settings["min-streams"]
     max_streams = measurement_settings["max-streams"] if measurement_settings["max-streams"] else sys.maxsize
     max_iterations = measurement_settings["max-iterations"] if measurement_settings["max-streams"] else sys.maxsize
