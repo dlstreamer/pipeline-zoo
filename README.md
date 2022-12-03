@@ -20,7 +20,29 @@ and pipelines are defined in a platform and framework independent way
 to allow implementations in a variety of frameworks and for multiple
 platform targets.
 
-![diagram](./pipelines/video/object-detection/README-1.svg)
+```mermaid
+stateDiagram
+    direction LR 
+    state Object-Detection {
+    direction LR
+    state video_source {
+	direction LR
+		demux --> parse 
+    }
+   
+    state detect {
+	direction LR
+		scale --> csc
+		csc --> inference
+		inference --> tensors_to_objects
+    }
+    
+    media --> video_source
+    video_source --> decode
+    decode --> detect
+    detect --> objects
+} 
+```
 
 ## Features Include:
 | |                  |
