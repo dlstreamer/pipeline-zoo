@@ -23,7 +23,26 @@ To simulate the 4K rendering of a kiosk the Pick and Go use case uses
 the [`decode-h265`](../pipelines/video/decode-vpp/decode-h265) pipeline. This pipeline is set to render a 4K
 video to the screen.
 
-![diagram](../pipelines/video/decode-vpp/decode-h265/README-1.svg)
+```mermaid
+stateDiagram
+    direction LR
+    state Decode-VPP {
+	direction LR
+	state media {
+	direction LR
+	h265
+	}
+	
+    state video_source {
+	direction LR
+		demux --> parse 
+    }
+		
+	media --> video_source
+    video_source --> decode
+    decode --> frames
+} 
+```
 
 ### Object Detection x 8
 
@@ -31,8 +50,54 @@ To simulate detecting objects being scanned at the kiosk the Pick and
 Go use case uses 8 streams of the
 [`od-h264-ssd-mobilenet-v1-coco`](../pipelines/video/object-detection/od-h264-ssd-mobilenet-v1-coco)
 pipeline. This pipeline detects objects in the streams using an `ssd-mobilenet-v1-coco` model.
-	
-![diagram](../pipelines/video/object-detection/od-h264-ssd-mobilenet-v1-coco/README-1.svg)
+
+```mermaid
+stateDiagram
+    direction LR 
+    state Object-Detection {
+    direction LR
+    state media {
+	direction LR
+    h264
+    }
+
+    state video_source {
+	direction LR
+		demux --> parse 
+    }
+   
+    state detect {
+	direction LR
+    state scale {
+	direction LR
+      w300xh300
+    }
+    state csc {
+	direction LR
+    BGR
+    }
+
+    state inference {
+	direction LR
+    ssd_mobilenet_v1_coco
+    }
+
+    state tensors_to_objects {
+	direction LR
+    labels_coco
+    }
+
+		scale --> csc
+		csc --> inference
+		inference --> tensors_to_objects
+    }
+    
+    media --> video_source
+    video_source --> decode
+    decode --> detect
+    detect --> objects
+} 
+```
 	
 ## System Configuration
 
