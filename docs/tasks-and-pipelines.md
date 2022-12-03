@@ -16,7 +16,29 @@ accuracy of different implementations and platforms.
 
 Object detection pipelines take encoded video frames and produce bounding boxes of regions of interest and corresponding labels.
 
-![diagram](../pipelines/video/object-detection/README-1.svg)
+```mermaid
+stateDiagram
+    direction LR 
+    state Object-Detection {
+    direction LR
+    state video_source {
+	direction LR
+		demux --> parse 
+    }
+   
+    state detect {
+	direction LR
+		scale --> csc
+		csc --> inference
+		inference --> tensors_to_objects
+    }
+    
+    media --> video_source
+    video_source --> decode
+    decode --> detect
+    detect --> objects
+} 
+```
 
 ## [Object Classification](../pipelines/video/object-classification)
 Object classification pipelines take encoded video frames and produce bounding boxes of regions of interest with labels and attributes.
