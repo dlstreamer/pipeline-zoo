@@ -603,9 +603,8 @@ class Model(Handler):
             process.stdout.close()
             process.wait()
 
-            if model!="mobilenetv2_7":
-                command = self._create_convert_command(model, output_dir)
-                self.logger.debug("Convert command: {0}".format(" ".join(command)))
+            command = self._create_convert_command(model, output_dir)
+            self.logger.debug("Convert command: {0}".format(" ".join(command)))
 
             process = subprocess.Popen(command, bufsize=1, universal_newlines=True, stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE)
