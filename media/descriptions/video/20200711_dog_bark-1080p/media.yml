@@ -1,6 +1,6 @@
 description: Dog Bark
 files:
-- name: 20200711_dog_bark.mp4
+- name: 20200711_dog_bark-1080p.mp4
   sha256: 8375fbca222cfc055993474c4ed187eba3824edf7b81a5eddac48021cfc1e73c
   size: 26476725
   source: https://github.com/dlstreamer/pipeline-zoo-media/blob/main/storage/video/20200711_dog_bark/20200711_dog_bark_1920x1080.mp4?raw=true
