@@ -194,7 +194,9 @@ class Runner(Handler):
         return True
 
 class GithubUrlConverter:
-    def __init__(self):
+    def __init__(self, logger, args):
+        self._logger = logger
+        self._args = args
         self._github = self._connect_to_repo()
 
     def convert(self, original_url):
@@ -206,10 +208,15 @@ class GithubUrlConverter:
             repo_name = url_info.path.split("/")[1] + "/" + url_info.path.split("/")[2]
             try:
                 repo = self._github.get_repo(repo_name)
-            except:
-                return original_url
+            except Exception as ex:
+                self._logger.error("\tError: GitHub URL conversion failed:\n\tException:{}".format(ex))
+                
+            else:
+                converted_url = self._get_download_url(repo, url_info.path.split("/")[-1], "/".join(url_info.path.split("/")[5:-1]))
 
-            converted_url = self._get_download_url(repo, url_info.path.split("/")[-1], "/".join(url_info.path.split("/")[5:-1]))
+                if not converted_url:
+                    self._logger.error("\tError: GitHub URL conversion failed")
+                    converted_url = original_url
 
         return converted_url
 
@@ -220,11 +227,11 @@ class GithubUrlConverter:
     def _get_download_url(self, repo, file_name, file_dir):
         files_content = repo.get_dir_contents(file_dir)
         for file_content in files_content:
-                if file_content.name == file_name:
-                    if file_content.size > 200:
-                        return file_content.download_url
-                    else:
-                        return self._get_lfs_download_url(repo, os.path.join(file_dir, file_name))
+            if file_content.name == file_name:
+                if file_content.size > 200:
+                    return file_content.download_url
+                else:
+                    return self._get_lfs_download_url(repo, os.path.join(file_dir, file_name))
 
         return None
 
@@ -234,15 +241,19 @@ class GithubUrlConverter:
 
         if not token:
             try:
-                netrc_file = netrc.netrc()
+                netrc_file = netrc.netrc("/root/.netrc")
                 auth_tokens = netrc_file.authenticators("github.com")
                 token = auth_tokens[2]
-            except:
+            except Exception as ex:
+                if self._args.verbose:
+                    self._logger.info("\tINFO: GitHub token is not set in .netrc {}".format(ex))
                 token=None
 
-        github = Github(token)
-        return github
+        if (not token and self._args.verbose): 
+            self._logger.info("\tINFO: GitHub token is not set in environment or .netrc")
 
+        return Github(token)
+     
 
 class Media(Handler):
     def __init__(self, args):
@@ -324,7 +335,7 @@ class Media(Handler):
         if self._args.verbose:
             self.logger.info("\tURL: {}\n\tPATH: {}".format(url, target_path))
 
-        url_converter = GithubUrlConverter()
+        url_converter = GithubUrlConverter(self.logger, self._args)
         url = url_converter.convert(url)
 
         response = requests.get(url,allow_redirects=True, stream=True)
@@ -558,7 +569,7 @@ class Model(Handler):
         model_config = load_document(model_path)
 
         for file in model_config["files"]:
-            url_converter = GithubUrlConverter()
+            url_converter = GithubUrlConverter(self.logger, self._args)
             url = url_converter.convert(file["source"])
             file["source"] = url
             for key in Model.CHECKSUM_KEYS:
