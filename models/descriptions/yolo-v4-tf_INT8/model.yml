@@ -2,11 +2,16 @@
 ---
 description: yolo-v4-tf_INT8
 files:
-- checksum: 91b1552a035bdfe723b745fcee87a834fee7bf9d3033f17683f0e2194675ef4fd8d0df2fa060f5489c4441fe31392002
-  name: FP16-INT8/yolo-v4-tf_INT8.json
-  sha256: 03dc4d027b794f92dff3cc2caaee91ab03d708e6ac375168a9c0a8b0d887d241
-  size: 2516
-  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolo-v4-tf_INT8/yolo-v4-tf_INT8.json?raw=true
+- checksum: 109adbbf67c4193235dbf12e6934c7500c0cdb01b50a970b5925261c52f513a6196d3a8dbaa05ed3ac705a6de71b3f65
+  name: yolo-v4-tf.json
+  sha256: 656296a76feba16718a37331e08784a5ae3cd4ba0c557cb7104b53e361453d3a
+  size: 945
+  source: https://github.com/dlstreamer/dlstreamer/blob/master/samples/gstreamer/model_proc/public/yolo-v4-tf.json?raw=true
+- checksum: a7925a36e8cd90d2cfeb6c6aa4e7ae0c62040da681dea51a77867496bf770643ae3efc2b4cd98b51242361fba110d233
+  name: coco_80cl.txt
+  sha256: fb63dcb6c4e744c1a9f89d11dc331d70fe2866ac4f360dac65c4f805eb3d74d4
+  size: 606
+  source: https://github.com/dlstreamer/dlstreamer/raw/master/samples/labels/coco_80cl.txt
 - checksum: 98220d54fa42c7dea398ab6799176073fffbceadc949fe899ac7712ff34d05c4003cfb4aa6fa4f762b7d834c8ba1da4f
   name: FP16-INT8/yolo-v4-tf_INT8.bin
   sha256: 7ff15669f69baa5573549be5e9f0e1b0c1ead7faeb9341d3a713328a5862ed55

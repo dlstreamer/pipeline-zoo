@@ -1,6 +1,0 @@
-# Runner specific configuration
-
-run: "python3 mockrun"
-
-reference: reference/objects.jsonl
-

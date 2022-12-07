@@ -1,6 +1,6 @@
-# od-h265-yolo-v4-tf
+# od-h264-yolo-v4-tf-416
 
-Object detection pipeline taking encoded video frames in h265 format and using [yolo-v4-tf]() for detection.
+Object detection pipeline taking encoded video frames in h264 format and using [yolo-v4-tf]() for detection.
 
 ```mermaid
 stateDiagram
@@ -9,7 +9,7 @@ stateDiagram
     direction LR
     state media {
     direction LR
-    h265
+    h264
     }
 
     state video_source {
@@ -18,10 +18,10 @@ stateDiagram
     }
 
     state detect {
-     direction LR
+    direction LR
     state scale {
       direction LR
-      w680xh680
+      w416xh416
     }
     state csc {
     direction LR

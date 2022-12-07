@@ -1,6 +1,6 @@
-# oc-h264-yolo-v4-tf-resnet-50-tf
+# oc-h264-yolo-v4-tf-416-resnet-50-tf
 
-Object detection pipeline taking encoded video frames in h264 format and using [yolo-v4-tf](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public/yolo-v4-tf) for detection and [resnet-50-tf](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public/resnet-50-tf) for classification.
+Object detection pipeline taking encoded video frames in h264 format and using [yolo-v4-tf-416](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public/yolo-v4-tf) for detection and [resnet-50-tf](https://github.com/openvinotoolkit/open_model_zoo/tree/master/models/public/resnet-50-tf) for classification.
 
 ```mermaid
 stateDiagram
@@ -23,7 +23,7 @@ objects
 	direction LR
     state scale {
 	direction LR
-      w608xh608
+      w416xh416
     }
     state csc {
 	direction LR
@@ -32,7 +32,7 @@ objects
 
     state inference {
 	direction LR
-    yolo_v4_tf
+    yolo_v4_tf_416
     }
 
     state tensors_to_objects {

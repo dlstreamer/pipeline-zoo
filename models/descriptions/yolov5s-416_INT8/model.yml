@@ -4,32 +4,32 @@ files:
   name: FP16-INT8/yolov5s-416_INT8.bin
   sha256: 4308714b1ecd495601f5cd7889b08307e54cf83412349be5a32be5a11e5c106b
   size: 14534634
-  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/yolov5s-416_INT8/FP16-INT8/yolov5s.bin?raw=true
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416_INT8/FP16-INT8/yolov5s.bin
 - checksum: 8cb5d3d4775b46016a1b5278c6ac929c84a2c4a792edb8c3ff2e90421a584dc9989c58865ad1846ece1ef2a1750097c5
   name: FP16-INT8/yolov5s-416_INT8.xml
   sha256: b20423988101cba238782e813bcd00403bc135b344f2bd8fa2c3668d3ab29ffd
   size: 517319
-  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/yolov5s-416_INT8/FP16-INT8/yolov5s.xml?raw=true
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416_INT8/FP16-INT8/yolov5s.xml
 - checksum: 6051e21045cc8ceb008a20558113dfbe59596b7c49cd78c6175a59f697331640bf100e943e9de6f2a9b98644e66d25ae
   name: FP16-INT8/yolov5s.json
   sha256: a1b4723c3e645e039ff9461418b22f5b46ad7a9e8e50fa5d6a860aa3de8c2c8e
   size: 3126
-  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/yolov5s-416_INT8/yolov5s.json?raw=true
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416_INT8/yolov5s.json
 - checksum: c7e419c21b5d3d58fe78306d159effaf6bd483fcaabfdb16f3b0ea43f48f367d140760e93912e8e9c52bd85e7a4044c1
   name: FP32-INT8/yolov5s-416_INT8.bin
   sha256: 9c090ab7841e6495eb76d756790095d3b556ea0dc1ee89d16413fc4993fab006
   size: 28986404
-  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/yolov5s-416_INT8/FP32-INT8/yolov5s.bin?raw=true
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416_INT8/FP32-INT8/yolov5s.bin
 - checksum: 7e289c667a08d98e00e6d6fa22e15c6a3ba1679246e4f2855d43ec0aab14aae5f622b18f5266ad01ecb43c7045ca51ae
   name: FP32-INT8/yolov5s-416_INT8.xml
   sha256: fb4476a4789ae394efde663df726f31b1cd8147d663f606dc26255b083fc1428
   size: 450880
-  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/yolov5s-416_INT8/FP32-INT8/yolov5s.xml?raw=true
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416_INT8/FP32-INT8/yolov5s.xml
 - checksum: 6051e21045cc8ceb008a20558113dfbe59596b7c49cd78c6175a59f697331640bf100e943e9de6f2a9b98644e66d25ae
   name: FP32-INT8/yolov5s.json
   sha256: a1b4723c3e645e039ff9461418b22f5b46ad7a9e8e50fa5d6a860aa3de8c2c8e
   size: 3126
-  source: https://github.com/intel-innersource/frameworks.ai.media-analytics.pipeline-zoo-models/blob/main/storage/yolov5s-416_INT8/yolov5s.json?raw=true
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416_INT8/yolov5s.json
 framework: dldt
-license: ''
+license: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416_INT8/LICENSE
 task_type: detection

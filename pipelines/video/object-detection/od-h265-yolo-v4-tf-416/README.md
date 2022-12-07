@@ -1,40 +1,33 @@
-# od-h265-yolo-v4-tf
+# od-h265-yolo-v4-tf-416
 
 Object detection pipeline taking encoded video frames in h265 format and using [yolo-v4-tf]() for detection.
 
 ```mermaid
 stateDiagram
-    direction LR
+
     state Object-Detection {
-    direction LR
+
     state media {
-    direction LR
     h265
     }
 
     state video_source {
-    direction LR
 		demux --> parse
     }
 
     state detect {
-     direction LR
     state scale {
-      direction LR
-      w680xh680
+      w416xh416
     }
     state csc {
-    direction LR
     RGB
     }
 
     state inference {
-    direction LR
     yolo_v4_tf
     }
 
     state tensors_to_objects {
-    direction LR
     labels_coco
     }
 

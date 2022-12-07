@@ -1,6 +1,0 @@
-task: object-detection
-
-model: yolov5s_INT8
-
-inputs.media.type.media-type: video/x-h265
-

@@ -12,7 +12,7 @@ declare -A PLATFORMS=(["DEFAULT"]=1 ["DGPU"]=3)
 PLATFORM=DEFAULT
 
 # Base Images
-# For latest agama UMD drivers use ./build.sh --base intel/dlstreamer:2022.1.1-ubuntu20-devel
+
 DEFAULT_BASE_IMAGE=intel/dlstreamer:2022.2.0-ubuntu20-gpu815-devel
 DGPU_BASE_IMAGE=intel/dlstreamer:2022.2.0-ubuntu20-gpu419.40-devel
 
