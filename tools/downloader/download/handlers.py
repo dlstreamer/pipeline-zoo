@@ -209,7 +209,7 @@ class GithubUrlConverter:
             try:
                 repo = self._github.get_repo(repo_name)
             except Exception as ex:
-                if (self._args.verbose): 
+                if self._args.verbose:
                     self._logger.warning("\tWarning: GitHub URL conversion failed:\n\tException:{}\n\tUsing original URL {}".format(ex,
                                                                                                                                     original_url))
                 
@@ -217,7 +217,7 @@ class GithubUrlConverter:
                 converted_url = self._get_download_url(repo, url_info.path.split("/")[-1], "/".join(url_info.path.split("/")[5:-1]))
 
                 if not converted_url:
-                    if (self._args.verbose):
+                    if self._args.verbose:
                         self._logger.warning("\tWarning: GitHub URL conversion failed.\n\tUsing original URL {}".format(original_url))
                     converted_url = original_url
 
@@ -255,8 +255,13 @@ class GithubUrlConverter:
         if (not token and self._args.verbose): 
             self._logger.info("\tINFO: GitHub token is not set in environment or .netrc")
 
-        return Github(token)
-     
+        try:
+            return Github(token)
+        except Exception as ex:
+            if self._args.verbose:
+                self._logger.warning("\tWarning: GitHub API failed:\n\tException:{}".format(ex))
+
+        return None   
 
 class Media(Handler):
     def __init__(self, args):
