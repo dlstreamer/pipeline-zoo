@@ -23,7 +23,7 @@ objects
 	direction LR
     state scale {
 	direction LR
-      w416xh416
+      w608xh608
     }
     state csc {
 	direction LR
@@ -32,7 +32,7 @@ objects
 
     state inference {
 	direction LR
-    yolo-v4-tf
+    yolo_v4_tf
     }
 
     state tensors_to_objects {

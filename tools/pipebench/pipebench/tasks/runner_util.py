@@ -13,6 +13,7 @@ def start_pipeline_runner(runner,
                           systeminfo_path,
                           redirect=True,
                           numa_node = None,
+                          gpu_render_device = None,
                           verbose_level=0):
 
     runner_root = os.path.join(pipeline_root, "runners", runner)
@@ -43,16 +44,25 @@ def start_pipeline_runner(runner,
     if numa_node is not None:
         runner_command = ["numactl","--cpunodebind",str(numa_node),"--membind",str(numa_node)] + runner_command
 
+    environment = None
+    render_device_verbose = []
+    
+    if gpu_render_device is not None:
+        environment = dict(os.environ,GST_VAAPI_DRM_DEVICE=gpu_render_device)
+        render_device_verbose = ["GST_VAAPI_DRM_DEVICE: {}".format(gpu_render_device)]
+    
     start_time = time.time()
     if verbose_level>0:
         util.print_action("Launching: {}".format(runner),
                           ["Started: {}".format(start_time),
-                           "Command: {}".format(runner_command)])
+                           "Command: {}".format(runner_command)]+
+                          render_device_verbose)
 
     
     process = subprocess.Popen(runner_command,
                                cwd=runner_root,
                                stdout=stdout_file,
-                               stderr=stderr_file)
+                               stderr=stderr_file,
+                               env=environment)
     return process
 

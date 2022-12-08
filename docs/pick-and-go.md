@@ -50,7 +50,7 @@ To simulate detecting objects being scanned at the kiosk the Pick and
 Go use case uses 8 streams of the
 [`od-h264-ssd-mobilenet-v1-coco`](../pipelines/video/object-detection/od-h264-ssd-mobilenet-v1-coco)
 pipeline. This pipeline detects objects in the streams using an `ssd-mobilenet-v1-coco` model.
-
+	
 ```mermaid
 stateDiagram
     direction LR 

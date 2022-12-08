@@ -6,7 +6,7 @@
 #
 
 # Platforms
-declare -A PLATFORMS=(["DEFAULT"]=1 ["VCAC-A"]=2 ["ATS"]=3)
+declare -A PLATFORMS=(["DEFAULT"]=1 ["DGPU"]=3)
 PLATFORM=DEFAULT
 
 IMAGE=
@@ -14,7 +14,7 @@ VOLUME_MOUNT=
 CAPADD=
 DEVICES=
 DEVICEGRP=
-DEFAULT_IMAGE="media-analytics-pipeline-zoo"
+DEFAULT_IMAGE="dlstreamer-pipeline-zoo"
 ENTRYPOINT=
 ENTRYPOINT_ARGS=
 PRIVILEGED=
@@ -32,6 +32,7 @@ ENVIRONMENT=$(env | cut -f1 -d= | grep -E '_(proxy)$' | sed 's/^/-e / ' | tr '\n
 ENVIRONMENT+="-e DISPLAY "
 WORKDIR=
 MOUNTSRC=true
+PRIVILEGED=true
 
 get_options() {
     while :; do
@@ -143,6 +144,22 @@ get_options() {
             else
                 error 'ERROR: "--mount-src" requires a true/false argument'
             fi
+            ;;  
+        --privileged)
+            if [ "$2" ]; then
+                PRIVILEGED="$2"
+                shift
+            else
+                error 'ERROR: "--privileged" requires a true/false argument'
+            fi
+            ;;
+        --gpus)
+            if [ "$2" = "all" ]; then
+                GPUS_ALL+="--gpus all "
+                shift
+            else
+                error 'ERROR: unknown option: ' $1 $2
+            fi
             ;;
         --attach)
             ATTACH=TRUE
@@ -174,17 +191,20 @@ get_options() {
         fi
     fi
 
-    if [[ $PLATFORM =~ "ATS" ]] || [[ $IMAGE =~ "ats" ]]; then
+    if [[ $PLATFORM =~ "DGPU" ]] ; then
         CAPADD="--cap-add SYS_ADMIN"
-        if [ -z "$ENTRYPOINT" ]; then  # else means that user override it using --entrypoint argument
-            ENTRYPOINT="--entrypoint /bin/hello-bash"
-        fi
         DEVICE=${DEVICE:-/dev/dri/renderD128}
         DEVICE_GRP=$(ls -g $DEVICE | awk '{print $3}' | xargs getent group | awk -F: '{print $3}')
         ENVIRONMENT+=" -e DEVICE=$DEVICE"
         DEVICES="--device=$DEVICE"
         if [ -e /dev/dri/by-path ]; then BY_PATH="-v /dev/dri/by-path:/dev/dri/by-path"; fi
         DEVICEGRP="--group-add $DEVICE_GRP $BY_PATH"
+    fi
+    
+    if [ "${PRIVILEGED,,}" == "true" ]; then
+        PRIVILEGED="--privileged "
+    else
+        PRIVILEGED=""
     fi
 
     if [ -z "$IMAGE" ]; then
@@ -197,10 +217,15 @@ get_options() {
     if [ -z "$NAME" ]; then
         # Convert tag separator if exists
         NAME=${IMAGE//[\:]/_}
+	NAME=${NAME//[\/]/_}
     fi
 
     if [[ "$GITHUB_TOKEN" ]]; then
         ENVIRONMENT+=" -e GITHUB_TOKEN=$GITHUB_TOKEN"
+    fi
+
+    if [ -f "$HOME/.netrc" ]; then
+	VOLUME_MOUNT+="-v $HOME/.netrc:/root/.netrc "
     fi
 }
 
@@ -216,6 +241,7 @@ show_options() {
     echo "   User: '${USER}'"
     echo "   workdir: '${WORKDIR}'"
     echo "   mount src: '${MOUNTSRC}'"
+    echo "   privileged: '${PRIVILEGED}'"
     echo "   Attach: '${ATTACH}'"
     echo "   Interactive: '${INTERACTIVE}'"
     echo "   Platform: '${PLATFORM}'"
@@ -233,9 +259,11 @@ show_help() {
   echo "  [--name container name to pass to docker run]"
   echo "  [--attach attach to running container]"
   echo "  [--mount-src [true/false] mount pipeline-zoo source directory]"
+  echo "  [--privileged [true/false] launch container in privileged mode]"
   echo "  [--workdir working directory to start with inside the container to docker run]"
   echo "  [--non-interactive run container without -i flag]"
   echo "  [--platform platform specific image]"
+  echo "  [--gpus all]"
   exit 0
 }
 
@@ -273,13 +301,12 @@ if [ -z "$ENTRYPOINT" ]; then
     ENTRYPOINT="--entrypoint /bin/bash";
 fi
 
-PRIVILEGED="--privileged "
 
 show_options
 
 if [ -z "$ATTACH" ]; then
     set -x
-    docker run $INTERACTIVE $WORKDIR --rm $ENVIRONMENT $VOLUME_MOUNT $CAPADD $DEVICES $DEVICEGRP $NETWORK $ENTRYPOINT $CPUSET_CPUS $CPUSET_MEMS --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
+    docker run $INTERACTIVE $WORKDIR --rm $GPUS_ALL $ENVIRONMENT $VOLUME_MOUNT $CAPADD $DEVICES $DEVICEGRP $NETWORK $ENTRYPOINT $CPUSET_CPUS $CPUSET_MEMS --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
      { set +x; } 2>/dev/null
 else
     RUNNING_INSTANCE=$(docker ps -q --filter "name=$IMAGE")

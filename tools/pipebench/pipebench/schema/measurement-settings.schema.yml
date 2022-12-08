@@ -71,6 +71,12 @@ properties:
   generate-reference:
     type: boolean
     default: false
+  gpu-devices:
+    type: array
+    items:
+      type: string
+    minItems: 1
+    default: ["ALL"]
 
 required: [media,
            warm-up,
@@ -91,5 +97,6 @@ required: [media,
            save-pipeline-output,
            scenario,
            use-reference-detections,
-           generate-reference]  
+           generate-reference,
+           gpu-devices]  
       

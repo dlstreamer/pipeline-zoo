@@ -25,8 +25,8 @@ FROM ${REGISTRY}${BASE} as media-analytics-pipeline-zoo
 ARG PIPELINE_ZOO_PLATFORM=DEFAULT
 ARG GITHUB_TOKEN
 ARG PIPELINE_LIST
-ARG ENTRYPOINT="/usr/bin/bash"
-ARG CMD="/usr/bin/bash"
+ARG ENTRYPOINT="/bin/bash"
+ARG CMD="/bin/bash"
 
 ENV PIPELINE_ZOO_PLATFORM=$PIPELINE_ZOO_PLATFORM
 ENV PIPELINE_ZOO_BASE_IMAGE=${REGISTRY}$BASE
@@ -138,6 +138,6 @@ ENV HISTFILE=/home/pipeline-zoo/workspace/.bash_history
 # work dir
 WORKDIR /home/pipeline-zoo/workspace 
 
-ENTRYPOINT echo $ENTRYPOINT
+ENTRYPOINT []
 
-CMD echo $CMD
+CMD []
