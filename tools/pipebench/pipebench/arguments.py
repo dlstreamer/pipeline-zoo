@@ -90,6 +90,13 @@ def _add_measurement_settings(parser):
                          dest="numactl",
                          help="Disable numactrl and use OS default placement")
 
+    measurement_settings.add_argument("--gpu-device",
+                                      action="append",
+                                      dest="gpu_devices",
+                                      help="Enable specific gpu device. Can be given multiple times. "
+                                      "Device given in form `/dev/dri/renderD128`. ALL selects all devices. "
+                                      "NONE deselects all devices. (default: ALL)")
+
     measurement_settings.add_argument("--streams",
                                       type=int,
                                       help="Number of concurrent media streams. If set to 0 (AUTO) "

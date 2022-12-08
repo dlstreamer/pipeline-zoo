@@ -31,15 +31,6 @@ done
 
 PIPELINE_ZOO_HOME_DIR=/home/pipeline-zoo
 
-###TODO: Remove###
-### Workaround for images with model.yml pre downloaded ###
-###/opt/intel/openvino/deployment_tools/open_model_zoo/models/
-###intel  media-analytics-pipeline-zoo
-
-if [ -d /opt/intel/openvino/deployment_tools/open_model_zoo/models/media-analytics-pipeline-zoo ]; then
-    rm -rf /opt/intel/openvino/deployment_tools/open_model_zoo/models/media-analytics-pipeline-zoo
-fi
-
 # Intel(R) Media Analytics Containers
 
 if [ -d "/opt/intel/samples" ]; then

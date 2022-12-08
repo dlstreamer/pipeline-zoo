@@ -25,6 +25,7 @@ from threading import Thread
 import time
 import json
 from .media_util import MEDIA_TYPES
+import tempfile
 
 class DecodeVPP(Task):
     names = ["decode-vpp"]
@@ -52,9 +53,10 @@ class DecodeVPP(Task):
         self._input_uris = []
         inputs = []
         outputs = []
+        tmpdir = tempfile.mkdtemp()
         for i in range(number_of_streams):
             pipe_uuid = uuid.uuid1()
-            pipe_directory = os.path.join("/tmp",str(pipe_uuid))
+            pipe_directory = os.path.join(tmpdir,str(pipe_uuid))
             create_directory(pipe_directory)
             if (self._measurement_settings["scenario"]["source"]=="memory"):
                 self._input_caps.append(read_caps(os.path.join(self._args.workload_root,"input"))["caps"])
@@ -134,7 +136,8 @@ class DecodeVPP(Task):
             number_of_streams=1,
             starting_stream_index=0,
             semaphore = None,
-            numa_node = None):
+            numa_node = None,
+            gpu_render_device = None):
         
         # create piperun config
         
@@ -178,6 +181,7 @@ class DecodeVPP(Task):
                                                os.path.join(self._args.workload_root,"systeminfo.json"),
                                                redirect,
                                                numa_node = numa_node,
+                                               gpu_render_device = gpu_render_device,
                                                verbose_level=self._args.verbose_level)
 
         for stream_index in range(number_of_streams):

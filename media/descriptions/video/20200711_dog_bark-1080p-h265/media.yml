@@ -1,0 +1,8 @@
+description: Dog Bark
+files:
+- name: 20200711_dog_bark-1080p.temp
+  sha256: 8375fbca222cfc055993474c4ed187eba3824edf7b81a5eddac48021cfc1e73c
+  size: 26476725
+  source: https://github.com/dlstreamer/pipeline-zoo-media/blob/main/storage/video/20200711_dog_bark/20200711_dog_bark_1920x1080.mp4?raw=true
+  convert-command: -c:v libx265 -preset medium -x265-params crf=28 -c:a aac -strict experimental -b:a 128k 20200711_dog_bark-1080p.h265
+license: https://github.com/dlstreamer/pipeline-zoo-media/raw/main/storage/video/20200711_dog_bark/LICENSE

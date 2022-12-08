@@ -4,30 +4,37 @@ Object detection pipeline taking encoded video frames in h265 format and using [
 
 ```mermaid
 stateDiagram
-
+    direction LR
     state Object-Detection {
-
+    direction LR
     state media {
+    direction LR
     h265
     }
 
     state video_source {
+    direction LR
 		demux --> parse
     }
 
     state detect {
+     direction LR
     state scale {
-      w416xh416
+      direction LR
+      w680xh680
     }
     state csc {
+    direction LR
     RGB
     }
 
     state inference {
+    direction LR
     yolo_v4_tf
     }
 
     state tensors_to_objects {
+    direction LR
     labels_coco
     }
 

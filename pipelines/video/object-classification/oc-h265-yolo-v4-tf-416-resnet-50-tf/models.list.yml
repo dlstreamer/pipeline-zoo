@@ -1,0 +1,3 @@
+- resnet-50-tf_INT8
+- resnet-50-tf
+- yolo-v4-tf-416_INT8

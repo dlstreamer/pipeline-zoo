@@ -1,0 +1,37 @@
+%YAML 1.0
+---
+description: yolo-v4-tf-416_INT8
+files:
+- checksum: 109adbbf67c4193235dbf12e6934c7500c0cdb01b50a970b5925261c52f513a6196d3a8dbaa05ed3ac705a6de71b3f65
+  name: yolo-v4-tf.json
+  sha256: 656296a76feba16718a37331e08784a5ae3cd4ba0c557cb7104b53e361453d3a
+  size: 945
+  source: https://github.com/dlstreamer/dlstreamer/blob/master/samples/gstreamer/model_proc/public/yolo-v4-tf.json?raw=true
+- checksum: a7925a36e8cd90d2cfeb6c6aa4e7ae0c62040da681dea51a77867496bf770643ae3efc2b4cd98b51242361fba110d233
+  name: coco_80cl.txt
+  sha256: fb63dcb6c4e744c1a9f89d11dc331d70fe2866ac4f360dac65c4f805eb3d74d4
+  size: 606
+  source: https://github.com/dlstreamer/dlstreamer/raw/master/samples/labels/coco_80cl.txt
+- checksum: c844f999a61bdf674cb86fad4d36c2a43369657ecb390bdd5188abb843638fc8265eebda8f66ee9345296a557e839274
+  name: FP16-INT8/yolo-v4-tf-416_INT8.bin
+  sha256: 4bfa7ed0ec3f929e83b3c8882dc4015c33c28dbd2fa453324be87734694c1c82
+  size: 64636124
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolo-v4-tf-416_INT8/FP16-INT8/yolo-v4-tf.bin
+- checksum: 131c7b4843f471cf4d38cf1693286bac1182ee8034668563958c3b0fc1aa10d86883ae968407b86edd930605e4909b03
+  name: FP16-INT8/yolo-v4-tf-416_INT8.xml
+  sha256: d202c0ee2e41d9cf84813cd864924fd107996a61a811dfc08b774d56cd174397
+  size: 1161035
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolo-v4-tf-416_INT8/FP16-INT8/yolo-v4-tf.xml
+- checksum: d95d7a5ae2009411d602b2e204b64ae2097ee57e441d4a9f1566ce54e85f0d36c82a9fe3306e27f63cf305d8e18f0256
+  name: FP32-INT8/yolo-v4-tf-416_INT8.bin
+  sha256: e5515dd0170206031fbfb66c04ce73403ba897255c0d26b19776fb6e8a698ee5
+  size: 64703964
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolo-v4-tf-416_INT8/FP32-INT8/yolo-v4-tf.bin
+- checksum: 36c0e49df3b4618a76c86ea256dd55eed922cbab353061a5ffbb14104c96fc13ef675b2fea62da425672939af29fa23c
+  name: FP32-INT8/yolo-v4-tf-416_INT8.xml
+  sha256: 05c8b63f90fd18da83629f381bbef530119b61ff426caa5a7b005378af05e836
+  size: 1080161
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolo-v4-tf-416_INT8/FP32-INT8/yolo-v4-tf.xml
+framework: dldt
+license: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolo-v4-tf-416_INT8/LICENSE
+task_type: detection

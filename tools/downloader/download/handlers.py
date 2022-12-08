@@ -26,6 +26,7 @@ from tqdm import tqdm
 import sys
 from util import Spinner
 import logging
+import glob
 
 class Handler(object, metaclass=abc.ABCMeta):
     logger = None
@@ -193,7 +194,9 @@ class Runner(Handler):
         return True
 
 class GithubUrlConverter:
-    def __init__(self):
+    def __init__(self, logger, args):
+        self._logger = logger
+        self._args = args
         self._github = self._connect_to_repo()
 
     def convert(self, original_url):
@@ -205,10 +208,18 @@ class GithubUrlConverter:
             repo_name = url_info.path.split("/")[1] + "/" + url_info.path.split("/")[2]
             try:
                 repo = self._github.get_repo(repo_name)
-            except:
-                return original_url
+            except Exception as ex:
+                if self._args.verbose:
+                    self._logger.warning("\tWarning: GitHub URL conversion failed:\n\tException:{}\n\tUsing original URL {}".format(ex,
+                                                                                                                                    original_url))
+                
+            else:
+                converted_url = self._get_download_url(repo, url_info.path.split("/")[-1], "/".join(url_info.path.split("/")[5:-1]))
 
-            converted_url = self._get_download_url(repo, url_info.path.split("/")[-1], "/".join(url_info.path.split("/")[5:-1]))
+                if not converted_url:
+                    if self._args.verbose:
+                        self._logger.warning("\tWarning: GitHub URL conversion failed.\n\tUsing original URL {}".format(original_url))
+                    converted_url = original_url
 
         return converted_url
 
@@ -219,11 +230,11 @@ class GithubUrlConverter:
     def _get_download_url(self, repo, file_name, file_dir):
         files_content = repo.get_dir_contents(file_dir)
         for file_content in files_content:
-                if file_content.name == file_name:
-                    if file_content.size > 200:
-                        return file_content.download_url
-                    else:
-                        return self._get_lfs_download_url(repo, os.path.join(file_dir, file_name))
+            if file_content.name == file_name:
+                if file_content.size > 200:
+                    return file_content.download_url
+                else:
+                    return self._get_lfs_download_url(repo, os.path.join(file_dir, file_name))
 
         return None
 
@@ -233,15 +244,24 @@ class GithubUrlConverter:
 
         if not token:
             try:
-                netrc_file = netrc.netrc()
+                netrc_file = netrc.netrc("/root/.netrc")
                 auth_tokens = netrc_file.authenticators("github.com")
                 token = auth_tokens[2]
-            except:
+            except Exception as ex:
+                if self._args.verbose:
+                    self._logger.info("\tINFO: GitHub token is not set in .netrc {}".format(ex))
                 token=None
 
-        github = Github(token)
-        return github
+        if (not token and self._args.verbose): 
+            self._logger.info("\tINFO: GitHub token is not set in environment or .netrc")
 
+        try:
+            return Github(token)
+        except Exception as ex:
+            if self._args.verbose:
+                self._logger.warning("\tWarning: GitHub API failed:\n\tException:{}".format(ex))
+
+        return None   
 
 class Media(Handler):
     def __init__(self, args):
@@ -313,8 +333,9 @@ class Media(Handler):
                 return False
 
             if "convert-command" in file:
-                self._ffmpeg_convert(media_file, file["convert-command"])
-
+                if not self._ffmpeg_convert(media_file, file["convert-command"]):
+                    return False
+                
         return True
 
     def _download_media(self, url, target_path, file_name):
@@ -323,7 +344,7 @@ class Media(Handler):
         if self._args.verbose:
             self.logger.info("\tURL: {}\n\tPATH: {}".format(url, target_path))
 
-        url_converter = GithubUrlConverter()
+        url_converter = GithubUrlConverter(self.logger, self._args)
         url = url_converter.convert(url)
 
         response = requests.get(url,allow_redirects=True, stream=True)
@@ -433,7 +454,7 @@ class Model(Handler):
                                            "tools/downloader/converter.py")
     DEFAULT_MODEL_OPTIMIZER = os.path.join(DEFAULT_OPEN_VINO_DEPLOYMENT_TOOLS,
                                            "model_optimizer/mo")
-    DEFAULT_MODEL_PROC_ROOT = "/opt/intel/openvino/data_processing/dl_streamer/samples"
+    DEFAULT_MODEL_PROC_ROOT = "/opt/intel/dlstreamer/samples/gstreamer"
 
     CHECKSUM_KEYS = ['checksum', 'sha256']
     
@@ -446,7 +467,7 @@ class Model(Handler):
         self._find_open_model_zoo()
         self._determine_checksum_key()
         self._find_model_proc_root()
-        self._model_index = self._get_model_index()
+        self._find_model_index()
 
     def _get_example_model_config(self):
         try:
@@ -471,20 +492,22 @@ class Model(Handler):
                         self._checksum_key = key
                         return
 
-    def _get_model_index(self):
+    def _find_model_index(self):
         try:
-            index_path = os.path.join(self._model_proc_root,
-                                      "model_index.yaml")
-            return load_document(index_path)
+            candidates = glob.glob("/opt/intel/**/model_index.yaml",recursive=True)
+            if candidates:
+                self._model_index_path = candidates[0]
+            self._model_index = load_document(self._model_index_path)
         except:
-            pass
-
-        return None
+            self._model_index = None
+            self._model_index_path = None
 
     def _find_model_proc_root(self):
         self._model_proc_root = Model.DEFAULT_MODEL_PROC_ROOT
-        if os.path.isdir("/opt/intel/dlstreamer/samples/model_proc"):
-            self._model_proc_root = "/opt/intel/dlstreamer/samples"
+        candidates = glob.glob("/opt/intel/**/model_proc",recursive=True)
+        candidates.sort(key=len)
+        if candidates:
+            self._model_proc_root = candidates[0]
             
      
     def _find_open_model_zoo(self):
@@ -509,10 +532,13 @@ class Model(Handler):
                                                       "models/pipeline-zoo-models")
 
         
-    def _create_download_command(self, model, output_dir):
-        return shlex.split("python3 {0} --name {1} -o {2}".format(self._model_downloader,
-                                                                  model,
-                                                                  output_dir))
+    def _create_download_command(self, model, output_dir, cache_dir=None):
+        if cache_dir:
+            cache_dir = "--cache_dir {}".format(cache_dir)
+        return shlex.split("python3 {0} --name {1} -o {2} {3}".format(self._model_downloader,
+                                                                      model,
+                                                                      output_dir,
+                                                                      cache_dir))
 
     def _create_convert_command(self, model, output_dir):
         return shlex.split("python3 {0} -d {2} --name {1} -o {2} --mo {3}".format(self._model_converter,
@@ -534,7 +560,7 @@ class Model(Handler):
             if model in self._model_index:
                 for _, value in self._model_index[model].items():
                     paths.append(os.path.join(
-                        self._model_proc_root,
+                        os.path.dirname(self._model_index_path),
                         value))
                 return paths
             
@@ -552,7 +578,7 @@ class Model(Handler):
         model_config = load_document(model_path)
 
         for file in model_config["files"]:
-            url_converter = GithubUrlConverter()
+            url_converter = GithubUrlConverter(self.logger, self._args)
             url = url_converter.convert(file["source"])
             file["source"] = url
             for key in Model.CHECKSUM_KEYS:
@@ -576,9 +602,15 @@ class Model(Handler):
         if (not self._args.force) and (os.path.isdir(target_model)):
             self.logger.debug("Model Directory {0} Exists - Skipping".format(model))
             return
+
+        cache_directory = os.path.join(self._args.destination,
+                                      ".model-downloader-cache")
+        
+        create_directory(cache_directory,
+                         False)
         
         with tempfile.TemporaryDirectory() as output_dir:
-            command = self._create_download_command(model,output_dir)
+            command = self._create_download_command(model,output_dir, cache_directory)
             
             self.logger.debug("Download command: {0}".format(" ".join(command)))
 
@@ -591,9 +623,11 @@ class Model(Handler):
             process.stdout.close()
             process.wait()
 
-            if model!="mobilenetv2_7":
-                command = self._create_convert_command(model, output_dir)
-                self.logger.debug("Convert command: {0}".format(" ".join(command)))
+            if process.returncode != 0:
+                return False
+            
+            command = self._create_convert_command(model, output_dir)
+            self.logger.debug("Convert command: {0}".format(" ".join(command)))
 
             process = subprocess.Popen(command, bufsize=1, universal_newlines=True, stdout=subprocess.PIPE,
                                             stderr=subprocess.PIPE)
@@ -604,8 +638,10 @@ class Model(Handler):
                 sys.stdout.flush()
 
             process.stdout.close()
-
             process.wait()
+
+            if process.returncode != 0:
+                return False
 
             model_path = self._find_model_root(model, output_dir)
             
@@ -616,6 +652,7 @@ class Model(Handler):
             model_proc_paths = self._find_model_proc(model)
             for model_proc in model_proc_paths:
                 shutil.copy(model_proc, target_model)
+        return True
 
     def _get_model_list(self, pipeline_root):
         model_list = []
@@ -638,9 +675,12 @@ class Model(Handler):
                 spinner = Spinner(text='Loading')
                 spinner.start()
 
-            self._download_and_convert_model(pipeline,pipeline_root,model)
+            result = self._download_and_convert_model(pipeline,pipeline_root,model)
 
             if self._args.verbose < 2:
                 spinner.stop()
+
+            if not result:
+                return False
 
         return True

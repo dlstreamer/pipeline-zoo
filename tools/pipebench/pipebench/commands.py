@@ -5,6 +5,7 @@
 '''
 
 import os
+import glob
 import shlex
 import subprocess
 import shutil
@@ -70,6 +71,15 @@ def _get_runner_settings_path(measurement, args, add_default_platform):
         
     args.parser.error("Runner settings not found in workspace, candidates: {}".format(candidates,))
 
+def _get_gpu_render_devices(measurement_settings):
+    for value in measurement_settings["gpu-devices"]:
+        value = value.upper()
+        if value == 'ALL':
+            measurement_settings['gpu-devices'] = glob.glob("/dev/dri/render*")
+        if value == 'NONE': 
+            measurement_settings['gpu-devices'] = ['NONE']
+    return measurement_settings["gpu-devices"]
+    
 def _get_numa_nodes(args):
     numa_nodes = None
     try:
@@ -292,6 +302,7 @@ def _estimate_starting_streams(args, run_directory, task, measurement_settings):
 def _run_iteration(num_streams,
                    streams_per_process,
                    numa_nodes,
+                   gpu_render_devices,
                    runner_settings,
                    measurement_settings,
                    target_dir,
@@ -326,7 +337,11 @@ def _run_iteration(num_streams,
 
         numa_node = None
         if (numa_nodes):
-            numa_node = stream_index % numa_nodes
+            numa_node = process_index % numa_nodes
+
+        gpu_render_device = None
+        if (gpu_render_devices):
+            gpu_render_device = gpu_render_devices[process_index % len(gpu_render_devices)]
 
         sources, sinks, runner  = task.run(run_directory,
                                            runner_settings,
@@ -335,6 +350,7 @@ def _run_iteration(num_streams,
                                            measurement_settings["sample-size"],
                                            semaphore = semaphore,
                                            numa_node = numa_node,
+                                           gpu_render_device = gpu_render_device,
                                            starting_stream_index = stream_index,
                                            number_of_streams=(end_stream_index-stream_index+1))
 
@@ -376,7 +392,7 @@ def run(args):
     numa_nodes = []
     if measurement_settings["numactl"]:
         numa_nodes = _get_numa_nodes(args)
-
+    gpu_render_devices = _get_gpu_render_devices(measurement_settings)
     min_streams = measurement_settings["min-streams"]
     max_streams = measurement_settings["max-streams"] if measurement_settings["max-streams"] else sys.maxsize
     max_iterations = measurement_settings["max-iterations"] if measurement_settings["max-streams"] else sys.maxsize
@@ -450,6 +466,7 @@ def run(args):
         results = _run_iteration(num_streams,
                                  streams_per_process,
                                  numa_nodes,
+                                 gpu_render_devices,
                                  runner_settings,
                                  measurement_settings,
                                  run_directory,
