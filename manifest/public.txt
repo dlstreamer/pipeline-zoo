@@ -21,6 +21,8 @@ docs/tasks-and-pipelines.md
 docs/tasks-and-pipelines-1.svg
 docs/xeon.md
 docs/output.md
+docs/flex_140_gpu.md
+docs/flex_170_gpu.md
 docs/*.svg
 docs/pick-and-go.md
 docs/measurements.md

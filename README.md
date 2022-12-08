@@ -4,6 +4,8 @@
 | [Measurement Definitions](docs/measurements.md) 
 | [Intel® Core™ processor Examples](docs/core.md)
 | [Intel® Xeon® Processor Examples](docs/xeon.md)
+| [Intel® Data Center GPU Flex Series 140 Examples](docs/flex_140_gpu.md)
+| [Intel® Data Center GPU Flex Series 170 Examples](docs/flex_170_gpu.md)
 | [Pick and Go Use Case](docs/pick-and-go.md) 
 | [Advanced Examples](docs/examples.md)
 | [Pipebench Reference](docs/pipebench-reference-guide.md)
