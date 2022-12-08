@@ -88,6 +88,8 @@ models/descriptions/yolo-v4-tf_INT8
 models/descriptions/yolo-v4-tf-416_INT8
 models/descriptions/ssdlite_mobilenet_v2_INT8
 models/descriptions/efficientnet-b0_INT8
+models/descriptions/yolov5s-416_INT8
+models/descriptions/yolov5s-416
 
 # media
 media/descriptions/video/20200711_dog_bark
