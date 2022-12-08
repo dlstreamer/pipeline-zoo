@@ -6,6 +6,7 @@
 '''
 
 import os
+import shutil
 import sys
 from arguments import parse_args
 import handlers
@@ -65,6 +66,12 @@ if __name__ == '__main__':
             item = getattr(args,"{}_item".format(item_type),None)
             if not handler.download(pipeline, pipeline_root, item,item_list):
                 handler.logger.error("Pipeline download failed. Failed downloading {}.".format(item_type))
+                target_pipeline = os.path.join(args.destination,
+                                               pipeline)
+                try:
+                    shutil.rmtree(target_pipeline)
+                except:
+                    pass
                 exit(1)
         
         print("\nPipeline Downloaded")

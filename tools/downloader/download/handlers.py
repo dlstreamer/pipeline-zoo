@@ -209,13 +209,16 @@ class GithubUrlConverter:
             try:
                 repo = self._github.get_repo(repo_name)
             except Exception as ex:
-                self._logger.error("\tError: GitHub URL conversion failed:\n\tException:{}".format(ex))
+                if (self._args.verbose): 
+                    self._logger.warning("\tWarning: GitHub URL conversion failed:\n\tException:{}\n\tUsing original URL {}".format(ex,
+                                                                                                                                    original_url))
                 
             else:
                 converted_url = self._get_download_url(repo, url_info.path.split("/")[-1], "/".join(url_info.path.split("/")[5:-1]))
 
                 if not converted_url:
-                    self._logger.error("\tError: GitHub URL conversion failed")
+                    if (self._args.verbose):
+                        self._logger.warning("\tWarning: GitHub URL conversion failed.\n\tUsing original URL {}".format(original_url))
                     converted_url = original_url
 
         return converted_url
@@ -325,8 +328,9 @@ class Media(Handler):
                 return False
 
             if "convert-command" in file:
-                self._ffmpeg_convert(media_file, file["convert-command"])
-
+                if not self._ffmpeg_convert(media_file, file["convert-command"]):
+                    return False
+                
         return True
 
     def _download_media(self, url, target_path, file_name):
@@ -614,6 +618,9 @@ class Model(Handler):
             process.stdout.close()
             process.wait()
 
+            if process.returncode != 0:
+                return False
+            
             command = self._create_convert_command(model, output_dir)
             self.logger.debug("Convert command: {0}".format(" ".join(command)))
 
@@ -626,8 +633,10 @@ class Model(Handler):
                 sys.stdout.flush()
 
             process.stdout.close()
-
             process.wait()
+
+            if process.returncode != 0:
+                return False
 
             model_path = self._find_model_root(model, output_dir)
             
@@ -638,6 +647,7 @@ class Model(Handler):
             model_proc_paths = self._find_model_proc(model)
             for model_proc in model_proc_paths:
                 shutil.copy(model_proc, target_model)
+        return True
 
     def _get_model_list(self, pipeline_root):
         model_list = []
@@ -660,9 +670,12 @@ class Model(Handler):
                 spinner = Spinner(text='Loading')
                 spinner.start()
 
-            self._download_and_convert_model(pipeline,pipeline_root,model)
+            result = self._download_and_convert_model(pipeline,pipeline_root,model)
 
             if self._args.verbose < 2:
                 spinner.stop()
+
+            if not result:
+                return False
 
         return True
