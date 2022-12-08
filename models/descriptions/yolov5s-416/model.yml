@@ -1,5 +1,10 @@
 description: yolov5s-416
 files:
+- checksum: 97e3d855ac00427b143c9ecab704a5a3a04440726a7b5247f4b695208d6a1196b0646de558b9dd95efe338f18412762f
+  name: yolov5s.json
+  sha256: 0849483679a17ee10cae1d02da4b01ae5b9fc5ee17c518f2d4bdca349c52398c
+  size: 3099
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416/yolov5s.json
 - checksum: de55c43546646fe031d988ae52473162036856ebb42b8a376f24a579fd90942aa3c8d080b516d141d036d0969139d743
   name: FP16/yolov5s-416.bin
   sha256: 6e37ec658e7f17102579f8c9de27f6d1293d65babfd82a601f7282316c8fccff
@@ -10,11 +15,6 @@ files:
   sha256: 149fdef9fe07603f2679f5807f1c64c41e1533bce4f32a35a81ece4e38d7b146
   size: 268533
   source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416/FP16/yolov5s.xml
-- checksum: 6051e21045cc8ceb008a20558113dfbe59596b7c49cd78c6175a59f697331640bf100e943e9de6f2a9b98644e66d25ae
-  name: FP16/yolov5s.json
-  sha256: a1b4723c3e645e039ff9461418b22f5b46ad7a9e8e50fa5d6a860aa3de8c2c8e
-  size: 3126
-  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416/yolov5s.json
 - checksum: 47e1fe5e7effb6862da6f49dd0745084977c08d09403a554db0244f903853a8c08d2cd1517a0e737ff7344b4db251dec
   name: FP32/yolov5s-416.bin
   sha256: 39e3f741c93cf4412221933b8484e77114732958ca33795fa58a8f6a81319586
@@ -25,11 +25,6 @@ files:
   sha256: 4c1e292ac6285e79cd6f57f9105fd26a366b1d28459ff3b732989af500d002af
   size: 201860
   source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416/FP32/yolov5s.xml
-- checksum: 6051e21045cc8ceb008a20558113dfbe59596b7c49cd78c6175a59f697331640bf100e943e9de6f2a9b98644e66d25ae
-  name: FP32/yolov5s.json
-  sha256: a1b4723c3e645e039ff9461418b22f5b46ad7a9e8e50fa5d6a860aa3de8c2c8e
-  size: 3126
-  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416/yolov5s.json
 framework: dldt
 license: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416/LICENSE
 task_type: detection
