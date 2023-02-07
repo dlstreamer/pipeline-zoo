@@ -51,7 +51,7 @@ RUN if [ -f /opt/intel/openvino/install_dependencies/install_NCS_udev_rules.sh ]
     fi    
 
 # Dependencies installed via apt-get
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
+RUN DEBIAN_FRONTEND=noninteractive apt-get --allow-releaseinfo-change update && \
     apt-get install -y -q --no-install-recommends \
     python3-setuptools \
     python3-pip \
