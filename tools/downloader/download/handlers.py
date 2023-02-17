@@ -457,6 +457,7 @@ class Model(Handler):
     DEFAULT_MODEL_PROC_ROOT = "/opt/intel/dlstreamer/samples/gstreamer"
 
     CHECKSUM_KEYS = ['checksum', 'sha256']
+    MODEL_SPECIFIC_FILES= ['model-proc', 'labels-file']
     
     def __init__(self, args):
         self._args = args
@@ -558,10 +559,10 @@ class Model(Handler):
         paths = []
         if self._model_index:
             if model in self._model_index:
-                for _, value in self._model_index[model].items():
-                    paths.append(os.path.join(
-                        os.path.dirname(self._model_index_path),
-                        value))
+                for key, value in self._model_index[model].items():
+                    if key in Model.MODEL_SPECIFIC_FILES:
+                        paths.append(os.path.join(
+                            os.path.dirname(self._model_index_path), value))
                 return paths
             
         for root, _, files in os.walk(self._model_proc_root):
@@ -645,7 +646,7 @@ class Model(Handler):
 
             model_path = self._find_model_root(model, output_dir)
             
-            self.logger.debug("Creating direcory: {}".format(target_root))
+            self.logger.debug("Creating directory: {}".format(target_root))
             create_directory(target_root,False)
             
             shutil.move(model_path,target_root)
