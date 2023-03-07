@@ -19,7 +19,7 @@
 # SOFTWARE.
 
 # For latest agama UMD drivers use ./build.sh --base intel/dlstreamer:2022.1.1-ubuntu20-devel
-ARG BASE=intel/dlstreamer:2022.1.0-ubuntu20-devel
+ARG BASE=intel/dlstreamer:2022.3.0-ubuntu22-gpu555-devel
 ARG REGISTRY
 FROM ${REGISTRY}${BASE} as media-analytics-pipeline-zoo
 ARG PIPELINE_ZOO_PLATFORM=DEFAULT
@@ -42,13 +42,13 @@ RUN if [ -f /opt/intel/openvino/install_dependencies/install_openvino_dependenci
     fi
 
 RUN if [ -f /opt/intel/openvino/install_dependencies/install_NEO_OCL_driver.sh ]; then \
-       /opt/intel/openvino/install_dependencies/install_NEO_OCL_driver.sh -y ; exit 0; \ 
-    fi    
+       /opt/intel/openvino/install_dependencies/install_NEO_OCL_driver.sh -y ; exit 0; \
+    fi
 
 RUN if [ -f /opt/intel/openvino/install_dependencies/install_NCS_udev_rules.sh ]; then \
-       apt-get install -y -q --no-install-recommends sudo; \ 
+       apt-get install -y -q --no-install-recommends sudo; \
        /opt/intel/openvino/install_dependencies/install_NCS_udev_rules.sh -y ;\
-    fi    
+    fi
 
 # Dependencies installed via apt-get
 RUN DEBIAN_FRONTEND=noninteractive apt-get --allow-releaseinfo-change update && \
@@ -98,14 +98,14 @@ RUN if [ ! -z "$DLSTREAMER_SRC_REPO" ]; then \
 #       ./scripts/install_metapublish_dependencies.sh && \
        mkdir build && cd build  \
        && cmake \
-	     -DCMAKE_BUILD_TYPE=Release \	
+	     -DCMAKE_BUILD_TYPE=Release \
     	     -DCMAKE_INSTALL_PREFIX=/opt/intel/dlstreamer \
     	     -DENABLE_PAHO_INSTALLATION=OFF \
     	     -DENABLE_RDKAFKA_INSTALLATION=OFF \
     	     -DENABLE_VAAPI=ON \
 	         .. \
        && make -j $(nproc) \
-       && make install; \ 
+       && make install; \
     fi
 ENV GST_PLUGIN_PATH=/home/dlstreamer_src/build/intel64:${GST_PLUGIN_PATH}
 
@@ -136,7 +136,7 @@ ENV cl_cache_dir=/home/pipeline-zoo/workspace/.cl-cache
 ENV HISTFILE=/home/pipeline-zoo/workspace/.bash_history
 
 # work dir
-WORKDIR /home/pipeline-zoo/workspace 
+WORKDIR /home/pipeline-zoo/workspace
 
 ENTRYPOINT []
 
