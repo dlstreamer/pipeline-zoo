@@ -13,8 +13,8 @@ PLATFORM=DEFAULT
 
 # Base Images
 
-DEFAULT_BASE_IMAGE=intel/dlstreamer:2022.2.0-ubuntu20-gpu815-devel
-DGPU_BASE_IMAGE=intel/dlstreamer:2022.2.0-ubuntu20-gpu419.40-devel
+DEFAULT_BASE_IMAGE=intel/dlstreamer:2022.3.0-ubuntu22-gpu555-devel
+DGPU_BASE_IMAGE=intel/dlstreamer:2022.3.0-ubuntu22-gpu555-devel
 
 
 # Model Proc Versions
@@ -84,7 +84,7 @@ get_options() {
             else
                 error 'ERROR: "--pipeline-list" requires a .yml file'
             fi
-            ;;            
+            ;;
         --registry)
 	        if [ "$2" ]; then
 		        REGISTRY=$2
@@ -153,7 +153,7 @@ get_options() {
 	    TAG+="-${PLATFORM,,}"
 	fi
     fi
-    
+
 }
 
 
@@ -218,6 +218,6 @@ if [ -z "$RUN_PREFIX" ]; then
     set -x
 fi
 
-$RUN_PREFIX docker build -f $DOCKERFILE $BUILD_OPTIONS $BUILD_ARGS -t $TAG $SOURCE_DIR $NO_CACHE 
+$RUN_PREFIX docker build -f $DOCKERFILE $BUILD_OPTIONS $BUILD_ARGS -t $TAG $SOURCE_DIR $NO_CACHE
 
 { set +x; } 2>/dev/null
