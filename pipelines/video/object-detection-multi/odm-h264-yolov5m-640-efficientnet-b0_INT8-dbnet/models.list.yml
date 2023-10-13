@@ -1,0 +1,3 @@
+- yolov5m-640_INT8
+- efficientnet-b0_INT8
+- dbnet_INT8

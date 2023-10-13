@@ -1,0 +1,9 @@
+
+task: object-classification
+
+detection-model: yolov5m-224_INT8
+
+classification-models: [resnet-50-tf_INT8]
+
+inputs.media.type.media-type: video/x-h264
+

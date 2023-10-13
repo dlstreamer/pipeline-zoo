@@ -1,0 +1,40 @@
+run: python3 dlstreamrun
+decode:
+  device: GPU
+  caps: video/x-raw(memory:VASurface)
+detect:
+  device: GPU
+  batch-size: 4
+  inference-interval: 3
+  pre-process-backend: vaapi-surface-sharing
+  pre-process-config: VAAPI_FAST_SCALE_LOAD_FACTOR=1
+  precision: FP16-INT8
+  model-instance-id: detection-0
+  nireq: 4
+classify-0:
+  device: GPU
+  batch-size: 4
+  inference-interval: 3
+  pre-process-backend: vaapi-surface-sharing
+  pre-process-config: VAAPI_FAST_SCALE_LOAD_FACTOR=1
+  precision: FP16-INT8
+  model-instance-id: classification-0
+  inference-region: roi-list
+  nireq: 4
+detect-0:
+  device: GPU
+  batch-size: 4
+  precision: FP16-INT8
+  model-instance-id: detection-1
+  nireq: 4
+  inference-interval: 3
+decode-queue:
+  enabled: false
+detect-queue:
+  enabled: false
+classify-0-queue:
+  enabled: false
+detect-0-queue:
+  enabled: false
+barcode_detector: true
+streams-per-process: 1

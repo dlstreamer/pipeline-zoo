@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 '''
-* Copyright (C) 2019-2020 Intel Corporation.
+* Copyright (C) 2019 Intel Corporation.
 *
-* SPDX-License-Identifier: BSD-3-Clause
+* SPDX-License-Identifier: MIT
 '''
 
 import os
@@ -10,8 +10,10 @@ import shutil
 import sys
 from arguments import parse_args
 import handlers
+# pylint: disable=no-name-in-module
 from handlers import load_document
 from arguments import find_pipeline_root
+# pylint: enable=no-name-in-module
 
 package_name = os.path.basename(os.path.dirname(__file__))
 
@@ -31,7 +33,7 @@ handler_map = {handler_class.__name__.lower():handler_class for handler_class in
 if __name__ == '__main__':
 
     args = parse_args(program_name=package_name)
-
+    # pylint: disable=no-member
     if args.verbose:
         print_args(args)
 
@@ -73,7 +75,7 @@ if __name__ == '__main__':
                 except:
                     pass
                 exit(1)
-        
+        # pylint: enable=no-member
         print("\nPipeline Downloaded")
             
     

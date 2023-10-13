@@ -1,0 +1,7 @@
+description: fruit_vegetable_1920x1080
+files:
+- name: fruit_vegetable_1920x1080.mp4
+  sha256: 6ddfaa2b6001dc293b9d4757c70b1d66ca85d44a16e727187b93ac29e30e7495
+  size: 83019305
+  source: https://github.com/dlstreamer/pipeline-zoo-media/blob/main/storage/video/fruit_vegetable_one_per_frame/fruit_vegetable_1920x1080.mp4?raw=true
+license: https://www.pexels.com/license/

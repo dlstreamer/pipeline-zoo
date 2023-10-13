@@ -1,0 +1,7 @@
+description: 10 blue bottles with barcode
+files:
+- name: 10_blue_bottles_with_barcode.mp4
+  sha256: f7dab20f737249fe6d42479ec4f498e4069d602d44c70db76d5f82c243b0e6db
+  size: 1680660
+  source: https://github.com/dlstreamer/pipeline-zoo-media/blob/main/storage/video/10_blue_bottles_with_barcode/10_blue_bottles_with_barcode_h264.mp4?raw=true
+license: https://raw.githubusercontent.com/dlstreamer/pipeline-zoo-media/main/storage/video/10_blue_bottles_with_barcode/LICENSE.txt

@@ -1,0 +1,43 @@
+# Object Tracking Task
+
+# Tasks Define the input output and properties of a pipeline task
+# The inputs and outputs will futher be specialized by pipeline and workload
+
+description: "Object Tracking"
+inputs:
+  media:
+    type:
+      media-type: video/*
+    operator: video-source.media
+outputs:
+  object-attributes:
+    type:
+      media-type: metadata/objects
+    operator: classify.object-attributes
+properties:
+  detection-model:
+    type: string
+    operator: detect.model
+  inference-models:
+    type: array
+    items:
+      oneOf:
+        - type: array
+          items:
+            type: string
+        - type: string
+    operator: inference.models
+operators:
+  video-source:
+    inputs:
+      media: inputs.media
+  decode:
+    inputs:
+      frame: video-source.frame
+  detect:
+    inputs:
+      frame: decode.frame
+  inference:
+    inputs:
+      frame: detect.frame
+      objects: detect.objects

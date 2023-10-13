@@ -1,0 +1,14 @@
+run: python3 dlstreamrun
+decode:
+  device: CPU
+classify-0:
+  device: GPU
+  batch-size: 4
+  pre-process-backend: opencv
+  inference-region: full-frame
+  precision: FP16-INT8
+  model-instance-id: cpu_gpu
+classify-0-queue:
+  enabled: false
+decode-queue:
+  enabled: false

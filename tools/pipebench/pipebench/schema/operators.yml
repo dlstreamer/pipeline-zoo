@@ -115,6 +115,16 @@ inference:
     model-type:
       type: string
   
+overlay:
+  inputs:
+    frame:
+      type: video/x-raw
+  outputs:
+    frame:
+      type: video/x-raw
+  properties:
+    device:
+      type: string
 
 tensors-to-objects:
   inputs:
@@ -194,6 +204,16 @@ vpp:
       inputs:
         frame: scale.frame
           
+inference:
+  properties:
+    models:
+      type: array
+      items:
+        oneOf:
+        - type: array
+          items:
+            type: string
+        - type: string
 classify:
   properties:
     models:
@@ -269,6 +289,9 @@ detect:
       inputs:
         frame: csc.frame
       model-type: detect
+    overlay:
+      inputs:
+        frame: inference.frame
     tensors-to-objects:
       inputs:
         tensor: inference.tensor

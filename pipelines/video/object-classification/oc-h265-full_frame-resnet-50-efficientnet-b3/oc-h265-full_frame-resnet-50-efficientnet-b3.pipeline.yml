@@ -1,0 +1,10 @@
+# Defines ob-h264-face-age-emotion object classification pipeline
+
+task: object-classification
+
+detection-model: full_frame
+
+classification-models: [resnet-50-pytorch, resnet-50-pytorch, efficientnet-b3, efficientnet-b3, efficientnet-b3]
+
+inputs.media.type.media-type: video/x-h265
+

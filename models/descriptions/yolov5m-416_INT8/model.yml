@@ -1,0 +1,35 @@
+description: yolov5m-416_INT8
+files:
+- checksum: ff79fe1036d23f481a965f16f0bd4d1167a468d8802a62fa046dabefce5803f541a37e3789019e15e0fe65c9e1a8626f
+  name: LICENSE
+  sha256: 5ba21b1969feeb65aff5d4d24835beae2aee1abf4766f22bbd2c01b199ec1666
+  size: 35256
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolov5m-416_INT8/LICENSE?raw=true
+- checksum: fe93187e825c30df136fd101b83979ff5ca7720d56a8490b284ade4f2dd0b6f2cf72ce4263c8c72e79e4be2e77aa4d54
+  name: yolo-v5.json
+  sha256: 537152fb2113179dd72262c5922a2dd02ba93211267e367d6b76cb95f6b8ca98
+  size: 3126
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolov5m-416_INT8/yolo-v5.json?raw=true
+- checksum: 6de5922e7036964f24a024804058daaa670510b8f4409901b0ec268762f219eb741c8869eee55f24cc5ee3a9e240c631
+  name: FP16-INT8/yolov5m-416_INT8.xml
+  sha256: aa1d36a314237188d21842fbd29769da8d667fb9952600535a8886419b15f4a0
+  size: 700311
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolov5m-416_INT8/FP16-INT8/yolov5m-416_INT8.xml?raw=true
+- checksum: 2ac20186568e631a71c49f90f5f5830393b3988383dfe19c8f5a233b937cd99eafa7a3ca8c394ecf4db2568c8530fc11
+  name: FP16-INT8/yolov5m-416_INT8.bin
+  sha256: f9a1573083e24c04a8b66ad6dfe6e7fabbb79dbdcbf3a300f3025d4e41bf1517
+  size: 21900669
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolov5m-416_INT8/FP16-INT8/yolov5m-416_INT8.bin?raw=true
+- checksum: 1bce4dfcb9426588f1241fe3864952e40433a1a908f3e2f2d18947544db4a267d46c79d4221dc5a08304ce6a6c7867fa
+  name: FP32-INT8/yolov5m-416_INT8.xml
+  sha256: 9ffe53920cf4dff40a7b80efadc6c6495fc0423bcd1f0119544ab197dbb481c5
+  size: 640459
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolov5m-416_INT8/FP32-INT8/yolov5m-416_INT8.xml?raw=true
+- checksum: 43b99e272ffc88ec59a58e5bae03273fcd2ae751f5bf239ee979fda9da8813da644ed66f4164122b4b1794334d4eb3c6
+  name: FP32-INT8/yolov5m-416_INT8.bin
+  sha256: ecdb30dfb3fe2283541872a1c3775eb93bb6b890ba36f0d80bd9d6170a0b472e
+  size: 21949241
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolov5m-416_INT8/FP32-INT8/yolov5m-416_INT8.bin?raw=true
+framework: dldt
+license: 'https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolov5m-416_INT8/LICENSE?raw=true'
+task_type: detection

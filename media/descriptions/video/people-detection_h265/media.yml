@@ -1,0 +1,8 @@
+description: People detection
+files:
+- name: people-detection.temp
+  sha256: 18ffe8672d741e3e29c9d891d22c59d453720b086c25b35c88b393d55f92f693
+  size: 5482579
+  source: https://github.com/intel-iot-devkit/sample-videos/blob/master/people-detection.mp4?raw=true
+  convert-command: -c:v libx265 -preset medium -x265-params crf=28 -c:a aac -strict experimental -b:a 128k people-detection.h265
+license: https://github.com/intel-iot-devkit/sample-videos/blob/master/LICENSE

@@ -1,0 +1,43 @@
+# Runner specific configuration
+run: "python3 dlstreamrun"
+decode:
+  device: GPU
+  caps: video/x-raw(memory:VASurface)
+classify-0:
+  device: GPU
+  batch-size: 4
+  inference-interval: 3
+  pre-process-backend: vaapi-surface-sharing
+  inference-region: full-frame
+  precision: FP16
+classify-1:
+  device: GPU
+  batch-size: 4
+  inference-interval: 3
+  pre-process-backend: vaapi-surface-sharing
+  inference-region: full-frame
+  precision: FP16
+classify-2:
+  device: GPU
+  batch-size: 4
+  inference-interval: 3
+  pre-process-backend: vaapi-surface-sharing
+  inference-region: full-frame
+  precision: FP16
+classify-3:
+  device: GPU
+  batch-size: 4
+  inference-interval: 3
+  pre-process-backend: vaapi-surface-sharing
+  inference-region: full-frame
+  precision: FP16
+classify-4:
+  device: GPU
+  batch-size: 4
+  inference-interval: 3
+  pre-process-backend: vaapi-surface-sharing
+  inference-region: full-frame
+  precision: FP16
+overlay:
+  device: GPU
+  caps: video/x-h265

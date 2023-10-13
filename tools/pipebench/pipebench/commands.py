@@ -1,7 +1,7 @@
 '''
-* Copyright (C) 2019-2020 Intel Corporation.
+* Copyright (C) 2019 Intel Corporation.
 *
-* SPDX-License-Identifier: BSD-3-Clause
+* SPDX-License-Identifier: MIT
 '''
 
 import os
@@ -30,6 +30,8 @@ import time
 from statistics import mean
 import subprocess
 from threading import Semaphore
+import re
+import copy
 
 
 def _get_runner_settings(measurement, args, add_default_platform=False, no_overrides=False):
@@ -44,7 +46,7 @@ def _get_runner_settings_path(measurement, args, add_default_platform):
     candidates = []
     template = os.path.join(args.pipeline_root,
                             "{runner}{setting}{platform}.runner-settings.{extension}")
-    
+
     settings = []
     if (args.runner_settings):
         settings.append(args.runner_settings)
@@ -68,18 +70,19 @@ def _get_runner_settings_path(measurement, args, add_default_platform):
     for candidate in candidates:
         if os.path.isfile(candidate):
             return candidate
-        
+
     args.parser.error("Runner settings not found in workspace, candidates: {}".format(candidates,))
 
 def _get_gpu_render_devices(measurement_settings):
     for value in measurement_settings["gpu-devices"]:
         value = value.upper()
         if value == 'ALL':
-            measurement_settings['gpu-devices'] = glob.glob("/dev/dri/render*")
-        if value == 'NONE': 
+            # Sorting to ensure renderD128 is the default
+            measurement_settings['gpu-devices'] = sorted(glob.glob("/dev/dri/render*"))
+        if value == 'NONE':
             measurement_settings['gpu-devices'] = ['NONE']
     return measurement_settings["gpu-devices"]
-    
+
 def _get_numa_nodes(args):
     numa_nodes = None
     try:
@@ -109,11 +112,19 @@ def _create_default_measurement_settings(args, overrides):
             args.measurement)
         measurement_settings = {}
         measurement_settings["media"]=_default_media(args)
-    
+
         with open(measurement_settings_path,"w") as measurement_settings_file:
             if args.measurement=="density":
                 measurement_settings["streams"] = 0
                 measurement_settings["target-condition"] = "stream"
+            if args.measurement=="latency":
+                GSTREAMER_LATENCY_ENV = {
+                    "GST_DEBUG":"GST_TRACER:7",
+                    "GST_TRACERS":"latency_tracer",
+                    "GST_DEBUG_FILE": "latency.log",
+                    "GST_DEBUG_NO_COLOR": "1"
+                }
+                measurement_settings["latency"] = GSTREAMER_LATENCY_ENV
             json.dump(measurement_settings,
                       measurement_settings_file)
         return validate(measurement_settings_path,args.schemas,overrides),measurement_settings_path
@@ -136,7 +147,7 @@ def _load_measurement_settings(args):
     platforms.append(None)
 
     overrides = _get_measurement_overrides(args)
-    
+
     template = os.path.join(args.workspace_root,
                             args.pipeline,
                             "{measurement_name}{platform}"
@@ -163,9 +174,9 @@ def _load_measurement_settings(args):
         if os.path.isfile(candidate):
             return validate(candidate,args.schemas,overrides), candidate
 
-    if not args.measurement_settings and args.measurement in ["density","throughput"]:
+    if not args.measurement_settings and args.measurement in ["density","throughput","latency"]:
         return _create_default_measurement_settings(args, overrides)
-        
+
     args.parser.error("Measurement settings not found in workspace.\n\tCandidates: {}".format(candidates))
 
 def _get_run_number(target_directory):
@@ -186,11 +197,11 @@ def _get_run_number(target_directory):
 
 def _prepare_run_directory(args):
     pipeline_path = find_pipeline(args.pipeline, args)
-        
+
     if (not pipeline_path):
         args.parser.error("Pipeline {} not found in workspace".format(
             args.pipeline,))
-       
+
     args.pipeline_root = os.path.dirname(pipeline_path)
 
     measurement_settings, measurement_settings_path = _load_measurement_settings(args)
@@ -199,25 +210,28 @@ def _prepare_run_directory(args):
     task = Task.create_task(measurement_settings, pipeline_path, args)
 
     media_name = os.path.basename(measurement_settings["media"])
-    
+
     args.workload_root = os.path.join(args.pipeline_root,
                                       ".workloads",
                                       media_name,
                                       measurement_settings["scenario"]["source"])
-    
+
     _prepare(task, measurement_settings, args)
 
-        
+
     runner_settings, runner_settings_path = _get_runner_settings(
         args.measurement,
         args)
 
-    if not "streams-per-process" in runner_settings:
+    if "latency" in measurement_settings:
+        runner_settings["latency"] = measurement_settings["latency"]
+
+    if "streams-per-process" not in runner_settings:
         runner_settings["streams-per-process"] = measurement_settings["streams-per-process"]
-    
+
     if "streams_per_process" in vars(args):
         runner_settings["streams-per-process"] = args.streams_per_process
-    
+
     if measurement_settings["streams-per-process"] != 1:
         runner_settings["streams-per-process"] = measurement_settings["streams-per-process"]
 
@@ -225,7 +239,7 @@ def _prepare_run_directory(args):
                             replace(".runner-settings.yml","").
                             replace(".{}".format(args.measurement),
                                     ""))
-    
+
     target_root = args.pipeline_root
 
     if (args.measurement_directory):
@@ -357,7 +371,7 @@ def _run_iteration(num_streams,
         runners.append((sources,sinks,runner,run_directory))
         process_index += 1
 
-    for stream_index in range(num_streams): 
+    for stream_index in range(num_streams):
         semaphore.release()
 
     return _wait_for_task(runners, measurement_settings["duration"] + 10,"{:04d}".format(iteration))
@@ -374,7 +388,7 @@ def _summarize_measurement(args,
     print(" Measurement:\n\t{}".format(args.measurement))
     print(" \t{}\n".format(os.path.basename(args.measurement_settings_path)))
     print(" Output Directory:\n\t{}\n".format(run_directory))
-    
+
 def run(args):
     run_directory, measurement_settings, runner_settings, task = _prepare_run_directory(args)
 
@@ -400,7 +414,7 @@ def run(args):
     if min_streams > max_streams:
         args.parser.error("min-streams ({0}) is greater than max-streams ({1})".format(min_streams,
                                                                                        max_streams))
-    
+
     if measurement_settings["streams"]:
         max_iterations = 1
         if measurement_settings["streams"] > max_streams:
@@ -409,7 +423,7 @@ def run(args):
         if measurement_settings["streams"] < min_streams:
             args.parser.error("streams ({0}) is less than min-streams ({1})".format(
                 starting_streams,min_streams))
-            
+
     if measurement_settings["starting-streams"]:
         if measurement_settings["starting-streams"] > max_streams:
             args.parser.error("starting-streams ({0}) is greater than max-streams ({1})".format(
@@ -420,12 +434,12 @@ def run(args):
 
     starting_streams = max(min_streams,
                            starting_streams)
-    
+
     starting_streams = min(max_streams,
                            starting_streams)
     if not starting_streams:
         starting_streams = 1
-        
+
     min_failure = -1
     max_success = -1
     max_success_iteration = -1
@@ -442,7 +456,7 @@ def run(args):
     if starting_streams > max_streams:
         args.parser.error("streams / streams_per_process ({0}/{1}) is greater than max-processes ({2})".format(
             starting_streams,streams_per_process,max_processes))
-    
+
     num_streams = starting_streams
     iteration_results = []
     iteration_results_map = {}
@@ -454,7 +468,7 @@ def run(args):
     search_method = measurement_settings["search-method"]
     current_total_fps = 0
 
-    
+
     while ( ((max_success==-1) or
              (min_failure==-1) or
              (min_failure-max_success>1)) and
@@ -474,15 +488,14 @@ def run(args):
                                  iteration,
                                  max_processes)
         total_fps = sum ([stream_result.avg for stream_result in results[0]])
-        
-            
+
         success, density_result = _check_density(results, measurement_settings)
         if args.verbose_level>0:
             _print_density_result(density_result,measurement_settings)
 
         iteration_results.append((density_result,num_streams,results[2]))
         iteration_results_map[num_streams] = success
-        
+
         if (first_result is None):
             first_result = success
         current_result = success
@@ -500,8 +513,8 @@ def run(args):
             else:
                 min_failure_iteration = iteration
                 break
-        
-        
+
+
         if (success):
             calculated_num_streams += 1
             if (density < num_streams):
@@ -529,18 +542,18 @@ def run(args):
                     num_streams = int(num_streams / 2)
                 else:
                     num_streams = int(((min_failure - max_success) / 2) + max_success)
-        
+
         if (num_streams>max_streams):
             num_streams = max_streams
 
         if (num_streams<min_streams):
             num_streams = min_streams
-        
+
         if (num_streams == old_num_streams) or (num_streams in iteration_results_map):
             break
 
         iteration += 1
-        
+
     _write_density_result(density,
                           run_directory,
                           args.pipeline,
@@ -550,7 +563,7 @@ def run(args):
                           max_success_iteration,
                           args.runner,
                           runner_settings,
-                          args)      
+                          args)
 
 
 def download(args):
@@ -577,29 +590,29 @@ def list_pipelines(args):
                     models.extend(value)
                 else:
                     models.append(value)
-                    
-        
+
+
         descriptions.append({"Pipeline":pipeline,
                              "Task":pipeline_config._namespace.task,
                              "Models":"\n".join(models),
                              "Runners":"\n".join(runners)})
-    
+
     print(tabulate(descriptions,headers={'name':'name','models':'models','task':'task'},tablefmt="grid"))
-    
+
 def _create_download_command(pipeline, args):
 
     downloader = os.path.join(args.zoo_root,"tools/downloader/download")
 
     verbose_option = "-v " * args.verbose_level
-    
+
     cmd = shlex.split("python3 {0} -d {1} {2} {3}".format(downloader, args.workspace_root, pipeline, verbose_option))
-    
+
     return cmd
 
 def _download_pipeline(pipeline, args):
 
     target_dir = os.path.join(args.workspace_root,pipeline)
-    
+
     if (args.force):
         try:
             shutil.rmtree(target_dir)
@@ -608,13 +621,16 @@ def _download_pipeline(pipeline, args):
 
     if (not os.path.isdir(target_dir)):
         print_action("Downloading {}".format(pipeline))
-                       
+
         command = _create_download_command(pipeline,args)
 
         output = subprocess.DEVNULL if args.silent else None
-        
-        subprocess.run(command, stdout=output, stderr=output)
-        
+
+        proc = subprocess.run(command, stdout=output, stderr=output)
+
+        if proc.returncode != 0:
+            raise Exception(f"Download failed, exit code {proc.returncode}")
+
     else:
         print("Pipeline found, skipping download")
 
@@ -622,19 +638,19 @@ def _download_pipeline(pipeline, args):
 def _create_systeminfo_command(target_dir, args):
 
     systeminfo = os.path.join(args.zoo_root,"tools/systeminfo/systeminfo")
-    
+
     return shlex.split("python3 {0} -js {1}".format(systeminfo,os.path.join(target_dir,"systeminfo.json")))
 
 
 def _load_workload(args):
-    
+
     try:
 
         pipeline_path = find_pipeline(args.pipeline, args)
 
         if (not pipeline_path):
             args.parser.error("Pipeline {} not found in workspace".format(args.pipeline,))
-       
+
         args.pipeline_root = os.path.dirname(pipeline_path)
 
         workload = WorkloadConfig(args.workload, args)
@@ -645,14 +661,14 @@ def _load_workload(args):
             workload_name = args.save_workload
         if getattr(workload._namespace,"use-reference-detections",False):
             workload_name+=".using-reference-detections"
-            
+
         args.workload_name = workload_name
 
         media_name = os.path.basename(workload.media)
 
         if getattr(workload._namespace,"use-reference-detections",False):
             media_name+=".using-reference-detections"
-        
+
         args.workload_root = os.path.join(args.
                                           workspace_root,
                                           workload.pipeline,
@@ -660,7 +676,7 @@ def _load_workload(args):
                                           media_name,
                                           workload.scenario.source)
 
-        
+
         return workload
     except Exception as error:
         args.parser.error("Invalid workload: {}, error: {}".format(args.workload,error))
@@ -669,7 +685,7 @@ def _load_workload(args):
 
 
 def _prepare(task, measurement_settings, args):
-            
+
     if (args.force):
         try:
             shutil.rmtree(args.workload_root)
@@ -681,12 +697,12 @@ def _prepare(task, measurement_settings, args):
 
     command = _create_systeminfo_command(args.workload_root,
                                          args)
-    
+
     subprocess.run(command,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-        
+
 
     directories = [os.path.join(args.workload_root,suffix) for suffix in ["input", "reference"]]
-                
+
     if (args.force):
         try:
             for directory in directories:
@@ -700,8 +716,8 @@ def _prepare(task, measurement_settings, args):
 
     timeout = None
     task.prepare(args.workload_root, timeout)
-    
-    
+
+
 def _print_fps(runners, totals, iteration):
 
     results = []
@@ -734,13 +750,13 @@ def _print_fps(runners, totals, iteration):
                                                                                              total)
     print(output)
     print("="*72,"\n")
-    
+
     if (len(runners) == 1):
         totals["total"] = stats.fps
         totals["min"] = stats.min
         totals["max"] = stats.max
         totals["avg"] = stats.avg
-                          
+
     return results
 
 known_return_codes = [-9, -15, 0]
@@ -784,7 +800,7 @@ def _wait_for_task(runners, duration, iteration=None):
             if (sink.connected):
                 sink.join(10)
         return_codes.append((runner_process.returncode,run_directory))
-        
+
     if ("total" in totals):
         del totals["total"]
     _check_return_codes(return_codes)
@@ -839,7 +855,7 @@ def _write_result_json(density,
         iteration_result["total"]=iteration_total
         iteration_result["processes"]=iteration_processes
         iteration_results[iteration_template.format(iteration_index)]=iteration_result
-    
+
     result = {args.measurement: {
         "streams":density,
         "max":maximum,
@@ -852,14 +868,115 @@ def _write_result_json(density,
         "runner_settings":runner_settings,
         "command_line":subprocess.list2cmdline(sys.argv)
     }}
-    
+
+    if args.measurement == "latency":
+        streams_latency = _get_latency_by_streams(run_directory)
+        if streams_latency:
+            result[args.measurement]["streams_latency"] = streams_latency
+            pipeline_aggregate, elements_aggregate = _aggregate_latency(
+                streams_latency)
+            result[args.measurement]["aggregate_latency"] = {
+                "pipeline(s)": pipeline_aggregate,
+                "elements": elements_aggregate
+            }
+            headers = {key: key.capitalize() for key in pipeline_aggregate}
+            print("\n\nStream(s) Latency:")
+            print(tabulate([pipeline_aggregate],
+                           headers=headers,  tablefmt="github"))
+            elements_latency = [elements_aggregate[key]
+                                for key in elements_aggregate]
+            if elements_latency:
+                print("\n\nElements Latency")
+                headers = {key: key.capitalize()
+                           for key in elements_latency[0]}
+                print(tabulate(elements_latency, headers=headers,
+                               tablefmt="github", numalign="left"))
+            print("\n\n")
+
     result_file_name = os.path.join(run_directory,
                                     "result.json")
 
-    with open(result_file_name,"w") as result_file:
+    with open(result_file_name, "w") as result_file:
         json.dump(result, result_file, indent=4)
 
-    
+
+def _get_latency_by_streams(run_directory):
+    streams_latency = []
+    for file in glob.glob("{}/*/*/*".format(run_directory)):
+        if os.path.basename(file) == "latency.log":
+            stream_latency = _read_latency_file(file)
+            if stream_latency:
+                streams_latency.append(_read_latency_file(file))
+    return streams_latency
+
+
+def _aggregate_latency(streams_latency):
+    pipelines_latency = copy.deepcopy(streams_latency)
+    elements_latency = [summary.pop("elements")
+                        for summary in pipelines_latency]
+    pipeline_aggregate = {}
+    elements_aggregate = {}
+    if len(pipelines_latency) == 1:
+        pipeline_aggregate = pipelines_latency[0]
+    elif len(pipelines_latency) > 1:
+        pipeline_aggregate = {
+            "latency": sum([summary["latency"] for summary in pipelines_latency])/(len(pipelines_latency) ** 2),
+            "avg": sum([summary["avg"] for summary in pipelines_latency])/len(pipelines_latency),
+            "min": min([summary["min"] for summary in pipelines_latency]),
+            "max": max([summary["max"] for summary in pipelines_latency])}
+
+    if len(elements_latency) == 1:
+        elements_aggregate = elements_latency[0]
+    elif len(elements_latency) > 1:
+        for key in elements_latency[0]:
+            elements_aggregate[key] = {
+                "element": key,
+                "min": min([summary[key]["min"] for summary in elements_latency]),
+                "max": max([summary[key]["max"] for summary in elements_latency]),
+                "avg": sum([summary[key]["avg"] for summary in elements_latency])/len(elements_latency)
+            }
+
+    return pipeline_aggregate, elements_aggregate
+
+
+def _read_latency_file(file):
+    elements_latency = {}
+    stream_latency = None
+    for line in reversed(list(open(file))):
+        line_string = line.rstrip()
+        if "latency_tracer_pipeline," in line_string and not stream_latency:
+            stream_latency = {"latency": _get_latency_value(line_string, "latency"),
+                              "avg": _get_latency_value(line_string, "avg"),
+                              "min": _get_latency_value(line_string, "min"),
+                              "max": _get_latency_value(line_string, "max")
+                              }
+
+        if "latency_tracer_element," in line_string:
+            name = _get_latency_value(
+                line_string, "name", "string")
+            if name and name not in elements_latency:
+                elements_latency[name] = {
+                    "element": name,
+                    "avg": _get_latency_value(line_string, "avg"),
+                    "min": _get_latency_value(line_string, "min"),
+                    "max": _get_latency_value(line_string, "max")}
+
+    if stream_latency and elements_latency:
+        stream_latency["elements"] = elements_latency
+    return stream_latency
+
+
+def _get_latency_value(line_string, key="latency", var_type="double"):
+    regex = "[+-]?([0-9]*[.])?[0-9]+"
+    if var_type == "string":
+        regex = "[A-Za-z0-9]+"
+    if key in line_string:
+        pattern = r" {}=\({}\)({})".format(key, var_type, regex)
+        if re.search(pattern, line_string):
+            match = re.search(pattern, line_string)
+            if var_type == "double":
+                return round(float(match.groups(0)[0]), 4)
+            return match.groups(0)[0]
 
 def _write_density_result(density,
                           run_directory,
@@ -871,7 +988,6 @@ def _write_density_result(density,
                           runner,
                           runner_settings,
                           args):
-    
     _write_result_json(density,
                        run_directory,
                        pipeline,
@@ -882,7 +998,6 @@ def _write_density_result(density,
                        runner,
                        runner_settings,
                        args)
-    
 
     last = []
     second_to_last = []
@@ -896,7 +1011,7 @@ def _write_density_result(density,
                                                                                            max(values["avg"]),
                                                                                            mean(values["avg"]),
                                                                                            sum(values["avg"])))
-                                                                                                                
+
         if (len(results)>1):
             iteration = results[min_failure_iteration]
             second_to_last.append("Streams: {}".format(iteration[1]))
@@ -911,7 +1026,7 @@ def _write_density_result(density,
 
     table = {'Pipeline':pipeline,
              'Runner':runner}
-    
+
     if (second_to_last):
         table[second_to_last[0]]="\n".join(second_to_last[1:])
 
@@ -921,7 +1036,7 @@ def _write_density_result(density,
     headers = {key:key for key in table}
     print(tabulate([table],headers=headers))
 
-    
+
 def _normalize_range(config,range_name):
     if (not range_name in config):
         return None
@@ -938,12 +1053,12 @@ def _normalize_range(config,range_name):
 
 def _check_ranges(result, ranges):
     return {key:((getattr(result,key),(getattr(result,key)>=ranges[key][0] and getattr(result,key)<=ranges[key][1]))) for key in ranges if ranges[key]!=None}
-    
+
 def _check_density(results, config):
     success = True
     ranges = {'min':_normalize_range(config,"minimum-range"),
               'avg':_normalize_range(config,"target-range")}
-    
+
     # if (config["target-condition"]=="stream"):
     #     per_stream_results = results[0]
     #     range_results = [_check_ranges(stream_result,ranges) for stream_result in per_stream_results]
@@ -970,7 +1085,7 @@ def _check_density(results, config):
         check_results = range_results
     else:
         check_results = [_check_ranges(total_result, ranges)]
-    
+
     for result in check_results:
         for key in result:
             if not result[key][1]:
@@ -994,7 +1109,7 @@ def _density_result_strings(range_results, config):
 
 def _print_density_result(range_results, config):
     print_action("Iteration Result",_density_result_strings(range_results,config))
-                      
+
 def _read_existing_throughput(target_dir, args):
     path = os.path.join(target_dir,"result.json")
     if (os.path.isfile(path)):
@@ -1005,14 +1120,14 @@ def _read_existing_throughput(target_dir, args):
             return result["throughput"]["FPS"].get(selected,None)
     return None
 
-    
+
 def _write_runner_settings(runner_settings,
                            runner_settings_name,
                            target_dir,
                            args):
     template = os.path.join(target_dir,
-                            "{settings}.runner-settings.{extension}")    
-    
+                            "{settings}.runner-settings.{extension}")
+
     settings_path = template.format(
                                     settings = "{}".format(runner_settings_name),
                                     extension = "yml")
@@ -1035,5 +1150,5 @@ def _write_measurement_settings(measurement_settings,
                   measurement_settings_file,
                   sort_keys=False)
 
-        
-    
+
+

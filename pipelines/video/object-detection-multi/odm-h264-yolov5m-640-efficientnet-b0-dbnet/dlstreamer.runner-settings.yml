@@ -1,0 +1,18 @@
+# Runner specific configuration
+run: "python3 dlstreamrun"
+decode:
+  device: CPU
+detect:
+  device: CPU
+  inference-interval: 3
+  precision: FP16-INT8
+classify-0:
+  device: CPU
+  inference-interval: 3
+  precision: FP16
+detect-0:
+  device: CPU
+  inference-interval: 3
+  precision: FP16-INT8
+barcode_detector:
+  allow_undecoded: "true"

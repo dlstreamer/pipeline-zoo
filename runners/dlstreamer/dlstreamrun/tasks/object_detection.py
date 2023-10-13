@@ -7,20 +7,21 @@ import copy
 from tasks.task import Task
 from tasks.channel import Channel
 
-
 class ObjectDetection(Task):
 
     supported_tasks = ["object-detection"]
 
     supported_uri_schemes = ["pipe", "file", "rtsp"]
-    
+
     detect_model_config = "model"
 
     classify_model_config = None
-    
+
     def __init__(self, piperun_config, args, *pos_args, **keywd_args):
         self._piperun_config = piperun_config
         self._my_args = args
+        self.run_directory = os.path.dirname(args.piperun_config_path)
+        self.overlay_pipeline = None
 
         super().__init__(piperun_config, args, *pos_args, **keywd_args)
         self.create_channels()
@@ -45,9 +46,17 @@ class ObjectDetection(Task):
             channel.add_caps_element(caps)
             channel.add_decode_element()
             channel.add_detect_element(detect_model_name)
-            channel.add_sink_element(self._piperun_config["outputs"][i])
+            if "barcode_detector" in self._piperun_config["runner-config"]:
+                channel.add_barcode_detector_element(self._piperun_config["runner-config"]["barcode_detector"])
+            overlay_pipeline = None
+            if "overlay" in self._piperun_config["runner-config"]:
+                overlay_pipeline = channel.get_overlay_pipeline()
+            channel.add_sink_element(output=self._piperun_config["outputs"][i],
+                                     overlay_pipeline=overlay_pipeline,
+                                     run_directory=self.run_directory)
             channel.add_fpscounter_element()
             channel.add_meta_element()
+
             channel.add_fakesink_element()
 
             self._channels.append(channel)
@@ -67,12 +76,23 @@ class ObjectDetection(Task):
         dirname, basename = os.path.split(self._my_args.piperun_config_path)
         command_path = os.path.join(dirname,
                                  basename.replace('piperun.yml',"gst-launch.sh"))
-        with open(command_path,"w") as command_file:
-            command_file.write("{}\n".format(' '.join(standalone_args).replace('(','\(').replace(')','\)').replace('"','\\"')))
+
+        command_with_args = ' '.join(standalone_args).replace(
+            '(', '\(').replace(')', '\)').replace('"', '\\"')
+
+        if "latency" in self._piperun_config["runner-config"]:
+            latency_config = self._piperun_config["runner-config"]["latency"]
+            latency_env = ""
+            for k, v in latency_config.items():
+                latency_env += "{}={} ".format(k, v)
+            command_with_args = latency_env + command_with_args
+
+        with open(command_path, "w") as command_file:
+            command_file.write(command_with_args)
         os.chmod(command_path,stat.S_IXGRP | stat.S_IXOTH | stat.S_IEXEC | stat.S_IWUSR | stat.S_IROTH | stat.S_IRUSR)
         self.completed = None
 
-        
+
     def run(self):
         print(' '.join(self._commandargs))
         print("\n\n", flush=True)
@@ -87,4 +107,3 @@ class ObjectDetection(Task):
             else:
                 max_attempts -= 1
         self.completed = completed
-

@@ -1,10 +1,10 @@
 description: yolov5s-416
 files:
-- checksum: 97e3d855ac00427b143c9ecab704a5a3a04440726a7b5247f4b695208d6a1196b0646de558b9dd95efe338f18412762f
-  name: yolov5s.json
-  sha256: 0849483679a17ee10cae1d02da4b01ae5b9fc5ee17c518f2d4bdca349c52398c
-  size: 3099
-  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416/yolov5s.json
+- checksum: fe93187e825c30df136fd101b83979ff5ca7720d56a8490b284ade4f2dd0b6f2cf72ce4263c8c72e79e4be2e77aa4d54
+  name: yolo-v5.json
+  sha256: 537152fb2113179dd72262c5922a2dd02ba93211267e367d6b76cb95f6b8ca98
+  size: 3126
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416/yolo-v5.json
 - checksum: de55c43546646fe031d988ae52473162036856ebb42b8a376f24a579fd90942aa3c8d080b516d141d036d0969139d743
   name: FP16/yolov5s-416.bin
   sha256: 6e37ec658e7f17102579f8c9de27f6d1293d65babfd82a601f7282316c8fccff

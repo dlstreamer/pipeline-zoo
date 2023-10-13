@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2019 Intel Corporation.
 #
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: MIT
 #
 TAG=
 RUN_PREFIX=
@@ -13,9 +13,8 @@ PLATFORM=DEFAULT
 
 # Base Images
 
-DEFAULT_BASE_IMAGE=intel/dlstreamer:2022.3.0-ubuntu22-gpu555-devel
-DGPU_BASE_IMAGE=intel/dlstreamer:2022.3.0-ubuntu22-gpu555-devel
-
+DEFAULT_BASE_IMAGE=intel/dlstreamer:2023.0.0-ubuntu22-gpu682-dpcpp-devel
+DGPU_BASE_IMAGE=intel/dlstreamer:2023.0.0-ubuntu22-gpu682-dpcpp-devel
 
 # Model Proc Versions
 DEFAULT_MODEL_PROC_VERSION=

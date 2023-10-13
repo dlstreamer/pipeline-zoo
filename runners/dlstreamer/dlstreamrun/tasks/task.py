@@ -1,7 +1,7 @@
 '''
-* Copyright (C) 2019-2020 Intel Corporation.
+* Copyright (C) 2019 Intel Corporation.
 *
-* SPDX-License-Identifier: BSD-3-Clause
+* SPDX-License-Identifier: MIT
 '''
 
 import abc
@@ -42,7 +42,7 @@ def input_to_src(_input):
         element = "filesrc location=\"{}\" ! {} ! {}".format(parsed_uri.path,media_type,parser)
     return element
 
-def output_to_sink(_output,config,channel_number=0):
+def output_to_sink(_output,config,channel_number=0, overlay_pipeline=None, run_directory=None):
 
     parsed_uri = parse.urlparse(_output["uri"])  
 
@@ -58,12 +58,23 @@ def output_to_sink(_output,config,channel_number=0):
                                   "video/x-raw": "{}"})
 
     caps = _output["caps"].split(',')
-    template = media_type_map[caps[0]]
+    template = "{}".format(media_type_map[caps[0]])
+    sink_path = parsed_uri.path
+
+    if "overlay" in config:
+        media_encoder_map = {
+            "video/x-h265": {
+                "GPU":"vaapih265enc"}}
+        encode_caps = config["overlay"].get("caps", "video/x-h265")
+        if encode_caps in media_encoder_map:
+            device = config["overlay"].get("device")
+            overlay_pipeline = "{} ! {} ".format(overlay_pipeline, media_encoder_map[encode_caps][device])
+            template = "gvametaconvert add-empty-results=true ! gvametapublish {} ! gvafpscounter ! " + overlay_pipeline + " ! {} "
+            sink_path = "{}/channel_{}_output.h265".format(run_directory, channel_number)
     
     sink_name = "sink"+str(channel_number)   
     sink_config = config.setdefault("sink",{})
-
-    if "metadata" in caps[0]:
+    if "metadata" in caps[0] and "overlay" not in config:
         sink_config.setdefault("element", "fakesink")
     else:
         sink_config.setdefault("element", "filesink")
@@ -71,7 +82,7 @@ def output_to_sink(_output,config,channel_number=0):
     sink_config.setdefault("async","false")
     sink_config["name"] = sink_name
     if sink_config["element"] == 'filesink':
-        sink_config.setdefault("location",parsed_uri.path)
+        sink_config.setdefault("location", sink_path)
 
     sink_properties = " ".join(["{}={}".format(key,value) for key,value in sink_config.items() if key != "element" and key != "enabled"])
     sink = "{} {}".format(sink_config["element"], sink_properties)
@@ -384,6 +395,8 @@ def inference_properties(config, model, model_name, systeminfo):
 
     result = config
 
+    post_proc = ""
+
     if model_name == "full_frame":
         return ""
 
@@ -408,6 +421,7 @@ def inference_properties(config, model, model_name, systeminfo):
 
     if ("GPU." in result["device"]):
         precision = result.setdefault("precision","FP32-INT8")
+        post_proc = " ! vaapipostproc !"
 
     if (result["device"]=="GPU"):
         precision = result.setdefault("precision","FP16")
@@ -430,11 +444,29 @@ def inference_properties(config, model, model_name, systeminfo):
     
     properties = ["{}={}".format(key,value) for key,value in result.items() if key not in non_properties]
     
-    template = "{} {}".format(result["element"],
-                                     " ".join(properties))
+    template = "{} {}{}".format(result["element"],
+                                     " ".join(properties), post_proc)
 
         
     return template
     
             
+def overlay_properties(config, queue_config, _input, systeminfo, channel_number = 0):
+    overlay_element_map = defaultdict(None, {
+        "GPU": "meta_overlay device=GPU", 
+        "CPU": "meta_overlay device=CPU"})
+    overlay_element = overlay_element_map[config["device"]]
+    queue_name = "overlay-queue"
+    queue_config.setdefault("element", "queue")
+    queue_config.setdefault("name", queue_name+str(channel_number))
+    queue_config.setdefault("enabled", True)
 
+    encode_queue_properties = queue_properties(queue_config,
+                                               None,
+                                               systeminfo)
+    if (encode_queue_properties):
+        encode_queue_properties="{} ! ".format(encode_queue_properties)
+    template = "{} {}".format(encode_queue_properties,
+                                     overlay_element)
+
+    return template

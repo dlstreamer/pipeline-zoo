@@ -4,11 +4,11 @@ decode:
   caps: video/x-raw(memory:VASurface)
 classify-0:
   device: GPU
-  nireq: 4
-  batch-size: 64
+  batch-size: 1
   pre-process-backend: vaapi-surface-sharing
+  inference-region: full-frame
   pre-process-config: "VAAPI_FAST_SCALE_LOAD_FACTOR=1"
-  precision: FP32-INT8
+  precision: FP16
   model-instance-id: cls
 classify-0-queue:
   enabled: false

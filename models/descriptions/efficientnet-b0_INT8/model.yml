@@ -1,14 +1,14 @@
 description: efficientnet-b0_INT8
 files:
-- checksum: 669e85bdc33c681a5985773a5e16499a316ab4cb53efa0175386205e9e2dfd1965792ce083516579d46d8e927bebc7ac 
-  name: FP16-INT8/efficientnet-b0.json
-  sha256: 4eb158164885e5131554c5a7e986f64c6f288ccdd0a40b62b3d3afeee7614bfa 
-  size: 41159
-  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b0_INT8/efficientnet-b0.json?raw=true
-- checksum: 669e85bdc33c681a5985773a5e16499a316ab4cb53efa0175386205e9e2dfd1965792ce083516579d46d8e927bebc7ac
-  name: FP32-INT8/efficientnet-b0.json
-  sha256: 4eb158164885e5131554c5a7e986f64c6f288ccdd0a40b62b3d3afeee7614bfa
-  size: 41159
+- checksum: 8881ac957acf089b389e2ccc536e8add2faeb1c15686830a0b150e9b83c4972b47598f6a7cfdd9813bdac3dd7ada49bc
+  name: LICENSE
+  sha256: 9f827e9c8a7bafe5fea52118403b10f24f74f76e9154353d88448d67bc3fa6fa
+  size: 11414
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b0_INT8/LICENSE?raw=true
+- checksum: 01a1c5fcf6a6129adda727bb14d464a51a4308c68110df644ae7e78e7b930b4cf453c1330f8e06cc05899c18dff1137b
+  name: efficientnet-b0.json
+  sha256: 2018235f288227fee2fc44d9848be4a69ba010b5ddbd1d27f9367c8c9221e28b
+  size: 41107
   source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b0_INT8/efficientnet-b0.json?raw=true
 - checksum: 10359e1d074287f4e6ac0e9e615ec889be9d370455125484cb32d86f32e2641b6c5804b4e803bc325536f6f77c28cc64
   name: FP16-INT8/efficientnet-b0_INT8.xml

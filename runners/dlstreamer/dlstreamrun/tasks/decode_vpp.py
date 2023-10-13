@@ -6,10 +6,6 @@ import stat
 import copy
 
 from tasks.task import Task
-from tasks.task import input_to_src
-from tasks.task import decode_properties
-from tasks.task import vpp_properties
-from tasks.task import output_to_sink
 from tasks.channel import Channel
 
 class DecodeVPP(Task):

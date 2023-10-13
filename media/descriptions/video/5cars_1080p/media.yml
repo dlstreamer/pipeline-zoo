@@ -1,0 +1,8 @@
+description: 5 cars h264
+files:
+- name: 5cars_1920x1080.jpg
+  sha256: ab44a81d20f445c0686474ca882729e97ed12ca150ee5f778d4a4da45cb5580f
+  size: 4269830
+  source: https://www.pexels.com/photo/1280560/download
+  convert-command: -c:v libx264 -preset medium -x264-params crf=28 -c:a aac -strict experimental -b:a 128k -t 200 -vf "scale=1920:1080,loop=-1:1" -r 30 5cars_1920x1080.mp4
+license: https://www.pexels.com/license
