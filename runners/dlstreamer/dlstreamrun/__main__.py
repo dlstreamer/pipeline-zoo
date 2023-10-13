@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 '''
-* Copyright (C) 2019-2020 Intel Corporation.
+* Copyright (C) 2019 Intel Corporation.
 *
-* SPDX-License-Identifier: BSD-3-Clause
+* SPDX-License-Identifier: MIT
 '''
 
 import os, traceback
@@ -13,6 +13,8 @@ import json
 from tasks.decode_vpp import DecodeVPP
 from tasks.object_detection import ObjectDetection
 from tasks.object_classification import ObjectClassification
+from tasks.object_tracking import ObjectTracking
+from tasks.object_detection_multi import ObjectDetectionMulti
 from tasks.task import Task
 import sys
 import signal

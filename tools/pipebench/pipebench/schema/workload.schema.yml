@@ -36,9 +36,8 @@ properties:
             default: avg
             enum: [max, min, avg]
         required: [warm-up, sample-size, duration, select]
-#      latency:
-#        type: object
-    
+      latency:
+        type: object
       density:
         type: object
         properties:

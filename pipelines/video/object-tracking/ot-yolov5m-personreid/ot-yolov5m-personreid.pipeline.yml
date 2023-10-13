@@ -1,0 +1,12 @@
+# Defines yolov5m-416_INT8 object classification pipeline
+
+task: object-tracking
+
+detection-model: yolov5m-416_INT8
+
+inference-models: [person-reidentification-retail-0287]
+
+inputs.media.type.media-type: video/x-h265
+
+track-object-class: person
+

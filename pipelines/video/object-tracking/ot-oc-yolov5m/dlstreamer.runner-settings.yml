@@ -1,0 +1,10 @@
+# Runner specific configuration
+run: "python3 dlstreamrun"
+decode:
+  device: CPU
+detect:
+  device: CPU
+inference-0:
+  device: CPU
+classify-0:
+  device: CPU

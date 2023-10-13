@@ -1,0 +1,28 @@
+# Runner specific configuration
+run: "python3 dlstreamrun"
+decode:
+  device: GPU
+  post-proc-caps: video/x-raw(memory:VASurface)
+detect:
+  device: GPU
+  pre-process-backend: vaapi-surface-sharing
+  scale-method: fast
+  batch-size: 4
+  nireq: 4
+  model-instance-id: detect
+  inference-interval: 3
+inference-0:
+  inference-region: roi-list
+  object-class: "person"
+  device: GPU
+  pre-process-backend: vaapi-surface-sharing
+  scale-method: fast
+  batch-size: 4
+  nireq: 4
+  model-instance-id: inference
+  inference-interval: 3
+overlay-queue:
+  max-size-buffers: 4
+overlay:
+  device: GPU
+  caps: video/x-h265

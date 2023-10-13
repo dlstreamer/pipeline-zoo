@@ -394,7 +394,7 @@ def software(model_zoo_path, job_name, openvino_path, omz_path):
             "hdf5":   dpkg_version("libhdf5-dev"),
             "lmdb":   dpkg_version("liblmdb-dev")
         })
-    elif ("yocto" in platform.release() or "centos" == platform.dist()[0]):
+    elif ("yocto" in platform.release() or distro.linux_distribution()[0] =="centos"):
         result.update({
             "Boost":  rpm_version("boost-dev"),
             "Gflag":  rpm_version("gflags"),

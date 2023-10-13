@@ -19,7 +19,7 @@
 # SOFTWARE.
 
 # For latest agama UMD drivers use ./build.sh --base intel/dlstreamer:2022.1.1-ubuntu20-devel
-ARG BASE=intel/dlstreamer:2022.3.0-ubuntu22-gpu555-devel
+ARG BASE=intel/dlstreamer:2023.0.0-ubuntu22-gpu682-dpcpp-devel
 ARG REGISTRY
 FROM ${REGISTRY}${BASE} as media-analytics-pipeline-zoo
 ARG PIPELINE_ZOO_PLATFORM=DEFAULT

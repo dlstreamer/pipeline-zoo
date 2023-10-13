@@ -1,8 +1,8 @@
 #!/bin/bash -e
 #
-# Copyright (C) 2019-2020 Intel Corporation.
+# Copyright (C) 2019 Intel Corporation.
 #
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: MIT
 #
 
 # Platforms
@@ -33,6 +33,7 @@ ENVIRONMENT+="-e DISPLAY "
 WORKDIR=
 MOUNTSRC=true
 PRIVILEGED=true
+TEST_ARG=
 
 get_options() {
     while :; do
@@ -41,7 +42,7 @@ get_options() {
             show_help # Display a usage synopsis.
             exit
             ;;
-	--platform)
+        --platform)
             if [ "$2" ]; then
                 PLATFORM=$2
                 shift
@@ -49,7 +50,7 @@ get_options() {
                 error 'ERROR: "--platform" requires an argument.'
             fi
             ;;
-	--cpuset-mems)
+        --cpuset-mems)
             if [ "$2" ]; then
                 CPUSET_MEMS=$2
                 shift
@@ -57,7 +58,7 @@ get_options() {
                 error 'ERROR: "--cpuset-mems" requires an argument.'
             fi
             ;;
-	--cpuset-cpus)
+        --cpuset-cpus)
             if [ "$2" ]; then
                 CPUSET_CPUS=$2
                 shift
@@ -129,6 +130,14 @@ get_options() {
                 error 'ERROR: "--entrypoint" requires a non-empty option argument.'
             fi
             ;;
+        --test-arg)
+            if [ "$2" ]; then
+                TEST_ARG+="$2 "
+                shift
+            else
+                error 'ERROR: "--test-arg" requires a non-empty option argument.'
+            fi
+            ;;
         --workdir)
             if [ "$2" ]; then
                 WORKDIR="--workdir $2"
@@ -156,6 +165,14 @@ get_options() {
         --gpus)
             if [ "$2" = "all" ]; then
                 GPUS_ALL+="--gpus all "
+                shift
+            else
+                error 'ERROR: unknown option: ' $1 $2
+            fi
+            ;;
+        --gpu-device)
+            if [ "$2" ]; then
+                GPU_DEVICE=$2
                 shift
             else
                 error 'ERROR: unknown option: ' $1 $2
@@ -194,6 +211,11 @@ get_options() {
     if [[ $PLATFORM =~ "DGPU" ]] ; then
         CAPADD="--cap-add SYS_ADMIN"
         DEVICE=${DEVICE:-/dev/dri/renderD128}
+        # Allow choice of GPU device in non-privileged mode for meta_overlay
+        if [[ $GPU_DEVICE && "${PRIVILEGED,,}" != "true" ]]; then
+            DEVICE=$GPU_DEVICE
+            ENVIRONMENT+=" -e GST_VAAPI_DRM_DEVICE=$GPU_DEVICE"
+        fi
         DEVICE_GRP=$(ls -g $DEVICE | awk '{print $3}' | xargs getent group | awk -F: '{print $3}')
         ENVIRONMENT+=" -e DEVICE=$DEVICE"
         DEVICES="--device=$DEVICE"
@@ -264,6 +286,7 @@ show_help() {
   echo "  [--non-interactive run container without -i flag]"
   echo "  [--platform platform specific image]"
   echo "  [--gpus all]"
+  echo "  [--gpu-device enables choosing GPU device in non-privileged mode, default: /dev/dri/renderD128]"
   exit 0
 }
 
@@ -305,8 +328,13 @@ fi
 show_options
 
 if [ -z "$ATTACH" ]; then
-    set -x
-    docker run $INTERACTIVE $WORKDIR --rm $GPUS_ALL $ENVIRONMENT $VOLUME_MOUNT $CAPADD $DEVICES $DEVICEGRP $NETWORK $ENTRYPOINT $CPUSET_CPUS $CPUSET_MEMS --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
+    if [ ! -z "$TEST_ARG" ]; then
+        set -x
+        docker run $INTERACTIVE $WORKDIR --rm $GPUS_ALL $ENVIRONMENT $VOLUME_MOUNT $CAPADD $DEVICES $DEVICEGRP $NETWORK $ENTRYPOINT $CPUSET_CPUS $CPUSET_MEMS --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS} "${TEST_ARG}"
+    else
+        set -x
+        docker run $INTERACTIVE $WORKDIR --rm $GPUS_ALL $ENVIRONMENT $VOLUME_MOUNT $CAPADD $DEVICES $DEVICEGRP $NETWORK $ENTRYPOINT $CPUSET_CPUS $CPUSET_MEMS --name ${NAME} ${PRIVILEGED} ${USER} $IMAGE ${ENTRYPOINT_ARGS}
+    fi
      { set +x; } 2>/dev/null
 else
     RUNNING_INSTANCE=$(docker ps -q --filter "name=$IMAGE")

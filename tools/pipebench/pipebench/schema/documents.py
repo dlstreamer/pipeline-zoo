@@ -206,11 +206,13 @@ class TaskConfig(Document):
             self.name = _task_name_from_path(document_path)
         else:
             self.name = list(self._document.keys())[0]
+            # pylint: disable=unsubscriptable-object
             self._document = self._document[self.name]
+            # pylint: enable=unsubscriptable-object
 
 
         self._scenarios = {}
-
+        # pylint: disable=not-an-iterable
         if (isinstance(self._document,list)):
             for scenario in self._document:
                 namespace = convert_to_namespace(scenario)
@@ -218,6 +220,8 @@ class TaskConfig(Document):
             self._scenarios['default'] = list(self._scenarios.items())[0][1]
         else:
             self._scenarios['default'] = self._document
+        # pylint: enable=not-an-iterable
+
 
     def get_task_scenario(self,scenario):
         if (isinstance(scenario,dict)):
@@ -267,14 +271,15 @@ class WorkloadConfig(Document):
 
         
         self._document = validate(document_path, args.schemas, args.overrides)
-
+        # pylint: disable=unsupported-membership-test, unsupported-assignment-operation, unsubscriptable-object
         if (not self._document):
             raise Exception("Invalid Workload {}".format(document_path))
         self._namespace = convert_to_namespace(self._document)
         if (not "media" in self._document):
             self._document["media"] = self._find_default_media(args)
             self._namespace.media = self._document["media"]
-            
+        # pylint: enable=unsupported-membership-test, unsupported-assignment-operation, unsubscriptable-object
+    
         self.media = self._namespace.media
         
         self.pipeline = args.pipeline

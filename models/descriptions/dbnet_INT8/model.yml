@@ -1,0 +1,35 @@
+description: dbnet_INT8
+files:
+- checksum: c07eedf9941c21c96b30644afc8bbc8a639ab8ef81cb1dbbd8e9ac055a7b4f2689b8a3164b861b6a78d9c01eebd8ff5d
+  name: dbnet.json
+  sha256: 7e79e91ece25f4f21a09a0d61b2541be9f6ca0404f6c5dd1c2583f3e4526dfca
+  size: 470
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/dbnet_INT8/dbnet.json
+- checksum: 208f5ed627940e5e40c72895ab7fc57e54ee6b54abd24309db97ba8a61bbad783b4a202c03655e9acbc4a95b0ba8ceff
+  name: LICENSE
+  sha256: cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30
+  size: 11358
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/dbnet_INT8/LICENSE
+- checksum: 61c9d59ea9af311c5a8dc5c1ce8816aa33e8a174c6feb014c73fc7e5f4e0d5d30de5ae507727e55600929d60a9df5cad
+  name: FP32-INT8/dbnet_INT8.xml
+  sha256: e0dbb9018461a1cc239a098f43fab720b0cd4b528e7859d0197884d257c63499
+  size: 268232
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/dbnet_INT8/FP32/dbnet.xml
+- checksum: 52cd945b6d46a5355c7492a90b152d0b7c4fcd2d52dcec06d581074b2c7ad505b8d924704aecba8d6d36006cb78478f3
+  name: FP32-INT8/dbnet_INT8.bin
+  sha256: c437c15782b25f52ca5be3a9fff396cd8894c1d7e203ba6ebd305fa0a7ff4ad8
+  size: 12303388
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/dbnet_INT8/FP32/dbnet.bin
+- checksum: aefc65d1f84aa074f78a08ade7004a381f5bd497452683390b0a1be32d0b9ae9c00719b114e36fe5e7053b7f54bdd6bf
+  name: FP16-INT8/dbnet_INT8.xml
+  sha256: b18210555bf0af6a0f2ce0292f32a69ea10e07d518df01d2e446c00191ff71cc
+  size: 268240
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/dbnet_INT8/FP16/dbnet.xml
+- checksum: b9302d6db26e41b1523af30a361eab9c59915209733233574b250e131e499adc1c7b26b194ff43ac8a662a3af83cb669
+  name: FP16-INT8/dbnet_INT8.bin
+  sha256: 8aa509c7c3dc40c0dba1b457c03f221df0634f4716b8bb46da554c7d6bd8093c
+  size: 12303388
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/dbnet_INT8/FP16/dbnet.bin
+framework: dldt
+license: 'https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/dbnet_INT8/LICENSE'
+task_type: detection

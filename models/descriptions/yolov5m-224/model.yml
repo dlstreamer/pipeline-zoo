@@ -1,0 +1,35 @@
+description: yolov5m-224
+files:
+- checksum: ff79fe1036d23f481a965f16f0bd4d1167a468d8802a62fa046dabefce5803f541a37e3789019e15e0fe65c9e1a8626f
+  name: LICENSE
+  sha256: 5ba21b1969feeb65aff5d4d24835beae2aee1abf4766f22bbd2c01b199ec1666
+  size: 35256
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5m-224/LICENSE
+- checksum: fe93187e825c30df136fd101b83979ff5ca7720d56a8490b284ade4f2dd0b6f2cf72ce4263c8c72e79e4be2e77aa4d54
+  name: yolo-v5.json
+  sha256: 537152fb2113179dd72262c5922a2dd02ba93211267e367d6b76cb95f6b8ca98
+  size: 3126
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5m-224/yolo-v5.json
+- checksum: bda686bbd7a127c63fd7169284ef99a1d89116dfc34d45aadcd8a85db5a4d633e7411a39b4705ac04079bd2339151471
+  name: FP32/yolov5m-224.xml
+  sha256: 048b1d043008c0bfe592e0aeb40d6479bbdd248bf1ef55018b28d71481b78c24
+  size: 245599
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5m-224/FP32/yolov5m-224.xml
+- checksum: 2282c9cd1e7c26e24331d2edcc1f1fd8e088253d53832cbf676d13fc3776885a6dfa71b497a730598479aee76b036023
+  name: FP32/yolov5m-224.bin
+  sha256: c252bfd67bdb343a850375db247f7c223a1463faeb751915d40426e1ed0ed756
+  size: 84688708
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5m-224/FP32/yolov5m-224.bin
+- checksum: bd5504a7733d436053d8a6e9ff4e9728245cfad5f351c69d15d6211a3f2757fc5a7ac73bcc1c5b3c90cdfd38b1c7ae15
+  name: FP16/yolov5m-224.xml
+  sha256: e73d70c7a36b9ffdbd35118fc3c6a7109389821ce6d89e20334c4fbe71ac6382
+  size: 339488
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5m-224/FP16/yolov5m-224.xml
+- checksum: 813a5ac8934177e9d8e742ae48f5409765b6ca3447a8c1fe7b79f76ebbd49113b7f23c97a2a23698c5868589c95d356c
+  name: FP16/yolov5m-224.bin
+  sha256: 7c0977459ae085f39992c32e162768e3f7bc15373f64d5600cadc2f2c66ef9df
+  size: 42344362
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5m-224/FP16/yolov5m-224.bin
+framework: dldt
+license: 'https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolov5m-224/LICENSE'
+task_type: detection

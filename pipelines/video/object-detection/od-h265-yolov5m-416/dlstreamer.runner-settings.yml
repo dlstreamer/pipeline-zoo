@@ -1,0 +1,4 @@
+run: python3 dlstreamrun
+decode:
+  device: GPU
+  caps: video/x-raw(memory:VASurface)

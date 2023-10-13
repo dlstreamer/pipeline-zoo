@@ -2,15 +2,16 @@ run: python3 dlstreamrun
 decode:
   device: GPU
   caps: video/x-raw(memory:VASurface)
-classify-0:
+detect:
   device: GPU
   nireq: 4
-  batch-size: 64
+  batch-size: 4
+  inference-interval: 2
   pre-process-backend: vaapi-surface-sharing
   pre-process-config: "VAAPI_FAST_SCALE_LOAD_FACTOR=1"
-  precision: FP32-INT8
-  model-instance-id: cls
-classify-0-queue:
+  precision: FP16-INT8
+  model-instance-id: od-h264-yolov5m-320-dgpu
+detect-queue:
   enabled: false
 decode-queue:
   enabled: false

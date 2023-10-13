@@ -1,0 +1,35 @@
+description: yolov5m-640_INT8
+files:
+- checksum: ff79fe1036d23f481a965f16f0bd4d1167a468d8802a62fa046dabefce5803f541a37e3789019e15e0fe65c9e1a8626f
+  name: LICENSE
+  sha256: 5ba21b1969feeb65aff5d4d24835beae2aee1abf4766f22bbd2c01b199ec1666
+  size: 35256
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5m-640_INT8/LICENSE
+- checksum: fe93187e825c30df136fd101b83979ff5ca7720d56a8490b284ade4f2dd0b6f2cf72ce4263c8c72e79e4be2e77aa4d54
+  name: yolo-v5.json
+  sha256: 537152fb2113179dd72262c5922a2dd02ba93211267e367d6b76cb95f6b8ca98
+  size: 3126
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5m-640_INT8/yolo-v5.json
+- checksum: bae1b3745233a1a7b43d0c6e8b958d96edfbe8e7f1c7f940a114d34da899d8c1c05b1c30047efd3aca4255e7d2346342
+  name: FP32-INT8/yolov5m-640_INT8.bin
+  sha256: 1182f201f2e220364a518e8bded9c5516da7e15d7b2e8540c9f7938628bbc17b
+  size: 21345202
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5m-640_INT8/FP32-INT8/yolov5m-640_INT8.bin
+- checksum: 07a59b5d688766f97f69d8c46bb5f15264ade9c57ba6dac7fa76bd523d325c49c15f1b84e46bed2b28e639123fb1a635
+  name: FP32-INT8/yolov5m-640_INT8.xml
+  sha256: 39ac510462a70489698dec7d258da4c6373ddd42a511b2ade963e8208231c2aa
+  size: 675514
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5m-640_INT8/FP32-INT8/yolov5m-640_INT8.xml
+- checksum: 81a617acacd1b1fc569c1fe1fcba638516b3c8516de11adb3d0390d91ae0f427e7869a7b3e706cc9f772117b7a70f72c
+  name: FP16-INT8/yolov5m-640_INT8.bin
+  sha256: 6ac750e89936189cde080c96e3f0854878cddce1997b2b3d42fb199290ea845c
+  size: 21268606
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5m-640_INT8/FP16-INT8/yolov5m-640_INT8.bin
+- checksum: 038a21cc249b69faebd5230cf88ea4976ebd0f0a78b1f73b8b1afeed5333bf3a08e1efc44431078f66b6229f32d90c1f
+  name: FP16-INT8/yolov5m-640_INT8.xml
+  sha256: 179d5efca36729d8018f20401b52042a62f821bd74225e75fbd512704e37d897
+  size: 591237
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5m-640_INT8/FP16-INT8/yolov5m-640_INT8.xml
+framework: dldt
+license: 'https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/yolov5m-640_INT8/LICENSE'
+task_type: detection

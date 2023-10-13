@@ -1,0 +1,11 @@
+
+task: object-detection-multi
+
+detection-model: yolov5m-640_INT8
+
+classification-models: [efficientnet-b0]
+
+multi-detection-models: [dbnet_INT8]
+
+inputs.media.type.media-type: video/x-h264
+

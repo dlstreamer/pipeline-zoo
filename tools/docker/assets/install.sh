@@ -2,7 +2,7 @@
 #
 # Copyright (C) 2019 Intel Corporation.
 #
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: MIT
 #
 # Invoke this script only from a Dockerfile
 # this will setup the docker image to execute pipeline-zoo

@@ -1,7 +1,7 @@
 '''
-* Copyright (C) 2019-2020 Intel Corporation.
+* Copyright (C) 2019 Intel Corporation.
 *
-* SPDX-License-Identifier: BSD-3-Clause
+* SPDX-License-Identifier: MIT
 '''
 import abc
 import util
@@ -24,7 +24,9 @@ import hashlib
 import netrc
 from tqdm import tqdm
 import sys
+# pylint: disable=no-name-in-module
 from util import Spinner
+# pylint: enable=no-name-in-module
 import logging
 import glob
 
@@ -204,7 +206,7 @@ class GithubUrlConverter:
 
         url_info = urllib.parse.urlparse(original_url)
 
-        if  "github.com" in url_info.netloc:
+        if  "github.com" in url_info.netloc or "githubusercontent.com" in url_info.netloc:
             repo_name = url_info.path.split("/")[1] + "/" + url_info.path.split("/")[2]
             try:
                 repo = self._github.get_repo(repo_name)
@@ -214,7 +216,10 @@ class GithubUrlConverter:
                                                                                                                                     original_url))
                 
             else:
-                converted_url = self._get_download_url(repo, url_info.path.split("/")[-1], "/".join(url_info.path.split("/")[5:-1]))
+                file_name = url_info.path.split("/")[-1]
+                file_dir = "/".join(url_info.path.split("/")[5:-1])
+                branch = self._get_branch(repo, url_info.path, file_dir)
+                converted_url = self._get_download_url(repo, file_name, file_dir, branch)
 
                 if not converted_url:
                     if self._args.verbose:
@@ -222,27 +227,49 @@ class GithubUrlConverter:
                     converted_url = original_url
 
         return converted_url
+    
+    def _get_branch(self, repo, url_path, file_dir):
+        # Needed for iot-devkit media
+        if "/master/" in url_path:
+            return "master"
+        last_index = url_path.find(file_dir) -1
+        branch = url_path[len(repo.full_name)+2:last_index]
+        branch = branch.replace("raw/","")
+        branch = branch.replace("blob/","")
+        try:
+            _ = repo.get_branch(branch)
+            return branch
+        except Exception as e:
+            pass
+        try:
+            _ = repo.get_commit(branch)
+            return branch
+        except Exception as e:
+            pass
+        return "main"
 
-    def _get_lfs_download_url(self, repo, file_path):
-        file_content = repo.get_contents(file_path)
+    def _get_lfs_download_url(self, repo, file_path, branch):
+        file_content = repo.get_contents(file_path, ref=branch)
         return file_content.download_url
 
-    def _get_download_url(self, repo, file_name, file_dir):
-        files_content = repo.get_dir_contents(file_dir)
+    def _get_download_url(self, repo, file_name, file_dir, branch):
+        files_content = repo.get_dir_contents(file_dir, ref=branch)
         for file_content in files_content:
             if file_content.name == file_name:
                 if file_content.size > 200:
                     return file_content.download_url
                 else:
-                    return self._get_lfs_download_url(repo, os.path.join(file_dir, file_name))
+                    return self._get_lfs_download_url(repo, os.path.join(file_dir, file_name), branch)
 
         return None
 
     def _connect_to_repo(self):
 
         token = os.getenv('GITHUB_TOKEN')
-
-        if not token:
+        if token:
+          self._logger.debug("\tINFO: GitHub token used from GITHUB_TOKEN environment variable")
+        else:
+            self._logger.debug("\tINFO: GITHUB_TOKEN environment variable not set, trying .netrc file")
             try:
                 netrc_file = netrc.netrc("/root/.netrc")
                 auth_tokens = netrc_file.authenticators("github.com")
@@ -625,6 +652,10 @@ class Model(Handler):
             process.wait()
 
             if process.returncode != 0:
+                self.logger.error("Download command \"{}\" failed with following error:".format(" ".join(command)))
+                for line in process.stderr:
+                    self.logger.error("\t{}".format(line))
+                    sys.stderr.flush()
                 return False
             
             command = self._create_convert_command(model, output_dir)
@@ -642,6 +673,10 @@ class Model(Handler):
             process.wait()
 
             if process.returncode != 0:
+                self.logger.error("Convert command \"{}\" failed with following error:".format(" ".join(command)))
+                for line in process.stderr:
+                    self.logger.error("\t{}".format(line))
+                    sys.stderr.flush()
                 return False
 
             model_path = self._find_model_root(model, output_dir)

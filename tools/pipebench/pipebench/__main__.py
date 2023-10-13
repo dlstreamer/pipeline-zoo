@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 '''
-* Copyright (C) 2019-2020 Intel Corporation.
+* Copyright (C) 2019 Intel Corporation.
 *
-* SPDX-License-Identifier: BSD-3-Clause
+* SPDX-License-Identifier: MIT
 '''
 
 import os, traceback
@@ -13,7 +13,9 @@ from pipebench.schema.documents import load_schemas
 from pipebench.schema.documents import load_tasks
 from pipebench.tasks.object_detection import ObjectDetection
 from pipebench.tasks.object_classification import ObjectClassification
+from pipebench.tasks.object_tracking import ObjectTracking
 from pipebench.tasks.decode_vpp import DecodeVPP
+from pipebench.tasks.object_detection_multi import ObjectDetectionMulti
 from util import print_action
 import logging
 import shlex

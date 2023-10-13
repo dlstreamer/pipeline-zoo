@@ -16,12 +16,6 @@ stateDiagram
 	direction LR
 		demux --> parse 
     }
-frames
-objects
-state detect {
-direction LR
-  full_frame
-}
 state classify {
 direction LR
     state scale {
@@ -49,11 +43,7 @@ direction LR
     
     media --> video_source
     video_source --> decode
-    decode --> detect
-	detect --> objects
-	detect --> frames
-	frames --> classify
-	objects --> classify
+    decode --> classify
     classify --> objects_attributes
 } 
 ```

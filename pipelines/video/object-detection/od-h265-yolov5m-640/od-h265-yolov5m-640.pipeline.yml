@@ -1,0 +1,5 @@
+task: object-detection
+
+model: yolov5m-640_INT8
+
+inputs.media.type.media-type: video/x-h265

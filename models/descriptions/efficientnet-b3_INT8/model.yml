@@ -1,0 +1,35 @@
+description: efficientnet-b3_INT8
+files:
+- checksum: 8881ac957acf089b389e2ccc536e8add2faeb1c15686830a0b150e9b83c4972b47598f6a7cfdd9813bdac3dd7ada49bc
+  name: LICENSE
+  sha256: 9f827e9c8a7bafe5fea52118403b10f24f74f76e9154353d88448d67bc3fa6fa
+  size: 11414
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b3_INT8/LICENSE
+- checksum: fb6ceaf6f06c2a1eb0e93eb1f378df281325809fa938812ed34e0158927f0c55ea4b6c1566c84c9d091fdcabf1cb80b6
+  name: efficientnet-b3.json
+  sha256: 00188c0df737684fcb2041925b0f98d039179a26b4e276ed7b6f70bc8ef04c04
+  size: 40942
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b3_INT8/efficientnet-b3.json
+- checksum: 2cafc867a2ec08258c34346dade2246afa0dbf6451735d236523fbb01697e181de59c24f0bc64b7bf0c817830ed50aea
+  name: FP16-INT8/efficientnet-b3_INT8.xml
+  sha256: 5b19f4d64f94199945b287884f6ef2efebc71659ce766c323921fe455541d14c
+  size: 1946662
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b3_INT8/FP16-INT8/efficientnet-b3_INT8.xml
+- checksum: 92815f5158f105ad770836adfacecdf07f436dad3bb95a099a0448945953c48b04f549cb44493302a5cc72a3da9df371
+  name: FP16-INT8/efficientnet-b3_INT8.bin
+  sha256: 040778b9a8495359c620fa3d738f6c56ad1306b782a48755c3883e7c45c83e7b
+  size: 12500030
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b3_INT8/FP16-INT8/efficientnet-b3_INT8.bin
+- checksum: c8a57dcf365aff4cbd0f566743fc2f3e1ecd58ab98605ef97aee4d585a1f93570c0a6faa437ee331e314a76722ca2b0c
+  name: FP32-INT8/efficientnet-b3_INT8.xml
+  sha256: 7b22cdbafca5603a125450fd002d9b44416c1729fd19c3b14f417c3861336d6f
+  size: 1342078
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b3_INT8/FP32-INT8/efficientnet-b3_INT8.xml
+- checksum: 7584d83424154a7c1ddd3e7a2d13f9f3970d56e51da3a9092b8a7abbb21b91d050b2a474c168927700c4631ebab9d1e1
+  name: FP32-INT8/efficientnet-b3_INT8.bin
+  sha256: 9e0519fa91a7cc8a676698cd4a8ff61284db002e45940ca823fc439497dae71f
+  size: 12875108
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b3_INT8/FP32-INT8/efficientnet-b3_INT8.bin
+framework: dldt
+license: 'https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b3_INT8/LICENSE'
+task_type: classification

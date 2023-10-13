@@ -8,16 +8,14 @@
 import os
 import sys
 
+from systeminfo import collect_configuration
+from systeminfo import generate_json
+from arguments import parse_args
+
 print(sys.path)
 
 print(__name__)
 print(__package__)
-
-from systeminfo import collect_configuration
-
-from systeminfo import generate_json
-
-from arguments import parse_args
 
 package_name = os.path.basename(os.path.dirname(__file__))
 
@@ -37,5 +35,7 @@ if __name__ == '__main__':
     print_args(args)
     info = collect_configuration(args)
 
+    # pylint: disable=no-member
     if args.json:
         generate_json(info, args.json)
+    # pylint: enable=no-member

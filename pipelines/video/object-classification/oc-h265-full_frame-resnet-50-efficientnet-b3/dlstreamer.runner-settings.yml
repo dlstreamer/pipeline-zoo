@@ -1,0 +1,22 @@
+# Runner specific configuration
+run: "python3 dlstreamrun"
+decode:
+  device: CPU
+classify-0:
+  device: CPU
+  inference-region: full-frame
+classify-1:
+  device: CPU
+  inference-region: full-frame
+classify-2:
+  device: CPU
+  inference-region: full-frame
+  precision: FP16
+classify-3:
+  device: CPU
+  inference-region: full-frame
+  precision: FP16
+classify-4:
+  device: CPU
+  inference-region: full-frame
+  precision: FP16

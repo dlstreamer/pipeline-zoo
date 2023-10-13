@@ -1,5 +1,5 @@
 # ==============================================================================
-# Copyright (C) 2018-2022 Intel Corporation
+# Copyright (C) 2018 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 # ==============================================================================
@@ -20,6 +20,7 @@ gi.require_version("GstVideo", "1.0")
 gi.require_version('GObject', '2.0')
 
 from gi.repository import GObject, Gst, GstVideo
+# pylint: disable=wrong-import-position, relative-beyond-top-level
 from .util import VideoRegionOfInterestMeta
 from .util import GVATensorMeta
 from .util import GVAJSONMeta
@@ -27,7 +28,7 @@ from .util import GVAJSONMetaStr
 from .region_of_interest import RegionOfInterest
 from .tensor import Tensor
 from .util import libgst, gst_buffer_data, VideoInfoFromCaps
-
+# pylint: enable=wrong-import-position, relative-beyond-top-level
 
 ## @brief This class represents video frame - object for working with RegionOfInterest and Tensor objects which
 # belong to this video frame (image). RegionOfInterest describes detected object (bounding boxes) and its Tensor

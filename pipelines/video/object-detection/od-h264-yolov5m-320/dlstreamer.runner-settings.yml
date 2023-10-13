@@ -1,0 +1,8 @@
+# Runner specific configuration
+
+run: "python3 dlstreamrun"
+detect:
+  device: CPU
+  precision: FP32-INT8
+decode:
+  device: CPU

@@ -1,0 +1,35 @@
+description: efficientnet-b3
+files:
+- checksum: 8881ac957acf089b389e2ccc536e8add2faeb1c15686830a0b150e9b83c4972b47598f6a7cfdd9813bdac3dd7ada49bc
+  name: LICENSE
+  sha256: 9f827e9c8a7bafe5fea52118403b10f24f74f76e9154353d88448d67bc3fa6fa
+  size: 11414
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b3/LICENSE
+- checksum: fb6ceaf6f06c2a1eb0e93eb1f378df281325809fa938812ed34e0158927f0c55ea4b6c1566c84c9d091fdcabf1cb80b6
+  name: efficientnet-b3.json
+  sha256: 00188c0df737684fcb2041925b0f98d039179a26b4e276ed7b6f70bc8ef04c04
+  size: 40942
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b3/efficientnet-b3.json
+- checksum: b84f8736a1ad3ba267a4d15d64a9a35d13211f49c3a687e222e6d7d844b3b8542bf6ce07d40265c6635d4ea4a5c407bb
+  name: FP16/efficientnet-b3.bin
+  sha256: e50744edeb9466e10a075828fb7d77e63ea4e7c5a8d04e39c1af4e808018ed24
+  size: 24379200
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b3/FP16/efficientnet-b3.bin
+- checksum: 7ed80fe7fd9627f29394016686fa4eb74e4fa80fb475f0af3e1b54970cc0f8f7c3fb938d1d0301fbf155080235e4cd8c
+  name: FP16/efficientnet-b3.xml
+  sha256: 58b7be3d702207c72b8f15687f15ea64e433b85dd63314c8ddfd6b7860d34f0c
+  size: 565943
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b3/FP16/efficientnet-b3.xml
+- checksum: 9fa148a6945173cb34002b9f9c61cea7610efad61a77915b1cacc5d3b825f29fb1c5e3c8b496aa3fb94f0eefdfb04ea6
+  name: FP32/efficientnet-b3.bin
+  sha256: f6591fac37da4724826b03855bc11b173335434ab3195741c1b4218a431861c9
+  size: 48758368
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b3/FP32/efficientnet-b3.bin
+- checksum: f42f3a0f44bce99924276152c21fcb6118e28a882b0bc9569d2b93f53ae5f5db8421a010a1cf74d6d1afc3a4d9b2a960
+  name: FP32/efficientnet-b3.xml
+  sha256: d02241c9e715d24f31bf28eaf24740e59a266a1ad5bc7979b45e8468cfec7b3c
+  size: 415766
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b3/FP32/efficientnet-b3.xml
+framework: dldt
+license: 'https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/efficientnet-b3/LICENSE'
+task_type: classification

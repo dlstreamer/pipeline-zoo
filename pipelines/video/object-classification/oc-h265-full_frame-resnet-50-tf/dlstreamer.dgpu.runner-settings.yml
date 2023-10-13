@@ -7,6 +7,7 @@ classify-0:
   nireq: 4
   batch-size: 64
   pre-process-backend: vaapi-surface-sharing
+  inference-region: full-frame
   pre-process-config: "VAAPI_FAST_SCALE_LOAD_FACTOR=1"
   precision: FP32-INT8
   model-instance-id: cls

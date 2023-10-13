@@ -1,0 +1,7 @@
+description: 20200711_cat
+files:
+- name: 20200711_cat.mp4
+  sha256: 5395e17eee9303f9f63680e7efaa38f4f740e0294839f33c3deb6f036941fc68
+  size: 98693578
+  source: https://github.com/dlstreamer/pipeline-zoo-media/blob/main/storage/video/20200711_cat/20200711_cat.mp4
+license: https://raw.githubusercontent.com/openvinotoolkit/open_model_zoo/master/LICENSE

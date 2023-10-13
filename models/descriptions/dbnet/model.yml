@@ -1,0 +1,35 @@
+description: dbnet
+files:
+- checksum: c07eedf9941c21c96b30644afc8bbc8a639ab8ef81cb1dbbd8e9ac055a7b4f2689b8a3164b861b6a78d9c01eebd8ff5d
+  name: dbnet.json
+  sha256: 7e79e91ece25f4f21a09a0d61b2541be9f6ca0404f6c5dd1c2583f3e4526dfca
+  size: 470
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/dbnet/dbnet.json
+- checksum: 208f5ed627940e5e40c72895ab7fc57e54ee6b54abd24309db97ba8a61bbad783b4a202c03655e9acbc4a95b0ba8ceff
+  name: LICENSE
+  sha256: cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30
+  size: 11358
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/dbnet/LICENSE
+- checksum: 6d2338ca5415b470a845176abb0bfd43d853f4ccb08fd597339d9951b53ead7f19253e93bb89140763ab82d22f0bddff
+  name: FP32/dbnet.xml
+  sha256: ce4d6834e0cef9df4d0e466e906906c24137e4b92e80245a84763f1b1a096331
+  size: 135409
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/dbnet/FP32/dbnet.xml
+- checksum: a1a5ad4cb2a029ce42ff3e4118288d332ab97f3585b590b3387de44cf554c0f24656353eb21ea98c05caf0e6f9d822d4
+  name: FP32/dbnet.bin
+  sha256: ebb65d504f3010d2f75bc9697b505313bd2c2b8671eda52f967a6f98ebcc2f5b
+  size: 49050996
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/dbnet/FP32/dbnet.bin
+- checksum: 6d2338ca5415b470a845176abb0bfd43d853f4ccb08fd597339d9951b53ead7f19253e93bb89140763ab82d22f0bddff
+  name: FP16/dbnet.xml
+  sha256: ce4d6834e0cef9df4d0e466e906906c24137e4b92e80245a84763f1b1a096331
+  size: 135409
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/dbnet/FP16/dbnet.xml
+- checksum: a1a5ad4cb2a029ce42ff3e4118288d332ab97f3585b590b3387de44cf554c0f24656353eb21ea98c05caf0e6f9d822d4
+  name: FP16/dbnet.bin
+  sha256: ebb65d504f3010d2f75bc9697b505313bd2c2b8671eda52f967a6f98ebcc2f5b
+  size: 49050996
+  source: https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/dbnet/FP16/dbnet.bin
+framework: dldt
+license: 'https://github.com/dlstreamer/pipeline-zoo-models/blob/main/storage/dbnet/LICENSE'
+task_type: detection

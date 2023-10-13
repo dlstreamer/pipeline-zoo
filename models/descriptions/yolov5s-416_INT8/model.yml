@@ -10,11 +10,11 @@ files:
   sha256: b20423988101cba238782e813bcd00403bc135b344f2bd8fa2c3668d3ab29ffd
   size: 517319
   source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416_INT8/FP16-INT8/yolov5s.xml
-- checksum: 97e3d855ac00427b143c9ecab704a5a3a04440726a7b5247f4b695208d6a1196b0646de558b9dd95efe338f18412762f
-  name: yolov5s.json
-  sha256: 0849483679a17ee10cae1d02da4b01ae5b9fc5ee17c518f2d4bdca349c52398c
-  size: 3099
-  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416_INT8/yolov5s.json
+- checksum: fe93187e825c30df136fd101b83979ff5ca7720d56a8490b284ade4f2dd0b6f2cf72ce4263c8c72e79e4be2e77aa4d54
+  name: yolo-v5.json
+  sha256: 537152fb2113179dd72262c5922a2dd02ba93211267e367d6b76cb95f6b8ca98
+  size: 3126
+  source: https://github.com/dlstreamer/pipeline-zoo-models/raw/main/storage/yolov5s-416_INT8/yolo-v5.json
 - checksum: c7e419c21b5d3d58fe78306d159effaf6bd483fcaabfdb16f3b0ea43f48f367d140760e93912e8e9c52bd85e7a4044c1
   name: FP32-INT8/yolov5s-416_INT8.bin
   sha256: 9c090ab7841e6495eb76d756790095d3b556ea0dc1ee89d16413fc4993fab006

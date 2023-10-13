@@ -1,7 +1,7 @@
 '''
 * Copyright (C) 2019 Intel Corporation.
 *
-* SPDX-License-Identifier: BSD-3-Clause
+* SPDX-License-Identifier: MIT
 '''
 import os
 import argparse
@@ -232,6 +232,7 @@ def _get_parser(program_name="pipebench"):
                             required=False,
                             dest="measurement",
                             default="throughput",
+                            choices=["throughput", "density", "latency"],
                             help="Measurement to perform. Used as selector "\
                             "for measurement and runner settings.")
 
