@@ -41,7 +41,7 @@ optional arguments:
 ```
 pipebench run -h
 usage: pipebench run [-h] [-v] [--workspace WORKSPACE_ROOT] [--measure MEASUREMENT] [--runner RUNNER] [--runner-settings RUNNER_SETTINGS]
-                     [--save-runner-settings SAVE_RUNNER_SETTINGS] [--platform PLATFORM] [--save-measurement-settings SAVE_MEASUREMENT_SETTINGS]
+                     [--save-runner-settings SAVE_RUNNER_SETTINGS] [--platform PLATFORM] [--gpu-device GPU_DEVICES] [--save-measurement-settings SAVE_MEASUREMENT_SETTINGS]
                      [--runner-override RUNNER_OVERRIDES RUNNER_OVERRIDES] [--measurement-settings MEASUREMENT_SETTINGS]
                      [--measurement-directory MEASUREMENT_DIRECTORY] [--force] [--media MEDIA] [--warm-up WARM_UP] [--duration DURATION]
                      [--numactl | --no-numactl] [--streams STREAMS] [--target-fps TARGET_FPS] [--target-condition {stream,average,total}]
@@ -67,7 +67,9 @@ optional arguments:
                         None)
   --save-runner-settings SAVE_RUNNER_SETTINGS
                         Save pipeline runner settings with overrides. (default: None)
-  --platform PLATFORM   Platform name. Used as selector for measurment and runner settings. (default: None)
+  --platform PLATFORM   Platform name. Used as selector for measurement and runner settings. (default: None)
+  --gpu-device GPU_DEVICES
+                        Specific device to perform measurement on. Example input /dev/dri/renderD129. (default: None)
   --save-measurement-settings SAVE_MEASUREMENT_SETTINGS
                         Name for saving measurement settings (default: None)
   --runner-override RUNNER_OVERRIDES RUNNER_OVERRIDES
