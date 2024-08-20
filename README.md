@@ -11,6 +11,11 @@
 | [Pipebench Reference](docs/pipebench-reference-guide.md)
 | [Measurement Output](docs/output.md) |
 
+**Important note:
+
+This repository is archived and no longer supported**
+
+
 The Intel® DL Streamer Pipeline Zoo is a catalog of media and media analytics
 pipelines optimized for Intel hardware. It includes tools for
 downloading pipelines and their dependencies and tools for measuring
